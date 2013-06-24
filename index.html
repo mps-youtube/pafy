@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Pafy by np1</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Pafy</h1>
+        <h2>Python API for YouTube - Download videos and retrieve metadata from YouTube.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/np1/pafy/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/np1/pafy/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/np1/pafy" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="pafy" class="anchor" href="#pafy"><span class="octicon octicon-link"></span></a>PAFY</h1>
+
+<p>Python API for YouTube</p>
+
+<p>by nagev</p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features:</h2>
+
+<ul>
+<li>Download any stream for a particular video</li>
+<li>Select best quality stream for download</li>
+<li>Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords</li>
+<li>Retrieve all availabe streams for a YouTube video (all resolutions and formats)</li>
+<li>Retrieve the Download URL to download or stream the video</li>
+<li>Small (&lt; 200 lines of code) standalone, single importable module file.</li>
+<li>Works with age-restricted videos and non-embeddable videos</li>
+<li>No dependencies</li>
+</ul><h2>
+<a name="usage-examples" class="anchor" href="#usage-examples"><span class="octicon octicon-link"></span></a>Usage Examples:</h2>
+
+<p>Here is how to use the module in your own python code:</p>
+
+<div class="highlight"><pre>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">pafy</span> <span class="kn">import</span> <span class="n">Pafy</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">url</span> <span class="o">=</span> <span class="s">"http://www.youtube.com/watch?v=dQw4w9WgXcQ"</span>
+
+
+    <span class="c"># create a video instance</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span> <span class="o">=</span> <span class="n">Pafy</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+
+    <span class="c"># get certain attributes</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span><span class="o">.</span><span class="n">title</span>
+<span class="s">u'Rick Astley - Never Gonna Give You Up'</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span><span class="o">.</span><span class="n">rating</span>
+<span class="mf">4.74645452989</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span><span class="o">.</span><span class="n">length</span>
+<span class="mi">213</span>
+
+    <span class="c"># display video metadata</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">video</span>
+<span class="n">Title</span><span class="p">:</span> <span class="n">Rick</span> <span class="n">Astley</span> <span class="o">-</span> <span class="n">Never</span> <span class="n">Gonna</span> <span class="n">Give</span> <span class="n">You</span> <span class="n">Up</span>
+<span class="n">Author</span><span class="p">:</span> <span class="n">RickAstleyVEVO</span>
+<span class="n">ID</span><span class="p">:</span> <span class="n">dQw4w9WgXcQ</span>
+<span class="n">Duration</span><span class="p">:</span> <span class="mo">00</span><span class="p">:</span><span class="mo">03</span><span class="p">:</span><span class="mi">33</span>
+<span class="n">Rating</span><span class="p">:</span> <span class="mf">4.74645452989</span>
+<span class="n">Views</span><span class="p">:</span> <span class="mi">63307745</span>
+<span class="n">Thumbnail</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">i1</span><span class="o">.</span><span class="n">ytimg</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">vi</span><span class="o">/</span><span class="n">dQw4w9WgXcQ</span><span class="o">/</span><span class="n">default</span><span class="o">.</span><span class="n">jpg</span>
+<span class="n">Keywords</span><span class="p">:</span> <span class="n">Rick</span><span class="p">,</span> <span class="n">Astley</span><span class="p">,</span> <span class="n">Sony</span><span class="p">,</span> <span class="n">BMG</span><span class="p">,</span> <span class="n">Music</span><span class="p">,</span> <span class="n">UK</span><span class="p">,</span> <span class="n">Pop</span>
+
+
+    <span class="c"># show all formats for a video:</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">streams</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">streams</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span>
+<span class="mi">480</span><span class="n">x854</span> <span class="n">webm</span>
+<span class="mi">480</span><span class="n">x854</span> <span class="n">flv</span>
+<span class="mi">360</span><span class="n">x640</span> <span class="n">webm</span>
+<span class="mi">360</span><span class="n">x640</span> <span class="n">flv</span>
+<span class="mi">360</span><span class="n">x640</span> <span class="n">mp4</span>
+<span class="mi">240</span><span class="n">x400</span> <span class="n">flv</span>
+<span class="mi">320</span><span class="n">x240</span> <span class="mi">3</span><span class="n">gp</span>
+<span class="mi">144</span><span class="n">x176</span> <span class="mi">3</span><span class="n">gp</span>
+
+
+    <span class="c"># show all formats and their download url:</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">url</span>
+<span class="mi">480</span><span class="n">x854</span> <span class="n">webm</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r12</span><span class="o">--</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">480</span><span class="n">x854</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">360</span><span class="n">x640</span> <span class="n">webm</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">360</span><span class="n">x640</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">360</span><span class="n">x640</span> <span class="n">mp4</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">240</span><span class="n">x400</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">320</span><span class="n">x240</span> <span class="mi">3</span><span class="n">gp</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="mi">144</span><span class="n">x176</span> <span class="mi">3</span><span class="n">gp</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+
+
+    <span class="c"># get best resolution regardless of file format:</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbest</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
+<span class="p">(</span><span class="s">'480x854'</span><span class="p">,</span> <span class="s">'webm'</span><span class="p">)</span>
+
+
+    <span class="c"># get best resolution for a particular file format:</span>
+    <span class="c"># (mp4, webm, flv or 3gp)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbest</span><span class="p">(</span><span class="n">preftype</span><span class="o">=</span><span class="s">"mp4"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
+<span class="p">(</span><span class="s">'360x640'</span><span class="p">,</span> <span class="s">'mp4'</span><span class="p">)</span>
+
+
+    <span class="c"># get best resolution for a particular file format, or return</span>
+    <span class="c"># a different format if it has the best resolution</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbest</span><span class="p">(</span><span class="n">preftype</span><span class="o">=</span><span class="s">"mp4"</span><span class="p">,</span> <span class="n">ftypestrict</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
+<span class="p">(</span><span class="s">'480x854'</span><span class="p">,</span> <span class="s">'webm'</span><span class="p">)</span>
+
+
+    <span class="c"># get url, for download or streaming in mplayer / vlc etc</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">url</span>
+<span class="s">'http://r12---sn-aig7kner.c.youtube.com/videoplayback?expire=1369...</span>
+
+
+    <span class="c"># Download video and show progress:</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="o">-</span><span class="n">Downloading</span> <span class="s">'Rick Astley - Never Gonna Give You Up.webm'</span> <span class="p">[</span><span class="mi">33</span><span class="p">,</span><span class="mi">924</span><span class="p">,</span><span class="mi">150</span> <span class="n">Bytes</span><span class="p">]</span>
+  <span class="mi">2</span><span class="p">,</span><span class="mi">525</span><span class="p">,</span><span class="mi">100</span> <span class="n">Bytes</span> <span class="p">[</span><span class="mf">7.44</span><span class="o">%</span><span class="p">]</span> <span class="n">received</span><span class="o">.</span> <span class="n">Rate</span><span class="p">:</span> <span class="p">[</span> <span class="mi">901</span> <span class="n">kbps</span><span class="p">]</span><span class="o">.</span>  <span class="n">ETA</span><span class="p">:</span> <span class="p">[</span><span class="mi">34</span> <span class="n">secs</span><span class="p">]</span>    
+
+
+    <span class="c"># Download video, use specific filepath:</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myfilename</span> <span class="o">=</span> <span class="s">"/tmp/"</span> <span class="o">+</span> <span class="n">best</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s">"."</span> <span class="o">+</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">myfilename</span><span class="p">)</span>
+<span class="o">-</span><span class="n">Downloading</span> <span class="s">'Rick Astley - Never Gonna Give You Up.webm'</span> <span class="p">[</span><span class="mi">33</span><span class="p">,</span><span class="mi">924</span><span class="p">,</span><span class="mi">150</span> <span class="n">Bytes</span><span class="p">]</span>
+<span class="n">Done</span>
+</pre></div>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
