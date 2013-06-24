@@ -136,7 +136,10 @@ class Pafy():
         origUrl = "https://www.youtube.com/watch?v=" + vidid
         self.origrawinfo = opener.open(origUrl).read()
         match = re.search(r';ytplayer.config = ({.*?});', self.origrawinfo)
-        myjson = json.loads(match.group(1))
+        try:
+            myjson = json.loads(match.group(1))
+        except:
+            raise NameError('Problem handling this video')
         args = myjson['args']
         urlefsm = args['url_encoded_fmt_stream_map'].split(",")
         self.allinfo = parse_qs(self.rawinfo)

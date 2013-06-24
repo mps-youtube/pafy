@@ -2,7 +2,7 @@
 
 from pafy import Pafy
 
-url = "http://www.youtube.com/watch?v=dQw4w9WgXcQ"
+url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
 
 # create a video instance
 
