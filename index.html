@@ -8,7 +8,20 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
 
-    <title>Pafy by np1</title>
+    <title>Pafy - Python API for YouTube</title>
+    
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-41778544-1', 'np1.github.io');
+  ga('send', 'pageview');
+
+  </script>
+    
+    
   </head>
 
   <body>
@@ -16,7 +29,7 @@
     <header>
       <div class="container">
         <h1>Pafy</h1>
-        <h2>Python API for YouTube - Download videos and retrieve metadata from YouTube.</h2>
+        <h2>Python API for YouTube - Download videos and retrieve metadata from YouTube</h2>
 
         <section id="downloads">
           <a href="https://github.com/np1/pafy/zipball/master" class="btn">Download as .zip</a>
@@ -28,31 +41,28 @@
 
     <div class="container">
       <section id="main_content">
-        <h1>
-<a name="pafy" class="anchor" href="#pafy"><span class="octicon octicon-link"></span></a>PAFY</h1>
+        <h1>PAFY</h1>
 
 <p>Python API for YouTube</p>
 
 <p>by nagev</p>
 
-<h2>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features:</h2>
+<h2>Features:</h2>
 
 <ul>
 <li>Download any stream for a particular video</li>
 <li>Select best quality stream for download</li>
 <li>Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords</li>
 <li>Retrieve all availabe streams for a YouTube video (all resolutions and formats)</li>
-<li>Retrieve the Download URL to download or stream the video</li>
+<li>Retrieve the Download URL to download the video</li>
 <li>Small (&lt; 200 lines of code) standalone, single importable module file.</li>
 <li>Works with age-restricted videos and non-embeddable videos</li>
 <li>No dependencies</li>
-</ul><h2>
-<a name="usage-examples" class="anchor" href="#usage-examples"><span class="octicon octicon-link"></span></a>Usage Examples:</h2>
+</ul><h2>Usage Examples:</h2>
 
 <p>Here is how to use the module in your own python code:</p>
 
-<div class="highlight"><pre>
+<div class="highlight"><pre style="font-size: 1em;">
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">pafy</span> <span class="kn">import</span> <span class="n">Pafy</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">url</span> <span class="o">=</span> <span class="s">"http://www.youtube.com/watch?v=dQw4w9WgXcQ"</span>
 
@@ -91,28 +101,28 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">streams</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">streams</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
 <span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span>
-<span class="mi">480</span><span class="n">x854</span> <span class="n">webm</span>
-<span class="mi">480</span><span class="n">x854</span> <span class="n">flv</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">webm</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">flv</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">mp4</span>
-<span class="mi">240</span><span class="n">x400</span> <span class="n">flv</span>
-<span class="mi">320</span><span class="n">x240</span> <span class="mi">3</span><span class="n">gp</span>
-<span class="mi">144</span><span class="n">x176</span> <span class="mi">3</span><span class="n">gp</span>
+<span class="n">480</span><span class="n">x854</span> <span class="n">webm</span>
+<span class="n">480</span><span class="n">x854</span> <span class="n">flv</span>
+<span class="n">360</span><span class="n">x640</span> <span class="n">webm</span>
+<span class="n">360</span><span class="n">x640</span> <span class="n">flv</span>
+<span class="n">360</span><span class="n">x640</span> <span class="n">mp4</span>
+<span class="n">240</span><span class="n">x400</span> <span class="n">flv</span>
+<span class="n">320</span><span class="n">x240</span> <span class="n">3</span><span class="n">gp</span>
+<span class="n">144</span><span class="n">x176</span> <span class="n">3</span><span class="n">gp</span>
 
 
     <span class="c"># show all formats and their download url:</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
 <span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">url</span>
-<span class="mi">480</span><span class="n">x854</span> <span class="n">webm</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r12</span><span class="o">--</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">480</span><span class="n">x854</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">webm</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">mp4</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">240</span><span class="n">x400</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">320</span><span class="n">x240</span> <span class="mi">3</span><span class="n">gp</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">144</span><span class="n">x176</span> <span class="mi">3</span><span class="n">gp</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">480</span><span class="n">x854</span> <span class="n">webm</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r12</span><span class="o">--</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">480</span><span class="n">x854</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">360</span><span class="n">x640</span> <span class="n">webm</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">360</span><span class="n">x640</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">360</span><span class="n">x640</span> <span class="n">mp4</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">240</span><span class="n">x400</span> <span class="n">flv</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">320</span><span class="n">x240</span> <span class="n">3</span><span class="n">gp</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback?expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<span class="n">144</span><span class="n">x176</span> <span class="n">3</span><span class="n">gp</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span>?<span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
 
 
     <span class="c"># get best resolution regardless of file format:</span>
