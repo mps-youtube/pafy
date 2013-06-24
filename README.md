@@ -27,7 +27,7 @@ Here is how to use the module in your own python code:
 ```python
 
 >>> from pafy import Pafy
->>> url = "http://www.youtube.com/watch?v=dQw4w9WgXcQ"
+>>> url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
 
 
     # create a video instance
@@ -38,25 +38,26 @@ Here is how to use the module in your own python code:
     # get certain attributes
     
 >>> video.title
-u'Rick Astley - Never Gonna Give You Up'
+u'Rick Astley Sings Live - Never Gonna Give You Up - This Morning'
+
 
 >>> video.rating
-4.74645452989
+4.93608852755
 
 >>> video.length
-213
+355
 
     # display video metadata
     
 >>> print video
-Title: Rick Astley - Never Gonna Give You Up
-Author: RickAstleyVEVO
-ID: dQw4w9WgXcQ
-Duration: 00:03:33
-Rating: 4.74645452989
-Views: 63307745
-Thumbnail: https://i1.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
-Keywords: Rick, Astley, Sony, BMG, Music, UK, Pop
+Title: Rick Astley Sings Live - Never Gonna Give You Up - This Morning
+Author: Ryan915
+ID: cyMHZVT91Dw
+Duration: 00:05:55
+Rating: 4.93608852755
+Views: 672583
+Thumbnail: https://i1.ytimg.com/vi/cyMHZVT91Dw/default.jpg
+Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, Gunna, Give, You,...
 
 
     # show all formats for a video:
@@ -120,15 +121,15 @@ Keywords: Rick, Astley, Sony, BMG, Music, UK, Pop
     # Download video and show progress:
     
 >>> best.download(progress=True)
--Downloading 'Rick Astley - Never Gonna Give You Up.webm' [33,924,150 Bytes]
-  2,525,100 Bytes [7.44%] received. Rate: [ 901 kbps].  ETA: [34 secs]    
+-Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
+Traceback (most recent call last):ed. Rate: [1095 kbps].  ETA: [33 secs]  
 
 
     # Download video, use specific filepath:
     
 >>> myfilename = "/tmp/" + best.title + "." + best.extension
 >>> best.download(progress=False, filepath=myfilename)
--Downloading 'Rick Astley - Never Gonna Give You Up.webm' [33,924,150 Bytes]
+-Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
 Done
 ```
 
