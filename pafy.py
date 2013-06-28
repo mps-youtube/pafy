@@ -49,7 +49,7 @@ def _decrypt_signature(s):
         return s[36] + s[79:67:-1] + s[81] + s[66:40:-1] + s[33] +\
                 s[39:36:-1] + s[40] + s[35] + s[0] + s[67] + s[32:0:-1] + s[34]
     else:
-        sys.exit("failed %s" % len(s))
+        raise NameError("Unable to decode video url - sig len %s" % len(s))
 
 class Stream():
     resolutions = {
@@ -146,15 +146,6 @@ class Pafy():
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
         self.rawinfo = opener.open(infoUrl).read()
-        origUrl = "https://www.youtube.com/watch?v=" + vidid
-        self.origrawinfo = opener.open(origUrl).read()
-        match = re.search(r';ytplayer.config = ({.*?});', self.origrawinfo)
-        try:
-            myjson = json.loads(match.group(1))
-        except:
-            raise NameError('Problem handling this video')
-        args = myjson['args']
-        urlefsm = args['url_encoded_fmt_stream_map'].split(",")
         self.allinfo = parse_qs(self.rawinfo)
         self.title = self.allinfo['title'][0].decode('utf-8')
         self.author = self.allinfo['author'][0]
@@ -175,7 +166,15 @@ class Pafy():
         streamMap = self.allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         if not smap[0].get("sig", ""):  # vevo!
-            streamMap = urlefsm
+            watchurl = "https://www.youtube.com/watch?v=" + vidid
+            watchinfo = opener.open(watchurl).read()
+            match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
+            try:
+                myjson = json.loads(match.group(1))
+            except:
+                raise NameError('Problem handling this video')
+            args = myjson['args']
+            streamMap = args['url_encoded_fmt_stream_map'].split(",")
             smap = [parse_qs(sm) for sm in streamMap]
         self.streams = [Stream(sm, opener, self.title) for sm in smap]
 
