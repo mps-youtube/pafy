@@ -105,7 +105,7 @@ class Pafy():
         out = ""
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
-        keywords = ", ".join(self.keywords)
+        keywords = ", ".join(self.keywords).decode("utf8")
         length = time.strftime('%H:%M:%S', time.gmtime(self.length))
         info = dict(Title=self.title,
                     Author=self.author,
@@ -120,7 +120,7 @@ class Pafy():
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
-        return out
+        return out.encode("utf8", "ignore")
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
