@@ -83,6 +83,10 @@ class Stream():
         self.filename = self.title + "." + self.extension
         self._opener = opener
 
+    def get_filesize(self):
+        opener = self._opener
+        return int(opener.open(self.url).headers['content-length'])
+
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
         total = int(response.info().getheader('Content-Length').strip())
