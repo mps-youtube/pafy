@@ -14,7 +14,7 @@ Features:
  - Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords
  - Retrieve all availabe streams for a YouTube video (all resolutions and formats)
  - Retrieve the Download URL to download or stream the video
- - Small (< 200 lines of code) standalone, single importable module file.
+ - Small, standalone, single importable module file.
  - Works with age-restricted videos and non-embeddable videos
  - No dependencies
 
