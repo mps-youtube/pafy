@@ -29,6 +29,7 @@ import urllib2
 from urlparse import parse_qs
 
 def _decrypt_signature(s):
+    # This function taken from youtube-dl source. Thanks!
     if len(s) == 92:
         return s[25] + s[3:25] + s[0] + s[26:42] + s[79] + s[43:79] + s[91] + \
                 s[80:83]
@@ -54,12 +55,13 @@ def _decrypt_signature(s):
         return s[81:64:-1] + s[82] + s[63:52:-1] + s[45] + s[51:45:-1] + s[1]\
                 + s[44:1:-1] + s[0]
     elif len(s) == 82:
-        return s[36] + s[79:67:-1] + s[81] + s[66:40:-1] + s[33] + \
-                s[39:36:-1] + s[40] + s[35] + s[0] + s[67] + s[32:0:-1] + s[34]
+        return s[1:19] + s[0] + s[20:68] + s[19] + s[69:82]
     elif len(s) == 81:
         return s[56] + s[79:56:-1] + s[41] + s[55:41:-1] + s[80] + \
                 s[40:34:-1] + s[0] + s[33:29:-1] + s[34] + s[28:9:-1] + \
                 s[29] + s[8:0:-1] + s[9]
+    elif len(s) == 80:
+        return s[1:19] + s[0] + s[20:68] + s[19] + s[69:80]
     elif len(s) == 79:
         return s[54] + s[77:54:-1] + s[39] + s[53:39:-1] + s[78] + \
                 s[38:34:-1] + s[0] + s[33:29:-1] + s[34] + s[28:9:-1] + \
