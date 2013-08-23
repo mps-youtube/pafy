@@ -78,7 +78,7 @@ print("\n")
 
 print("Download video, show progress")
 print("-----------------------------")
-print("Uncomment line in source file to enable")
+print("Uncomment line in example.py source file to enable")
 #best.download(progress=True)
 print("\n")
 
@@ -86,6 +86,6 @@ print("\n")
 
 print("Download video, specify filepath")
 print("--------------------------------")
-print("Uncomment line in source file to enable")
+print("Uncomment line in example.py source file to enable")
 #filename = "/tmp/" + best.title + best.extension
 #best.download(progress=True, filepath=filename)
