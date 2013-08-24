@@ -145,7 +145,7 @@ usage: ytdl [-h] [-i] [-s] [-f {webm,mp4,3gp,flv}] [-r NNNxNNN] [-n N] [-b]
 YouTube Download Tool
 
 positional arguments:
-  url                   YouTube video URL to downlad
+  url                   YouTube video URL to download
 
 optional arguments:
   -h, --help            show this help message and exit

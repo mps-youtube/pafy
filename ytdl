@@ -53,7 +53,7 @@ def printstreams(vid):
 def main():
     description = "YouTube Download Tool"
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('url', help="YouTube video URL to downlad")
+    parser.add_argument('url', help="YouTube video URL to download")
     parser.add_argument('-i', required=False, help="Display vid info", 
         action="store_true")
     parser.add_argument('-s', help="Display available streams", action=
