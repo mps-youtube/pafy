@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.2"
+__version__ = "0.21"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -45,12 +45,12 @@ def _decrypt_signature(s):
     elif len(s) == 87:
         return s[6:27] + s[4] + s[28:39] + s[27] + s[40:59] + s[2] + s[60:] 
     elif len(s) == 86:
-        return s[5:20] + s[2] + s[21:]
+        return s[5:40] + s[3] + s[41:48] + s[0] + s[49:86]
     elif len(s) == 85:
         return s[83:34:-1] + s[0] + s[33:27:-1] + s[3] + s[26:19:-1] + s[34]\
                 + s[18:3:-1] + s[27]
     elif len(s) == 84:
-        return s[83:27:-1] + s[0] + s[26:5:-1] + s[2:0:-1] + s[27]
+        return s[5:40] + s[3] + s[41:48] + s[0] + s[49:84]
     elif len(s) == 83:
         return s[81:64:-1] + s[82] + s[63:52:-1] + s[45] + s[51:45:-1] + s[1]\
                 + s[44:1:-1] + s[0]
