@@ -135,6 +135,9 @@ Done
 ```
 
 Command Line Tool (ytdl) Usage:
+===============================
+
+```terminal
 
 usage: ytdl [-h] [-i] [-s] [-f {webm,mp4,3gp,flv}] [-r NNNxNNN] [-n N] [-b]
             url
@@ -161,7 +164,6 @@ format and quality:
   -r NNNxNNN            resolution of the video to download
 
 Examples:
-```terminal
 
 # Download best available resolution (-b):
 
