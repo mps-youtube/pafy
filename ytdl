@@ -1,0 +1,127 @@
+#!/usr/bin/python
+
+''' PAFY - Command Line Downloader Tool - ytdl
+    Copyright (C)  2013 nagev
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
+
+__version__ = "0.1"
+__author__ = "nagev"
+__license__ = "GPLv3"
+
+from pafy import Pafy
+import argparse
+import sys
+
+def processurl(url):
+    # Check whether supplied url argument is a valid youtube vid identifier
+    # valid urls contain a v=vidid pattern or are simply the vidid
+    if not "v=" in url:
+        if not len(url) > 9:
+            return False
+        else:
+            return Pafy(url)
+    else:
+        vid = Pafy(url)
+        return vid
+
+def download(video, stream=None):
+    #print "Downloading %s.." % video.title
+    if not stream:
+        stream = video.getbest(preftype="mp4")
+    print stream.resolution, stream.extension
+    stream.download()
+
+def printstreams(vid):
+    print "Stream\tFormat\tResolution\tSize"
+    print "------\t------\t----------\t----"
+    for n,s in enumerate(vid.streams):
+        megs = "%3.f" % (s.get_filesize() / 1024**2) + " MB"
+        print n,"\t",s.extension,'\t', s.resolution, '\t', megs
+
+def main():
+    description = "YouTube Download Tool"
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('url', help="YouTube video URL to downlad")
+    parser.add_argument('-i', required=False, help="Display vid info", 
+        action="store_true")
+    parser.add_argument('-s', help="Display available streams", action=
+        "store_true")
+    fq = parser.add_argument_group("format and quality", description=
+        "Specify the stream to download by resolution and file format")
+    fq.add_argument('-f', type=str, help='format of the'
+        ' video to download', required=False, choices=
+        'webm mp4 3gp flv'.split())
+    fq.add_argument('-r', type=str, help='resolution of the'
+        ' video to download',required=False, metavar='NNNxNNN')
+    parser.add_argument('-n', required=False, metavar="N", type=int, help=
+        "Specify stream to download by stream number (use -s to list,\
+            ignores -f and -r)")
+    parser.add_argument('-b', required=False, help=
+        'Download the best quality video (ignores -n, -f and -r)', action=
+        "store_true")
+    
+
+    args = parser.parse_args()
+    vid = processurl(args.url)
+    # check valid video
+    if not vid:
+        sys.exit("Invalid YouTube Video URL, " + args.url)
+    # resolution and format, if present, must both be present.
+    if args.f and not args.r or args.r and not args.f:
+        parser.print_help()
+        sys.exit("\n-f and -r cannot be used independently of each other!")
+    # if requested print vid info and list streams
+    if args.i:
+        print vid
+    if args.s:
+        printstreams(vid)
+    if args.b:
+        if args.n:
+            print "-b and -n cannot be used together! Use one or the other."
+        else:
+            download(vid)
+            sys.exit()
+    elif args.n:
+        streamnumber = int(args.n)
+        download(vid, vid.streams[streamnumber])
+
+    elif args.f and args.r:
+        print args.f, args.r
+        print "Getting streams..."
+        matchres, matchformat = 0, 0
+        for n, stream in enumerate(vid.streams):
+            if args.f == stream.extension:
+                matchformat = 1
+                if str(args.r) in stream.resolution:
+                    matchres = 1
+                    # matching video found, download it
+                    download(vid, stream)
+        if not matchres:
+            print "No stream found matching resolution " + str(args.r) +\
+            ". Try checking available resolutions using '-s'"
+        if not matchformat: 
+            print "no stream found matching format %s" % str(args.f) +\
+            ". Try checking available formats using '-s'"
+    if not args.i and not args.s and not args.b and not args.n and not \
+        args.r:
+        print "Nothing to do!  Try -b to download highest quality or" +\
+           " -s to list availabe streams"
+
+    
+main()
+
+    
+
+
