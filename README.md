@@ -17,12 +17,13 @@ Features:
  - Small, standalone, single importable module file.
  - Works with age-restricted videos and non-embeddable videos
  - No dependencies
-
+ - Command line tool (ytdl) for downloading directly from the command line
 
 Usage Examples:
 ---------------
 
-Here is how to use the module in your own python code:
+Here is how to use the module in your own python code.  For command line tool
+(ytdl) instructions, see further below:
 
 ```python
 
@@ -133,6 +134,65 @@ Traceback (most recent call last):ed. Rate: [1095 kbps].  ETA: [33 secs]
 Done
 ```
 
+Command Line Tool (ytdl) Usage:
 
+usage: ytdl [-h] [-i] [-s] [-f {webm,mp4,3gp,flv}] [-r NNNxNNN] [-n N] [-b]
+            url
+
+YouTube Download Tool
+
+positional arguments:
+  url                   YouTube video URL to downlad
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i                    Display video info
+  -s                    Display available streams
+  -n N                  Specify stream to download by stream number (use -s to
+                        list, ignores -f and -r)
+  -b                    Download the best quality video (ignores -n, -f and
+                        -r)
+
+format and quality:
+  Specify the stream to download by resolution and file format
+
+  -f {webm,mp4,3gp,flv}
+                        format of the video to download
+  -r NNNxNNN            resolution of the video to download
+
+Examples:
+```terminal
+
+# Download best available resolution (-b):
+
+nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
+
+# get video info (-i):
+
+nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
+
+# list available download formats (-s):
+
+nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -s
+Stream  Format  Resolution  Size
+------  ------  ----------  ----
+0   webm    480x854      54 MB
+1   flv     480x854      50 MB
+2   webm    360x640      33 MB
+3   flv     360x640      31 MB
+4   mp4     360x640      24 MB
+5   flv     240x400      13 MB
+6   3gp     320x240      10 MB
+7   3gp     144x176       3 MB
+
+# Download mp4 360x640, ie. stream number 4 (-n4)
+
+nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 4
+
+# Download flv at 240x400 (-f flv -r 240x400)
+ 
+nagev@laptop:/f/pafy$ ./ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -r 240x400 
+
+```
 
 
