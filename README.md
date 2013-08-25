@@ -137,7 +137,7 @@ Done
 Command Line Tool (ytdl) Usage:
 ===============================
 
-```terminal
+```shell
 
 usage: ytdl [-h] [-i] [-s] [-f {webm,mp4,3gp,flv}] [-r NNNxNNN] [-n N] [-b]
             url
