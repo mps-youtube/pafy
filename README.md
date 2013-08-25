@@ -167,15 +167,15 @@ Examples:
 
 # Download best available resolution (-b):
 
-nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
+ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
 
 # get video info (-i):
 
-nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
+ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
 
 # list available download formats (-s):
 
-nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -s
+ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -s
 Stream  Format  Resolution  Size
 ------  ------  ----------  ----
 0   webm    480x854      54 MB
@@ -189,11 +189,11 @@ Stream  Format  Resolution  Size
 
 # Download mp4 360x640, ie. stream number 4 (-n4)
 
-nagev@laptop:/f/pafy$ ./ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 4
+ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 4
 
 # Download flv at 240x400 (-f flv -r 240x400)
  
-nagev@laptop:/f/pafy$ ./ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -r 240x400 
+ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -r 240x400 
 
 ```
 
