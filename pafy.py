@@ -111,7 +111,7 @@ class Stream():
         print u"-Downloading '{}' [{:,} Bytes]".format(self.filename, total)
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
-        chunksize, bytesdone, t0 = 16834, 0, time.time()
+        chunksize, bytesdone, t0 = 1024, 0, time.time()
         outfh = open(filepath or self.filename, 'wb')
         while 1:
             chunk = response.read(chunksize)
