@@ -107,7 +107,7 @@ class Stream():
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
         total = int(response.info().getheader('Content-Length').strip())
-        print u"-Downloading '{}' [{:,} Bytes]".format(self.filename, total)
+        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename, total)).encode('UTF-8')
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         chunksize, bytesdone, t0 = 1024, 0, time.time()
