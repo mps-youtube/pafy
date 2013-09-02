@@ -123,7 +123,8 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, Gunna, Giv
     
 >>> best.download(progress=True)
 -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
-Traceback (most recent call last):ed. Rate: [1095 kbps].  ETA: [33 secs]  
+  56,858,674 Bytes [100.00%] received. Rate: [ 720 kbps].  ETA: [0 secs]    
+Done
 
 
     # Download video, use specific filepath:
@@ -133,6 +134,7 @@ Traceback (most recent call last):ed. Rate: [1095 kbps].  ETA: [33 secs]
 -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
 Done
 ```
+
 
 Command Line Tool (ytdl) Usage:
 ===============================
