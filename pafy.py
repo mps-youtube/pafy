@@ -27,29 +27,21 @@ import json
 import logging
 import urllib
 import urllib2
+from urlparse import parse_qs
 
 logging.basicConfig(level=logging.INFO)
 
-from urlparse import parse_qs
-
 def dojsfunc2(f1argname, f2arg1, f2arg2, f2name, f2bod, sig):
-    logging.debug("Doing function 2 (names %s)" % f2name)
     f2parts = f2bod.split(";")
-    logging.debug("f2parts %s" % f2parts)
     newvarname = ""
     newvarval = 0
     for part in f2parts:
-        logging.debug("sig is currently: %s" % sig)
-        logging.debug("performing part: %s" % part)
         # newvar is an index of sig
         if re.match(r'var\s(\w)=(\w)\[(\d+)\]', part):
-            logging.debug("newvar is an index of sig")
             match = re.match(r'var\s(\w)=(\w)\[(\d+)\]', part)
             newvarname = match.group(1)
             if match.group(2) == f1argname:
                 newvarval = sig[int(match.group(3))]
-                logging.debug("new varname: %s" % newvarname)
-                logging.debug("new varval : %s" % newvarval)
             else:
                 raise RuntimeError("no match in f2 for part: %s" % part)
         # a[n]=a[b%a.length]
@@ -57,11 +49,9 @@ def dojsfunc2(f1argname, f2arg1, f2arg2, f2name, f2bod, sig):
             match = re.match(r'(\w)\[(\d+)\]=(\w)\[(\w)\%(\w)\.length\]', part)
             if match.group(1) == f1argname and match.group(3) == f1argname and\
                 match.group(4) == 'b' and match.group(5) == f1argname:
-                logging.debug("a[n]=a[b%a.length]")
                 index = int(match.group(2))
                 newchar = sig[(int(f2arg2) % len(sig))]
                 sig = sig[:index] + newchar + sig[index + 1:]
-                logging.debug("sig is now: %s" % sig)
             else:
                 raise RuntimeError("no match in f2 for part: %s" % part)
         # a[b]=c
@@ -69,10 +59,8 @@ def dojsfunc2(f1argname, f2arg1, f2arg2, f2name, f2bod, sig):
             match = re.match(r'(\w)\[(\w)\]=(\w)', part)
             if match.group(1) == f1argname and match.group(2) == 'b' and\
                 match.group(3) == newvarname:
-                logging.debug("a[b]=c")
                 index = int(f2arg2)
                 sig = sig[:index] + str(newvarval) + sig[index + 1:]
-                logging.debug("sig is now: %s" % sig)
             else:
                 raise RuntimeError("no match in f2 for part: %s" % part)
         elif re.match(r'return\sa', part):
@@ -83,61 +71,44 @@ def dojsfunc2(f1argname, f2arg1, f2arg2, f2name, f2bod, sig):
 def dojs(sig, f1arg, f1bod, f2name=None, f2arg=None, f2bod=None):
     # split js function components
     f1parts = f1bod.split(";")
-    logging.debug("f1parts %s" % f1parts)
     for part in f1parts:
-        logging.debug("performing part: %s" % part)
         # split, do nothing
         if re.match(r'%s=%s\.split\(""\)' % (f1arg, f1arg), part):
-            logging.debug("split, do nothing")
+            pass
         # call secondary function
         elif re.match(r'%s=%s\((\w+),(\w+)\)' % (f1arg, f2name), part):
             match = re.match(r'%s=%s\((\w+),(\w+)\)' % (f1arg, f2name), part)
             f2arg1, f2arg2 = match.group(1), match.group(2)
-            logging.debug("call f2; f2arg1: %s; f2arg2: %s" % (f2arg1, f2arg2))
             sig = dojsfunc2(f1arg, f2arg1, f2arg2, f2name, f2bod, sig)
         # reverse        
         elif re.match(r'%s=%s\.reverse\(\)' % (f1arg, f1arg), part):
-            logging.debug("perform reverse")
             sig = sig[::-1]
-            #sig = sig.reverse()
-            logging.debug("sig: %s" % sig)
         # slice
         elif re.match(r'%s=%s\.slice\((\d+)\)' % (f1arg, f1arg), part):
             match = re.match(r'%s=%s\.slice\((\d+)\)' % (f1arg, f1arg), part)
             sliceval = int(match.group(1))
-            logging.debug("slice %s" % sliceval)
             sig = sig[sliceval:]
-            logging.debug("sig: %s" % sig)
         # return
         elif re.match(r'return %s\.join\(""\)' % f1arg, part):
-            logging.debug("returning sig: %s" % sig)
             return sig
         else:
             raise RuntimeError("no match for %s" % part)
 
 def _decodesig(s, js):
+    logging.debug("sig length: %s" % len(s))
     match = re.search(r'g.sig\|\|(\w+)\(g.s\)', js)
     f1name = match.group(1)
     match = re.search(r'function %s\((\w+)\)\{([^\{]+)\}' % f1name, js)
     f1arg = match.group(1)
     f1bod = match.group(2)
-    logging.debug('function name is: %s' % f1name)
-    logging.debug("function argument is: %s" % f1arg)
-    logging.debug("function body is: %s" % f1bod)
     match = re.search(r'(\w+)\(\w+,\d+\)', f1bod)
     if match:
         f2name = match.group(1)
-        logging.debug('function2 name is: %s' % f2name)
         match = re.search(r'(function %s\((\w+,\w+)\)\{([^\{]+)\})' % f2name,
                js)
         f2 = match.group(1)
         f2arg = match.group(2)
         f2bod = match.group(3)
-
-        logging.debug('function2 is: %s' % f2)
-        logging.debug('function 2 args: %s' % f2arg)
-        logging.debug('function 2 bod: %s' % f2bod)
-        
         return dojs(s, f1arg, f1bod, f2name, f2arg, f2bod)
     else:
         return dojs(s, f1arg, f1bod)
@@ -164,10 +135,9 @@ class Stream():
 
     def __init__(self, streammap, opener, title="ytvid", js=None):
         if not streammap.get("sig", ""):
-            decodedsig = [_decodesig(streammap['s'][0], js)]
-            streammap['sig'] = [decodedsig][0]
+            logging.debug("Decrypting sig: %s" % streammap['s'])
+            streammap['sig'] = [_decodesig(streammap['s'][0], js)]
             logging.debug("Calculated decrypted sig: %s" % streammap['sig'][0])
-            logging.debug("New decode method gets %s" % decodedsig[0])
         self.url = streammap['url'][0] + '&signature=' + streammap['sig'][0]
         self.vidformat = streammap['type'][0].split(';')[0]
         self.resolution = self.resolutions[streammap['itag'][0]][0]
@@ -182,10 +152,10 @@ class Stream():
         return int(opener.open(self.url).headers['content-length'])
 
     def download(self, progress=True, filepath=""):
-
         response = self._opener.open(self.url)
         total = int(response.info().getheader('Content-Length').strip())
-        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename, total)).encode('UTF-8')
+        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
+            total)).encode('UTF-8')
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         chunksize, bytesdone, t0 = 1024, 0, time.time()
@@ -247,8 +217,9 @@ class Pafy():
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
+        logging.debug("requested info page: %s" % infoUrl)
         self.rawinfo = opener.open(infoUrl).read()
-        logging.debug("requested page: %s" % infoUrl)
+        logging.debug("got info")
         self.allinfo = parse_qs(self.rawinfo)
         self.title = self.allinfo['title'][0].decode('utf-8')
         self.author = self.allinfo['author'][0]
@@ -271,8 +242,9 @@ class Pafy():
         js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
-            logging.debug("requested page: %s" % watchurl)
+            logging.debug("request watch?v page: %s" % watchurl)
             watchinfo = opener.open(watchurl).read()
+            logging.debug("got watch?v page")
             match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
                 myjson = json.loads(match.group(1))
@@ -281,7 +253,7 @@ class Pafy():
             args = myjson['args']
             streamMap = args['url_encoded_fmt_stream_map'].split(",")
             html5player = myjson['assets']['js']
-            logging.debug("got js url: %s" % html5player)
+            logging.debug("getting js url: %s" % html5player)
             js = opener.open(html5player).read()
             logging.debug("got js from %s" % html5player)
             smap = [parse_qs(sm) for sm in streamMap]
