@@ -222,10 +222,10 @@ class Pafy():
         logging.debug("got info")
         self.allinfo = parse_qs(self.rawinfo)
         self.title = self.allinfo[b'title'][0].decode('utf-8')
-        self.author = self.allinfo[b'author'][0]
-        self.videoid = self.allinfo[b'video_id'][0]
+        self.author = self.allinfo[b'author'][0].decode('utf-8')
+        self.videoid = self.allinfo[b'video_id'][0].decode('utf-8')
         if 'keywords' in self.allinfo:
-            self.keywords = self.allinfo[b'keywords'][0].split(',')
+            self.keywords = self.allinfo[b'keywords'][0].decode('utf-8').split(',')
         self.rating = float(self.allinfo[b'avg_rating'][0])
         self.length = int(self.allinfo[b'length_seconds'][0])
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
@@ -234,9 +234,9 @@ class Pafy():
         self.formats = self.allinfo[b'fmt_list'][0].decode("utf-8").split(",")
         self.formats = [x.split("/") for x in self.formats]
         if self.allinfo.get(b'iurlsd'):
-            self.bigthumb = self.allinfo['iurlsd'][0]
+            self.bigthumb = self.allinfo[b'iurlsd'][0].decode("utf-8")
         if self.allinfo.get(b'iurlmaxres'):
-            self.bigthumbhd = self.allinfo[b'iurlmaxres'][0]
+            self.bigthumbhd = self.allinfo[b'iurlmaxres'][0].decode("utf-8")
         streamMap = self.allinfo[b'url_encoded_fmt_stream_map'][0].decode("utf-8").split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         js = None
@@ -271,3 +271,4 @@ class Pafy():
             else:
                 return (key3d, keyres, keyftype)
         return max(self.streams, key=_sortkey)
+
