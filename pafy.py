@@ -25,9 +25,9 @@ import sys
 import time
 import json
 import logging
-import urllib
-import urllib2
-from urlparse import parse_qs
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+from urllib.parse import parse_qs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -136,7 +136,7 @@ class Stream():
     def __init__(self, streammap, opener, title="ytvid", js=None):
         if not streammap.get("sig", ""):
             logging.debug("Decrypting sig: %s" % streammap['s'])
-            streammap['sig'] = [_decodesig(streammap['s'][0], js)]
+            streammap['sig'] = [_decodesig(streammap['s'][0], js.decode("utf-8"))]
             logging.debug("Calculated decrypted sig: %s" % streammap['sig'][0])
         self.url = streammap['url'][0] + '&signature=' + streammap['sig'][0]
         self.vidformat = streammap['type'][0].split(';')[0]
@@ -153,9 +153,9 @@ class Stream():
 
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
-        total = int(response.info().getheader('Content-Length').strip())
-        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
-            total)).encode('UTF-8')
+        total = int(response.info()['Content-Length'].strip())
+        print("-Downloading '{}' [{:,} Bytes]".format(self.filename,
+            total))
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         chunksize, bytesdone, t0 = 1024, 0, time.time()
@@ -175,7 +175,7 @@ class Stream():
                 status = status_string.format(*display)
                 sys.stdout.write("\r" + status + ' ' * 4 + "\r")
                 sys.stdout.flush
-        print "\nDone"
+        print("\nDone")
 
 
 class Pafy():
@@ -187,7 +187,7 @@ class Pafy():
         out = ""
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
-        keywords = ", ".join(self.keywords).decode("utf8")
+        keywords = ", ".join(self.keywords)
         length = time.strftime('%H:%M:%S', time.gmtime(self.length))
         info = dict(Title=self.title,
                     Author=self.author,
@@ -202,7 +202,7 @@ class Pafy():
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
-        return out.encode("utf8", "ignore")
+        return out
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
@@ -212,7 +212,7 @@ class Pafy():
             raise RuntimeError("bad video url")
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
         self.urls = []
-        opener = urllib2.build_opener()
+        opener = urllib.request.build_opener()
         ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
@@ -221,29 +221,29 @@ class Pafy():
         self.rawinfo = opener.open(infoUrl).read()
         logging.debug("got info")
         self.allinfo = parse_qs(self.rawinfo)
-        self.title = self.allinfo['title'][0].decode('utf-8')
-        self.author = self.allinfo['author'][0]
-        self.videoid = self.allinfo['video_id'][0]
+        self.title = self.allinfo[b'title'][0].decode('utf-8')
+        self.author = self.allinfo[b'author'][0].decode('utf-8')
+        self.videoid = self.allinfo[b'video_id'][0].decode('utf-8')
         if 'keywords' in self.allinfo:
-            self.keywords = self.allinfo['keywords'][0].split(',')
-        self.rating = float(self.allinfo['avg_rating'][0])
-        self.length = int(self.allinfo['length_seconds'][0])
+            self.keywords = self.allinfo[b'keywords'][0].decode('utf-8').split(',')
+        self.rating = float(self.allinfo[b'avg_rating'][0])
+        self.length = int(self.allinfo[b'length_seconds'][0])
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
-        self.viewcount = int(self.allinfo['view_count'][0])
-        self.thumb = urllib.unquote_plus(self.allinfo['thumbnail_url'][0])
-        self.formats = self.allinfo['fmt_list'][0].split(",")
+        self.viewcount = int(self.allinfo[b'view_count'][0])
+        self.thumb = urllib.parse.unquote_plus(self.allinfo[b'thumbnail_url'][0].decode("utf-8"))
+        self.formats = self.allinfo[b'fmt_list'][0].decode("utf-8").split(",")
         self.formats = [x.split("/") for x in self.formats]
-        if self.allinfo.get('iurlsd'):
-            self.bigthumb = self.allinfo['iurlsd'][0]
-        if self.allinfo.get('iurlmaxres'):
-            self.bigthumbhd = self.allinfo['iurlmaxres'][0]
-        streamMap = self.allinfo['url_encoded_fmt_stream_map'][0].split(',')
+        if self.allinfo.get(b'iurlsd'):
+            self.bigthumb = self.allinfo[b'iurlsd'][0].decode("utf-8")
+        if self.allinfo.get(b'iurlmaxres'):
+            self.bigthumbhd = self.allinfo[b'iurlmaxres'][0].decode("utf-8")
+        streamMap = self.allinfo[b'url_encoded_fmt_stream_map'][0].decode("utf-8").split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
             logging.debug("request watch?v page: %s" % watchurl)
-            watchinfo = opener.open(watchurl).read()
+            watchinfo = opener.open(watchurl).read().decode("utf-8")
             logging.debug("got watch?v page")
             match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
@@ -271,3 +271,4 @@ class Pafy():
             else:
                 return (key3d, keyres, keyftype)
         return max(self.streams, key=_sortkey)
+
