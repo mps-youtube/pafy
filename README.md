@@ -123,7 +123,8 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, Gunna, Giv
     
 >>> best.download(progress=True)
 -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
-Traceback (most recent call last):ed. Rate: [1095 kbps].  ETA: [33 secs]  
+  56,858,674 Bytes [100.00%] received. Rate: [ 720 kbps].  ETA: [0 secs]    
+Done
 
 
     # Download video, use specific filepath:
@@ -133,6 +134,7 @@ Traceback (most recent call last):ed. Rate: [1095 kbps].  ETA: [33 secs]
 -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
 Done
 ```
+
 
 Command Line Tool (ytdl) Usage:
 ===============================
@@ -167,33 +169,34 @@ Examples:
 
 # Download best available resolution (-b):
 
-  ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
+    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
 
 # get video info (-i):
 
-  ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
+    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
 
 # list available download formats (-s):
 
   ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -s
-Stream  Format  Resolution  Size
-------  ------  ----------  ----
-0   webm    480x854      54 MB
-1   flv     480x854      50 MB
-2   webm    360x640      33 MB
-3   flv     360x640      31 MB
-4   mp4     360x640      24 MB
-5   flv     240x400      13 MB
-6   3gp     320x240      10 MB
-7   3gp     144x176       3 MB
+  
+    Stream  Format  Resolution  Size
+    ------  ------  ----------  ----
+    1   webm    480x854      54 MB
+    2   flv     480x854      50 MB
+    3   webm    360x640      33 MB
+    4   flv     360x640      31 MB
+    5   mp4     360x640      24 MB
+    6   flv     240x400      13 MB
+    7   3gp     320x240      10 MB
+    8   3gp     144x176       3 MB
 
 # Download mp4 360x640, ie. stream number 4 (-n4)
 
-  ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 4
+    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 4
 
 # Download flv at 240x400 (-f flv -r 240x400)
  
-  ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -r 240x400 
+    ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -r 240x400 
 
 ```
 
