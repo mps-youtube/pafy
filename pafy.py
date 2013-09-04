@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.05"
+__version__ = "0.3.06"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -29,89 +29,87 @@ import urllib
 import urllib2
 from urlparse import parse_qs
 
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.DEBUG)
 
-def dojsfunc2(f1argname, f2arg1, f2arg2, f2name, f2bod, sig):
-    f2parts = f2bod.split(";")
-    newvarname = ""
-    newvarval = 0
-    for part in f2parts:
-        # newvar is an index of sig
-        if re.match(r'var\s(\w)=(\w)\[(\d+)\]', part):
-            match = re.match(r'var\s(\w)=(\w)\[(\d+)\]', part)
-            newvarname = match.group(1)
-            if match.group(2) == f1argname:
-                newvarval = sig[int(match.group(3))]
-            else:
-                raise RuntimeError("no match in f2 for part: %s" % part)
-        # a[n]=a[b%a.length]
-        elif re.match(r'(\w)\[(\d+)\]=(\w)\[(\w)\%(\w)\.length\]', part):
-            match = re.match(r'(\w)\[(\d+)\]=(\w)\[(\w)\%(\w)\.length\]', part)
-            if match.group(1) == f1argname and match.group(3) == f1argname and\
-                match.group(4) == 'b' and match.group(5) == f1argname:
-                index = int(match.group(2))
-                newchar = sig[(int(f2arg2) % len(sig))]
-                sig = sig[:index] + newchar + sig[index + 1:]
-            else:
-                raise RuntimeError("no match in f2 for part: %s" % part)
-        # a[b]=c
-        elif re.match(r'(\w)\[(\w)\]=(\w)', part):
-            match = re.match(r'(\w)\[(\w)\]=(\w)', part)
-            if match.group(1) == f1argname and match.group(2) == 'b' and\
-                match.group(3) == newvarname:
-                index = int(f2arg2)
-                sig = sig[:index] + str(newvarval) + sig[index + 1:]
-            else:
-                raise RuntimeError("no match in f2 for part: %s" % part)
-        elif re.match(r'return\sa', part):
-            return sig
-        else:
-            raise RuntimeError("no match in f2 for part: %s" % part)
-            
-def dojs(sig, f1arg, f1bod, f2name=None, f2arg=None, f2bod=None):
-    # split js function components
-    f1parts = f1bod.split(";")
-    for part in f1parts:
-        # split, do nothing
-        if re.match(r'%s=%s\.split\(""\)' % (f1arg, f1arg), part):
-            pass
-        # call secondary function
-        elif re.match(r'%s=%s\((\w+),(\w+)\)' % (f1arg, f2name), part):
-            match = re.match(r'%s=%s\((\w+),(\w+)\)' % (f1arg, f2name), part)
-            f2arg1, f2arg2 = match.group(1), match.group(2)
-            sig = dojsfunc2(f1arg, f2arg1, f2arg2, f2name, f2bod, sig)
-        # reverse        
-        elif re.match(r'%s=%s\.reverse\(\)' % (f1arg, f1arg), part):
-            sig = sig[::-1]
-        # slice
-        elif re.match(r'%s=%s\.slice\((\d+)\)' % (f1arg, f1arg), part):
-            match = re.match(r'%s=%s\.slice\((\d+)\)' % (f1arg, f1arg), part)
-            sliceval = int(match.group(1))
-            sig = sig[sliceval:]
-        # return
-        elif re.match(r'return %s\.join\(""\)' % f1arg, part):
-            return sig
-        else:
-            raise RuntimeError("no match for %s" % part)
-
-def _decodesig(s, js):
-    logging.debug("sig length: %s" % len(s))
-    match = re.search(r'g.sig\|\|(\w+)\(g.s\)', js)
-    f1name = match.group(1)
-    match = re.search(r'function %s\((\w+)\)\{([^\{]+)\}' % f1name, js)
-    f1arg = match.group(1)
-    f1bod = match.group(2)
-    match = re.search(r'(\w+)\(\w+,\d+\)', f1bod)
+def _getval(val, argsdict): # resolves variable values. preserves int literals
+    match = re.match(r'(\d+)', val)
     if match:
-        f2name = match.group(1)
-        match = re.search(r'(function %s\((\w+,\w+)\)\{([^\{]+)\})' % f2name,
-               js)
-        f2 = match.group(1)
-        f2arg = match.group(2)
-        f2bod = match.group(3)
-        return dojs(s, f1arg, f1bod, f2name, f2arg, f2bod)
+        return(int(match.group(1)))
+    elif val in argsdict:
+        return argsdict[val]
     else:
-        return dojs(s, f1arg, f1bod)
+        raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
+
+def _solve(f, js):
+    # solve basic javascript function
+    parts = f['body'].split(";")
+    for part in parts:
+        logging.debug("Working on part: %s" % part)
+        # split, do nothing
+        m = re.match(r'(\w+)=(\w+)\.split\(""\)', part)
+        if m and m.group(1) == m.group(2):
+            continue
+        m = re.match(r'(\w+)=(\w+)\(((?:\w+,?)+)\)', part)
+        if m: # a function call
+            lhs, fname, argscall = m.group(*range(1,4))
+            argscall = argscall.split(",")
+            newfunc = _extract_function_from_js(fname, js)
+            newfunc['args'] = {}
+            for n, argname in enumerate(argscall):
+                value = _getval(argname, f['args'])
+                # curvar is the argname specified in the new func def
+                curvar = newfunc['argnames'][n]
+                newfunc['args'][curvar] = value
+            f['args'][lhs] = _solve(newfunc, js) # recursive call
+            continue
+        m = re.match(r'var\s(\w+)=(\w+)\[(\w+)\]', part)
+        if m: # new var is an index of another var; eg: var a = b[c]
+            b, c = [_getval(x, f['args']) for x in m.group(*range(2,4))]
+            f['args'][m.group(1)] = b[c]
+            continue
+        m = re.match(r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]', part)
+        if m: # a[b]=c[d%e.length]
+            vals = m.group(*range(1,6))
+            a, b, c, d, e = [_getval(x, f['args']) for x in vals]
+            f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:] 
+            continue
+        m = re.match(r'(\w+)\[(\w+)\]=(\w+)', part)
+        if m: # a[b]=c
+            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1,4))]
+            f['args'][m.group(1)] = a[:b] + c + a[b + 1:] # a[b] = c
+            continue
+        m= re.match(r'return (\w+)(\.join\(""\))?', part)
+        if m: # return
+            return f['args'][m.group(1)]
+        m = re.match(r'(\w+)=(\w+)\.reverse\(\)', part)
+        if m: # reverse        
+            f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
+            continue
+        m = re.match(r'(\w+)=(\w+)\.slice\((\w+)\)', part)
+        if m:  # slice a=b.slice(c)
+            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1,4))]
+            f['args'][m.group(1)] = b[c:]
+            continue
+        raise RuntimeError("no match for %s" % part)
+
+def _extract_function_from_js(funcname, js):
+    # Find a function named funcname and extract components
+    match = re.search(r'function %s\(((?:\w+,?)+)\)\{([^\{]+)\}' % funcname, js)
+    return {'name': funcname, 'argnames': match.group(1).split(","),
+        'body': match.group(2) }
+
+def _decodesig(sig, js):
+    # get main function name from a function call
+    sigargument = "g.s"
+    sigprefix = "g.sig"
+    match = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
+    mainfuncname = match.group(1)
+    mainfunction = _extract_function_from_js(mainfuncname, js)
+    if not len(mainfunction['argnames']) == 1:
+        raise RuntimeError("Main sig js function has more than one arg: %s" %
+            mainfunction['argnames'])
+    mainfunction['args'] = {mainfunction['argnames'][0]: sig}
+    return _solve(mainfunction, js)
 
 class Stream():
     resolutions = {
@@ -197,12 +195,31 @@ class Pafy():
                     ID=self.videoid,
                     Thumbnail=self.thumb,
                     Keywords=keywords)
-        for k in keys:
+        for k in keys: 
             try:
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
         return out.encode("utf8", "ignore")
+
+    def _setmetadata(self, allinfo):
+        self.title = allinfo['title'][0].decode('utf-8')
+        self.author = allinfo['author'][0]
+        self.videoid = allinfo['video_id'][0]
+        if 'keywords' in allinfo:
+            self.keywords = allinfo['keywords'][0].split(',')
+        self.rating = float(allinfo['avg_rating'][0])
+        self.length = int(allinfo['length_seconds'][0])
+        self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
+        self.viewcount = int(allinfo['view_count'][0])
+        self.thumb = urllib.unquote_plus(allinfo['thumbnail_url'][0])
+        self.formats = allinfo['fmt_list'][0].split(",")
+        self.formats = [x.split("/") for x in self.formats]
+        if allinfo.get('iurlsd'):
+            self.bigthumb = allinfo['iurlsd'][0]
+        if allinfo.get('iurlmaxres'):
+            self.bigthumbhd = allinfo['iurlmaxres'][0]
+        return 
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
@@ -211,51 +228,28 @@ class Pafy():
         except:
             raise RuntimeError("bad video url")
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
-        self.urls = []
         opener = urllib2.build_opener()
         ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
-        logging.debug("requested info page: %s" % infoUrl)
-        self.rawinfo = opener.open(infoUrl).read()
-        logging.debug("got info")
-        self.allinfo = parse_qs(self.rawinfo)
-        self.title = self.allinfo['title'][0].decode('utf-8')
-        self.author = self.allinfo['author'][0]
-        self.videoid = self.allinfo['video_id'][0]
-        if 'keywords' in self.allinfo:
-            self.keywords = self.allinfo['keywords'][0].split(',')
-        self.rating = float(self.allinfo['avg_rating'][0])
-        self.length = int(self.allinfo['length_seconds'][0])
-        self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
-        self.viewcount = int(self.allinfo['view_count'][0])
-        self.thumb = urllib.unquote_plus(self.allinfo['thumbnail_url'][0])
-        self.formats = self.allinfo['fmt_list'][0].split(",")
-        self.formats = [x.split("/") for x in self.formats]
-        if self.allinfo.get('iurlsd'):
-            self.bigthumb = self.allinfo['iurlsd'][0]
-        if self.allinfo.get('iurlmaxres'):
-            self.bigthumbhd = self.allinfo['iurlmaxres'][0]
-        streamMap = self.allinfo['url_encoded_fmt_stream_map'][0].split(',')
+        allinfo = parse_qs(opener.open(infoUrl).read())
+        self._setmetadata(allinfo)
+        streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
-            logging.debug("request watch?v page: %s" % watchurl)
             watchinfo = opener.open(watchurl).read()
-            logging.debug("got watch?v page")
             match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
                 myjson = json.loads(match.group(1))
             except:
-                raise NameError('Problem handling this video')
+                raise RuntimeError('Problem handling this video')
             args = myjson['args']
             streamMap = args['url_encoded_fmt_stream_map'].split(",")
             html5player = myjson['assets']['js']
-            logging.debug("getting js url: %s" % html5player)
             js = opener.open(html5player).read()
-            logging.debug("got js from %s" % html5player)
             smap = [parse_qs(sm) for sm in streamMap]
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
 
