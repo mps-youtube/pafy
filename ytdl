@@ -39,15 +39,16 @@ def download(video, stream=None):
     #print "Downloading %s.." % video.title
     if not stream:
         stream = video.getbest(preftype="mp4")
-    print stream.resolution, stream.extension
+    print (stream.resolution, stream.extension)
     stream.download()
 
 def printstreams(vid):
-    print "Stream\tFormat\tResolution\tSize"
-    print "------\t------\t----------\t----"
+    print ("Stream\tFormat\tResolution\tSize")
+    print ("------\t------\t----------\t----")
     for n,s in enumerate(vid.streams):
         megs = "%3.f" % (s.get_filesize() / 1024**2) + " MB"
-        print n+1,"\t",s.extension,'\t', s.resolution, '\t', megs
+        tab = '\t'
+        print ("{} {} {} {} {} {} {}".format(n, tab, s.extension, tab, s.resolution, tab, megs))
 
 def main():
     description = "YouTube Download Tool"
@@ -83,12 +84,12 @@ def main():
         sys.exit("\n-f and -r cannot be used independently of each other!")
     # if requested print vid info and list streams
     if args.i:
-        print vid
+        print (vid)
     if args.s:
         printstreams(vid)
     if args.b:
         if args.n:
-            print "-b and -n cannot be used together! Use one or the other."
+            print ("-b and -n cannot be used together! Use one or the other.")
         else:
             download(vid)
             sys.exit()
@@ -97,8 +98,8 @@ def main():
         download(vid, vid.streams[streamnumber])
 
     elif args.f and args.r:
-        print args.f, args.r
-        print "Getting streams..."
+        print (args.f, args.r)
+        print ("Getting streams...")
         matchres, matchformat = 0, 0
         for n, stream in enumerate(vid.streams):
             if args.f == stream.extension:
@@ -108,15 +109,15 @@ def main():
                     # matching video found, download it
                     download(vid, stream)
         if not matchres:
-            print "No stream found matching resolution " + str(args.r) +\
-            ". Try checking available resolutions using '-s'"
+            print ("No stream found matching resolution " + str(args.r) +\
+            ". Try checking available resolutions using '-s'")
         if not matchformat: 
-            print "no stream found matching format %s" % str(args.f) +\
-            ". Try checking available formats using '-s'"
+            print ("no stream found matching format %s" % str(args.f) +\
+            ". Try checking available formats using '-s'")
     if not args.i and not args.s and not args.b and not args.n and not \
         args.r:
-        print "Nothing to do!  Try -b to download highest quality or" +\
-           " -s to list availabe streams"
+        print ("Nothing to do!  Try -b to download highest quality or" +\
+           " -s to list availabe streams")
 
     
 main()

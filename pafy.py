@@ -25,9 +25,25 @@ import sys
 import time
 import json
 import logging
-import urllib
-import urllib2
-from urlparse import parse_qs
+import os
+
+# Import for Python 2.7.x or Python 3.x compatibility and set py_ver variable
+if sys.version_info[:2] >= (3, 0):
+    import urllib.request, urllib.parse, urllib.error
+    import urllib.request, urllib.error, urllib.parse
+    from urllib.parse import parse_qs
+    py_ver = (3)
+elif sys.version_info[:2] == (2, 7):
+    import urllib
+    import urllib2
+    from urlparse import parse_qs
+    py_ver = (2)
+elif sys.version_info[:2] <= (2, 6):
+    print ("Python 2.7.x or higher is required to run...exiting.")
+    exit (1)
+
+# Find the default encoding of stdout
+std_out = ("'" + (sys.stdout.encoding) + "'")
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -155,9 +171,16 @@ class Stream():
 
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
-        total = int(response.info().getheader('Content-Length').strip())
-        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
-            total)).encode('UTF-8')
+        total = int(response.info().get('Content-Length'.strip()))
+        if (py_ver) == 3:
+            if (os.name) == 'nt':
+                print(("-Downloading '{}' [{:,} Bytes]").format(self.filename, 
+                    total).encode('UTF-8').decode(std_out))
+            elif (os.name) == 'posix':
+                print(("-Downloading '{}' [{:,} Bytes]").format(self.filename, 
+                    total))
+        else:
+            print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename, total)).encode('UTF-8')     
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         chunksize, bytesdone, t0 = 1024, 0, time.time()
@@ -177,7 +200,7 @@ class Stream():
                 status = status_string.format(*display)
                 sys.stdout.write("\r" + status + ' ' * 4 + "\r")
                 sys.stdout.flush
-        print "\nDone"
+        print ("\nDone")
 
 
 class Pafy():
@@ -189,7 +212,10 @@ class Pafy():
         out = ""
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
-        keywords = ", ".join(self.keywords).decode("utf8")
+        if (py_ver) == 3:
+            keywords = (", ".join(self.keywords))
+        else:
+            keywords = (", ".join(self.keywords)).decode('UTF-8')
         length = time.strftime('%H:%M:%S', time.gmtime(self.length))
         info = dict(Title=self.title,
                     Author=self.author,
@@ -201,20 +227,35 @@ class Pafy():
                     Keywords=keywords)
         for k in keys: 
             try:
-                out += "%s: %s\n" % (k, info[k])
+                if (py_ver) == 3:
+                    out += ("{}: {}\n").format(k, info[k])
+                else:
+                    out += (("{}: {}\n").decode('UTF-8').format(k, info[k]))
             except KeyError:
                 pass
-        return out.encode("utf8", "ignore")
+        if (py_ver) == 3:
+            if (os.name) == 'nt':
+                return out.encode('UTF-8').decode(std_out)
+            elif (os.name) == 'posix':
+                return out
+        else:
+            return out.encode('UTF-8', 'ignore')
 
     def _setmetadata(self, allinfo):
-        self.title = allinfo['title'][0].decode('utf-8')
+        if (py_ver) == 3:
+            self.title = allinfo['title'][0]
+        else:
+            self.title = allinfo['title'][0].decode('UTF-8')
         self.author = allinfo['author'][0]
         self.videoid = allinfo['video_id'][0]
         self.rating = float(allinfo['avg_rating'][0])
         self.length = int(allinfo['length_seconds'][0])
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
         self.viewcount = int(allinfo['view_count'][0])
-        self.thumb = urllib.unquote_plus(allinfo['thumbnail_url'][0])
+        if (py_ver) == 3:
+            self.thumb = urllib.parse.unquote_plus(allinfo['thumbnail_url'][0])
+        else:
+            self.thumb = urllib.unquote_plus(allinfo['thumbnail_url'][0])
         self.formats = allinfo['fmt_list'][0].split(",")
         self.formats = [x.split("/") for x in self.formats]
         if 'keywords' in allinfo:
@@ -232,12 +273,18 @@ class Pafy():
         except:
             raise RuntimeError("bad video url")
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
-        opener = urllib2.build_opener()
+        if (py_ver) == 3:
+            opener = urllib.request.build_opener()
+        else:
+            opener = urllib2.build_opener()
         ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
-        allinfo = parse_qs(opener.open(infoUrl).read())
+        if (py_ver) == 3:
+            allinfo = parse_qs((opener.open(infoUrl).read()).decode('UTF-8'))
+        else:
+            allinfo = parse_qs(opener.open(infoUrl).read())
         self._setmetadata(allinfo)
         streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
