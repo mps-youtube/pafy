@@ -31,6 +31,12 @@ from urlparse import parse_qs
 
 #logging.basicConfig(level=logging.DEBUG)
 
+def _extract_function_from_js(funcname, js):
+    # Find a function definition named funcname and extract components
+    match = re.search(r'function %s\(((?:\w+,?)+)\)\{([^\{]+)\}' % funcname, js)
+    return {'name': funcname, 'argnames': match.group(1).split(","),
+        'body': match.group(2) }
+
 def _getval(val, argsdict): # resolves variable values. preserves int literals
     match = re.match(r'(\d+)', val)
     if match:
@@ -39,6 +45,17 @@ def _getval(val, argsdict): # resolves variable values. preserves int literals
         return argsdict[val]
     else:
         raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
+
+def _get_func_from_call(f_old, fname, argscall, js):
+    argscall = argscall.split(",")
+    newfunc = _extract_function_from_js(fname, js)
+    newfunc['args'] = {}
+    for n, argname in enumerate(argscall):
+        value = _getval(argname, f_old['args'])
+        # curvar is the argument name specified in the new function definition
+        curvar = newfunc['argnames'][n]
+        newfunc['args'][curvar] = value
+    return newfunc
 
 def _solve(f, js):
     # solve basic javascript function
@@ -52,14 +69,7 @@ def _solve(f, js):
         m = re.match(r'(\w+)=(\w+)\(((?:\w+,?)+)\)', part)
         if m: # a function call
             lhs, fname, argscall = m.group(*range(1,4))
-            argscall = argscall.split(",")
-            newfunc = _extract_function_from_js(fname, js)
-            newfunc['args'] = {}
-            for n, argname in enumerate(argscall):
-                value = _getval(argname, f['args'])
-                # curvar is the argname specified in the new func def
-                curvar = newfunc['argnames'][n]
-                newfunc['args'][curvar] = value
+            newfunc = _get_func_from_call(f, fname, argscall, js)
             f['args'][lhs] = _solve(newfunc, js) # recursive call
             continue
         m = re.match(r'var\s(\w+)=(\w+)\[(\w+)\]', part)
@@ -92,24 +102,18 @@ def _solve(f, js):
             continue
         raise RuntimeError("no match for %s" % part)
 
-def _extract_function_from_js(funcname, js):
-    # Find a function named funcname and extract components
-    match = re.search(r'function %s\(((?:\w+,?)+)\)\{([^\{]+)\}' % funcname, js)
-    return {'name': funcname, 'argnames': match.group(1).split(","),
-        'body': match.group(2) }
-
 def _decodesig(sig, js):
     # get main function name from a function call
     sigargument = "g.s"
     sigprefix = "g.sig"
     match = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
-    mainfuncname = match.group(1)
-    mainfunction = _extract_function_from_js(mainfuncname, js)
-    if not len(mainfunction['argnames']) == 1:
+    funcname = match.group(1)
+    function = _extract_function_from_js(funcname, js)
+    if not len(function['argnames']) == 1:
         raise RuntimeError("Main sig js function has more than one arg: %s" %
-            mainfunction['argnames'])
-    mainfunction['args'] = {mainfunction['argnames'][0]: sig}
-    return _solve(mainfunction, js)
+            function['argnames'])
+    function['args'] = {function['argnames'][0]: sig}
+    return _solve(function, js)
 
 class Stream():
     resolutions = {
@@ -206,8 +210,6 @@ class Pafy():
         self.title = allinfo['title'][0].decode('utf-8')
         self.author = allinfo['author'][0]
         self.videoid = allinfo['video_id'][0]
-        if 'keywords' in allinfo:
-            self.keywords = allinfo['keywords'][0].split(',')
         self.rating = float(allinfo['avg_rating'][0])
         self.length = int(allinfo['length_seconds'][0])
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
@@ -215,6 +217,8 @@ class Pafy():
         self.thumb = urllib.unquote_plus(allinfo['thumbnail_url'][0])
         self.formats = allinfo['fmt_list'][0].split(",")
         self.formats = [x.split("/") for x in self.formats]
+        if 'keywords' in allinfo:
+            self.keywords = allinfo['keywords'][0].split(',')
         if allinfo.get('iurlsd'):
             self.bigthumb = allinfo['iurlsd'][0]
         if allinfo.get('iurlmaxres'):
