@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.04"
+__version__ = "0.3.06"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -47,7 +47,7 @@ def printstreams(vid):
     print "------\t------\t----------\t----"
     for n,s in enumerate(vid.streams):
         megs = "%3.f" % (s.get_filesize() / 1024**2) + " MB"
-        print n,"\t",s.extension,'\t', s.resolution, '\t', megs
+        print n+1,"\t",s.extension,'\t', s.resolution, '\t', megs
 
 def main():
     description = "YouTube Download Tool"
@@ -93,7 +93,7 @@ def main():
             download(vid)
             sys.exit()
     elif args.n:
-        streamnumber = int(args.n)
+        streamnumber = int(args.n) - 1
         download(vid, vid.streams[streamnumber])
 
     elif args.f and args.r:

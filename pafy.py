@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.04"
+__version__ = "0.3.06"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -24,49 +24,96 @@ import re
 import sys
 import time
 import json
+import logging
 import urllib
 import urllib2
 from urlparse import parse_qs
 
-def _decrypt_signature(s):
-    # This function taken from youtube-dl source. Thanks!
-    if len(s) == 92:
-        return s[25] + s[3:25] + s[0] + s[26:42] + s[79] + s[43:79] + s[91] + \
-            s[80:83]
-    elif len(s) == 90:
-        return s[25] + s[3:25] + s[2] + s[26:40] + s[77] + s[41:77] + s[89] \
-            + s[78:81]
-    elif len(s) == 89:
-        return s[84:78:-1] + s[87] + s[77:60:-1] + s[0] + s[59:3:-1]
-    elif len(s) == 88:
-        return s[7:28] + s[87] + s[29:45] + s[55] + s[46:55] + s[2] +\
-            s[56:87] + s[28]
-    elif len(s) == 87:
-        return s[6:27] + s[4] + s[28:39] + s[27] + s[40:59] + s[2] + s[60:] 
-    elif len(s) == 86:
-        return s[83:36:-1] + s[0] + s[35:2:-1] 
-    elif len(s) == 85:
-        return s[83:34:-1] + s[0] + s[33:27:-1] + s[3] + s[26:19:-1] + s[34]\
-            + s[18:3:-1] + s[27]
-    elif len(s) == 84:
-        return s[81:36:-1] + s[0] + s[35:2:-1] 
-    elif len(s) == 83:
-        return s[81:64:-1] + s[82] + s[63:52:-1] + s[45] + s[51:45:-1] + s[1]\
-            + s[44:1:-1] + s[0]
-    elif len(s) == 82:
-        return s[1:19] + s[0] + s[20:68] + s[19] + s[69:82]
-    elif len(s) == 81:
-        return s[56] + s[79:56:-1] + s[41] + s[55:41:-1] + s[80] \
-            +s[40:34:-1] + s[0] + s[33:29:-1] + s[34] + s[28:9:-1] + s[29] +\
-            s[8:0:-1] + s[9]
-    elif len(s) == 80:
-        return s[1:19] + s[0] + s[20:68] + s[19] + s[69:80]
-    elif len(s) == 79:
-        return s[54] + s[77:54:-1] + s[39] + s[53:39:-1] + s[78] + \
-            s[38:34:-1] + s[0] + s[33:29:-1] + s[34] + s[28:9:-1] + \
-            s[29] + s[8:0:-1] + s[9]
+#logging.basicConfig(level=logging.DEBUG)
+
+def _extract_function_from_js(funcname, js):
+    # Find a function definition named funcname and extract components
+    match = re.search(r'function %s\(((?:\w+,?)+)\)\{([^\{]+)\}' % funcname, js)
+    return {'name': funcname, 'argnames': match.group(1).split(","),
+        'body': match.group(2) }
+
+def _getval(val, argsdict): # resolves variable values. preserves int literals
+    match = re.match(r'(\d+)', val)
+    if match:
+        return(int(match.group(1)))
+    elif val in argsdict:
+        return argsdict[val]
     else:
-        raise NameError("Unable to decode video url - sig len %s" % len(s))
+        raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
+
+def _get_func_from_call(f_old, fname, argscall, js):
+    argscall = argscall.split(",")
+    newfunc = _extract_function_from_js(fname, js)
+    newfunc['args'] = {}
+    for n, argname in enumerate(argscall):
+        value = _getval(argname, f_old['args'])
+        # curvar is the argument name specified in the new function definition
+        curvar = newfunc['argnames'][n]
+        newfunc['args'][curvar] = value
+    return newfunc
+
+def _solve(f, js):
+    # solve basic javascript function
+    parts = f['body'].split(";")
+    for part in parts:
+        logging.debug("Working on part: %s" % part)
+        # split, do nothing
+        m = re.match(r'(\w+)=(\w+)\.split\(""\)', part)
+        if m and m.group(1) == m.group(2):
+            continue
+        m = re.match(r'(\w+)=(\w+)\(((?:\w+,?)+)\)', part)
+        if m: # a function call
+            lhs, fname, argscall = m.group(*range(1,4))
+            newfunc = _get_func_from_call(f, fname, argscall, js)
+            f['args'][lhs] = _solve(newfunc, js) # recursive call
+            continue
+        m = re.match(r'var\s(\w+)=(\w+)\[(\w+)\]', part)
+        if m: # new var is an index of another var; eg: var a = b[c]
+            b, c = [_getval(x, f['args']) for x in m.group(*range(2,4))]
+            f['args'][m.group(1)] = b[c]
+            continue
+        m = re.match(r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]', part)
+        if m: # a[b]=c[d%e.length]
+            vals = m.group(*range(1,6))
+            a, b, c, d, e = [_getval(x, f['args']) for x in vals]
+            f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:] 
+            continue
+        m = re.match(r'(\w+)\[(\w+)\]=(\w+)', part)
+        if m: # a[b]=c
+            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1,4))]
+            f['args'][m.group(1)] = a[:b] + c + a[b + 1:] # a[b] = c
+            continue
+        m= re.match(r'return (\w+)(\.join\(""\))?', part)
+        if m: # return
+            return f['args'][m.group(1)]
+        m = re.match(r'(\w+)=(\w+)\.reverse\(\)', part)
+        if m: # reverse        
+            f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
+            continue
+        m = re.match(r'(\w+)=(\w+)\.slice\((\w+)\)', part)
+        if m:  # slice a=b.slice(c)
+            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1,4))]
+            f['args'][m.group(1)] = b[c:]
+            continue
+        raise RuntimeError("no match for %s" % part)
+
+def _decodesig(sig, js):
+    # get main function name from a function call
+    sigargument = "g.s"
+    sigprefix = "g.sig"
+    match = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
+    funcname = match.group(1)
+    function = _extract_function_from_js(funcname, js)
+    if not len(function['argnames']) == 1:
+        raise RuntimeError("Main sig js function has more than one arg: %s" %
+            function['argnames'])
+    function['args'] = {function['argnames'][0]: sig}
+    return _solve(function, js)
 
 class Stream():
     resolutions = {
@@ -88,9 +135,11 @@ class Stream():
         '100': ('640x360-3D', 'webm'),
         '102': ('1280x720-3D', 'webm')}
 
-    def __init__(self, streammap, opener, title="ytvid"):
+    def __init__(self, streammap, opener, title="ytvid", js=None):
         if not streammap.get("sig", ""):
-            streammap['sig'] = [_decrypt_signature(streammap['s'][0])]
+            logging.debug("Decrypting sig: %s" % streammap['s'])
+            streammap['sig'] = [_decodesig(streammap['s'][0], js)]
+            logging.debug("Calculated decrypted sig: %s" % streammap['sig'][0])
         self.url = streammap['url'][0] + '&signature=' + streammap['sig'][0]
         self.vidformat = streammap['type'][0].split(';')[0]
         self.resolution = self.resolutions[streammap['itag'][0]][0]
@@ -107,7 +156,8 @@ class Stream():
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
         total = int(response.info().getheader('Content-Length').strip())
-        print u"-Downloading '{}' [{:,} Bytes]".format(self.filename, total)
+        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
+            total)).encode('UTF-8')
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         chunksize, bytesdone, t0 = 1024, 0, time.time()
@@ -149,12 +199,31 @@ class Pafy():
                     ID=self.videoid,
                     Thumbnail=self.thumb,
                     Keywords=keywords)
-        for k in keys:
+        for k in keys: 
             try:
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
         return out.encode("utf8", "ignore")
+
+    def _setmetadata(self, allinfo):
+        self.title = allinfo['title'][0].decode('utf-8')
+        self.author = allinfo['author'][0]
+        self.videoid = allinfo['video_id'][0]
+        self.rating = float(allinfo['avg_rating'][0])
+        self.length = int(allinfo['length_seconds'][0])
+        self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
+        self.viewcount = int(allinfo['view_count'][0])
+        self.thumb = urllib.unquote_plus(allinfo['thumbnail_url'][0])
+        self.formats = allinfo['fmt_list'][0].split(",")
+        self.formats = [x.split("/") for x in self.formats]
+        if 'keywords' in allinfo:
+            self.keywords = allinfo['keywords'][0].split(',')
+        if allinfo.get('iurlsd'):
+            self.bigthumb = allinfo['iurlsd'][0]
+        if allinfo.get('iurlmaxres'):
+            self.bigthumbhd = allinfo['iurlmaxres'][0]
+        return 
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
@@ -163,32 +232,16 @@ class Pafy():
         except:
             raise RuntimeError("bad video url")
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
-        self.urls = []
         opener = urllib2.build_opener()
         ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
-        self.rawinfo = opener.open(infoUrl).read()
-        self.allinfo = parse_qs(self.rawinfo)
-        self.title = self.allinfo['title'][0].decode('utf-8')
-        self.author = self.allinfo['author'][0]
-        self.videoid = self.allinfo['video_id'][0]
-        if 'keywords' in self.allinfo:
-            self.keywords = self.allinfo['keywords'][0].split(',')
-        self.rating = float(self.allinfo['avg_rating'][0])
-        self.length = int(self.allinfo['length_seconds'][0])
-        self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
-        self.viewcount = int(self.allinfo['view_count'][0])
-        self.thumb = urllib.unquote_plus(self.allinfo['thumbnail_url'][0])
-        self.formats = self.allinfo['fmt_list'][0].split(",")
-        self.formats = [x.split("/") for x in self.formats]
-        if self.allinfo.get('iurlsd'):
-            self.bigthumb = self.allinfo['iurlsd'][0]
-        if self.allinfo.get('iurlmaxres'):
-            self.bigthumbhd = self.allinfo['iurlmaxres'][0]
-        streamMap = self.allinfo['url_encoded_fmt_stream_map'][0].split(',')
+        allinfo = parse_qs(opener.open(infoUrl).read())
+        self._setmetadata(allinfo)
+        streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
+        js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
             watchinfo = opener.open(watchurl).read()
@@ -196,11 +249,13 @@ class Pafy():
             try:
                 myjson = json.loads(match.group(1))
             except:
-                raise NameError('Problem handling this video')
+                raise RuntimeError('Problem handling this video')
             args = myjson['args']
             streamMap = args['url_encoded_fmt_stream_map'].split(",")
+            html5player = myjson['assets']['js']
+            js = opener.open(html5player).read()
             smap = [parse_qs(sm) for sm in streamMap]
-        self.streams = [Stream(sm, opener, self.title) for sm in smap]
+        self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
 
     def getbest(self, preftype="any", ftypestrict=True):
         # set ftypestrict to False to use a non preferred format if that
