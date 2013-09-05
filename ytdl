@@ -39,7 +39,7 @@ def download(video, stream=None):
     #print "Downloading %s.." % video.title
     if not stream:
         stream = video.getbest(preftype="mp4")
-    print(stream.resolution, stream.extension)
+    print((stream.resolution, stream.extension))
     stream.download()
 
 def printstreams(vid):
@@ -47,7 +47,7 @@ def printstreams(vid):
     print("------\t------\t----------\t----")
     for n,s in enumerate(vid.streams):
         megs = "%3.f" % (s.get_filesize() / 1024**2) + " MB"
-        print(n+1,"\t",s.extension,'\t', s.resolution, '\t', megs)
+        print("{}\t{}\t{}\t{}".format(n+1, s.extension, s.resolution, megs))
 
 def main():
     description = "YouTube Download Tool"
@@ -97,7 +97,7 @@ def main():
         download(vid, vid.streams[streamnumber])
 
     elif args.f and args.r:
-        print(args.f, args.r)
+        print((args.f, args.r))
         print("Getting streams...")
         matchres, matchformat = 0, 0
         for n, stream in enumerate(vid.streams):
@@ -108,15 +108,15 @@ def main():
                     # matching video found, download it
                     download(vid, stream)
         if not matchres:
-            print("No stream found matching resolution " + str(args.r) +\
-            ". Try checking available resolutions using '-s'")
+            print(("No stream found matching resolution " + str(args.r) +\
+            ". Try checking available resolutions using '-s'"))
         if not matchformat: 
-            print("no stream found matching format %s" % str(args.f) +\
-            ". Try checking available formats using '-s'")
+            print(("no stream found matching format %s" % str(args.f) +\
+            ". Try checking available formats using '-s'"))
     if not args.i and not args.s and not args.b and not args.n and not \
         args.r:
-        print("Nothing to do!  Try -b to download highest quality or" +\
-           " -s to list availabe streams")
+        print(("Nothing to do!  Try -b to download highest quality or" +\
+           " -s to list availabe streams"))
 
     
 main()
