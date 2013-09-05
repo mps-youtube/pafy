@@ -30,7 +30,7 @@ print("\n")
 print("All available formats...")
 print("------------------------")
 streams = video.streams
-print [(s.resolution, s.extension) for s in streams]
+print([(s.resolution, s.extension) for s in streams])
 print("\n")
 
 # show all formats and their download/stream url:
