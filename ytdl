@@ -47,7 +47,7 @@ def printstreams(vid):
     print("------\t------\t----------\t----")
     for n,s in enumerate(vid.streams):
         megs = "%3.f" % (s.get_filesize() / 1024**2) + " MB"
-        print("{}\t{}\t{}\t{}".format(n+1, s.extension, s.resolution, megs))
+        print("{} \t {} \t {} \t {}".format(n+1, s.extension, s.resolution, megs))
 
 def main():
     description = "YouTube Download Tool"
@@ -116,7 +116,7 @@ def main():
     if not args.i and not args.s and not args.b and not args.n and not \
         args.r:
         print(("Nothing to do!  Try -b to download highest quality or" +\
-           " -s to list availabe streams"))
+           " -s to list available streams"))
 
     
 main()
