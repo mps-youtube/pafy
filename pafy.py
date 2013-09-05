@@ -25,6 +25,7 @@ import sys
 import time
 import json
 import logging
+import locale
 
 if sys.version_info[:2] >= (3, 0):
     from urllib.request import build_opener
@@ -33,6 +34,8 @@ else:
     from urllib2 import build_opener
     from urllib import unquote_plus
     from urlparse import parse_qs
+
+encoding = locale.getpreferredencoding()
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -206,6 +209,7 @@ class Pafy():
                     Keywords=keywords)
         for k in keys: 
             try:
+#                print(u"Trying: {}".format(bytes(info[k], encoding)))
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
@@ -242,14 +246,14 @@ class Pafy():
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
-        allinfo = parse_qs(opener.open(infoUrl).read().decode("UTF-8"))
+        allinfo = parse_qs(str(opener.open(infoUrl).read().decode(encoding, "ignore")))
         self._setmetadata(allinfo)
         streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
-            watchinfo = opener.open(watchurl).read().decode("UTF-8")
+            watchinfo = opener.open(watchurl).read().decode(encoding, "ignore")
             match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
                 myjson = json.loads(match.group(1))
@@ -258,7 +262,7 @@ class Pafy():
             args = myjson['args']
             streamMap = args['url_encoded_fmt_stream_map'].split(",")
             html5player = myjson['assets']['js']
-            js = opener.open(html5player).read().decode("UTF-8")
+            js = opener.open(html5player).read().decode(encoding, "ignore")
             smap = [parse_qs(sm) for sm in streamMap]
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
 
