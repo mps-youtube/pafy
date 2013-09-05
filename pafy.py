@@ -25,9 +25,14 @@ import sys
 import time
 import json
 import logging
-import urllib
-import urllib2
-from urlparse import parse_qs
+
+if sys.version_info[:2] >= (3, 0):
+    from urllib.request import build_opener
+    from urllib.parse import parse_qs, unquote_plus
+else:
+    from urllib2 import build_opener
+    from urllib import unquote_plus
+    from urlparse import parse_qs
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -134,7 +139,7 @@ class Stream():
         '84': ('1280x720-3D', 'mp4'),
         '100': ('640x360-3D', 'webm'),
         '102': ('1280x720-3D', 'webm')}
-
+    
     def __init__(self, streammap, opener, title="ytvid", js=None):
         if not streammap.get("sig", ""):
             logging.debug("Decrypting sig: %s" % streammap['s'])
@@ -155,9 +160,9 @@ class Stream():
 
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
-        total = int(response.info().getheader('Content-Length').strip())
-        print (u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
-            total)).encode('UTF-8')
+        total = int(response.info()['Content-Length'].strip())
+        print(u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
+            total))
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         chunksize, bytesdone, t0 = 1024, 0, time.time()
@@ -176,8 +181,8 @@ class Stream():
                 display = (bytesdone, bytesdone * 1.0 / total, rate, eta)
                 status = status_string.format(*display)
                 sys.stdout.write("\r" + status + ' ' * 4 + "\r")
-                sys.stdout.flush
-        print "\nDone"
+                sys.stdout.flush()
+        print("\nDone")
 
 
 class Pafy():
@@ -189,7 +194,7 @@ class Pafy():
         out = ""
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
-        keywords = ", ".join(self.keywords).decode("utf8")
+        keywords = ", ".join(self.keywords)
         length = time.strftime('%H:%M:%S', time.gmtime(self.length))
         info = dict(Title=self.title,
                     Author=self.author,
@@ -204,17 +209,17 @@ class Pafy():
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
-        return out.encode("utf8", "ignore")
+        return out
 
     def _setmetadata(self, allinfo):
-        self.title = allinfo['title'][0].decode('utf-8')
+        self.title = allinfo['title'][0]
         self.author = allinfo['author'][0]
         self.videoid = allinfo['video_id'][0]
         self.rating = float(allinfo['avg_rating'][0])
         self.length = int(allinfo['length_seconds'][0])
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
         self.viewcount = int(allinfo['view_count'][0])
-        self.thumb = urllib.unquote_plus(allinfo['thumbnail_url'][0])
+        self.thumb = unquote_plus(allinfo['thumbnail_url'][0])
         self.formats = allinfo['fmt_list'][0].split(",")
         self.formats = [x.split("/") for x in self.formats]
         if 'keywords' in allinfo:
@@ -232,19 +237,19 @@ class Pafy():
         except:
             raise RuntimeError("bad video url")
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
-        opener = urllib2.build_opener()
+        opener = build_opener()
         ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
-        allinfo = parse_qs(opener.open(infoUrl).read())
+        allinfo = parse_qs(opener.open(infoUrl).read().decode("UTF-8"))
         self._setmetadata(allinfo)
         streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
-            watchinfo = opener.open(watchurl).read()
+            watchinfo = opener.open(watchurl).read().decode("UTF-8")
             match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
                 myjson = json.loads(match.group(1))
@@ -253,7 +258,7 @@ class Pafy():
             args = myjson['args']
             streamMap = args['url_encoded_fmt_stream_map'].split(",")
             html5player = myjson['assets']['js']
-            js = opener.open(html5player).read()
+            js = opener.open(html5player).read().decode("UTF-8")
             smap = [parse_qs(sm) for sm in streamMap]
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
 
