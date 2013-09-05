@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.06"
+__version__ = "0.3.07"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -26,10 +26,14 @@ import time
 import json
 import logging
 
+def decode_if_py3(data):
+    return data.decode("UTF-8")
+
 if sys.version_info[:2] >= (3, 0):
     from urllib.request import build_opener
     from urllib.parse import parse_qs, unquote_plus
 else:
+    decode_if_py3 = lambda x: x
     from urllib2 import build_opener
     from urllib import unquote_plus
     from urlparse import parse_qs
@@ -161,7 +165,7 @@ class Stream():
     def download(self, progress=True, filepath=""):
         response = self._opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
-        print(u"-Downloading '{}' [{:,} Bytes]".format(self.filename,
+        print("-Downloading '{}' [{:,} Bytes]".format(self.filename,
             total))
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
@@ -242,7 +246,7 @@ class Pafy():
               "Trident/5.0)")
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
-        allinfo = parse_qs(opener.open(infoUrl).read().decode("UTF-8"))
+        allinfo = parse_qs(decode_if_py3(opener.open(infoUrl).read()))
         self._setmetadata(allinfo)
         streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
