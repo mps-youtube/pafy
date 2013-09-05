@@ -84,7 +84,7 @@ def _solve(f, js):
             continue
         m = re.match(r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]', part)
         if m: # a[b]=c[d%e.length]
-            vals = m.group(*list(range(1,6)))
+            vals = m.group(*range(1,6))
             a, b, c, d, e = [_getval(x, f['args']) for x in vals]
             f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:] 
             continue
