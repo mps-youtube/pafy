@@ -25,7 +25,6 @@ import sys
 import time
 import json
 import logging
-import locale
 
 def decode_if_py3(data):
     return data.decode("UTF-8")
@@ -38,8 +37,6 @@ else:
     from urllib2 import build_opener
     from urllib import unquote_plus
     from urlparse import parse_qs
-
-encoding = locale.getpreferredencoding()
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -229,7 +226,6 @@ class Pafy():
                     Keywords=keywords)
         for k in keys: 
             try:
-#                print(u"Trying: {}".format(bytes(info[k], encoding)))
                 out += "%s: %s\n" % (k, info[k])
             except KeyError:
                 pass
@@ -273,7 +269,7 @@ class Pafy():
         js = None
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
-            watchinfo = opener.open(watchurl).read().decode(encoding, "ignore")
+            watchinfo = opener.open(watchurl).read().decode("UTF-8")
             match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
                 myjson = json.loads(match.group(1))
@@ -282,7 +278,7 @@ class Pafy():
             args = myjson['args']
             streamMap = args['url_encoded_fmt_stream_map'].split(",")
             html5player = myjson['assets']['js']
-            js = opener.open(html5player).read().decode(encoding, "ignore")
+            js = opener.open(html5player).read().decode("UTF-8")
             smap = [parse_qs(sm) for sm in streamMap]
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
 
