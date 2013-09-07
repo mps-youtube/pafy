@@ -162,13 +162,12 @@ class Stream():
         opener = self._opener
         return int(opener.open(self.url).headers['content-length'])
 
-    def download(self, progress=True, filepath=""):
+    def download_with_callback(self, prepare_callback=None,
+                                     progress_callback=None, filepath=""):
         response = self._opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
-        print("-Downloading '{}' [{:,} Bytes]".format(self.filename,
-            total))
-        status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
-                         'kbps].  ETA: [{:.0f} secs]')
+        if prepare_callback != None:
+            prepare_callback(total)
         chunksize, bytesdone, t0 = 1024, 0, time.time()
         outfh = open(filepath or self.filename, 'wb')
         while 1:
@@ -179,13 +178,30 @@ class Stream():
             if not chunk:
                 outfh.close()
                 break
-            if progress:
+            if progress_callback != None:
                 rate = (bytesdone / 1024) / elapsed
                 eta = (total - bytesdone) / (rate * 1024)
-                display = (bytesdone, bytesdone * 1.0 / total, rate, eta)
-                status = status_string.format(*display)
-                sys.stdout.write("\r" + status + ' ' * 4 + "\r")
-                sys.stdout.flush()
+                arguments = (bytesdone, bytesdone * 1.0 / total, rate, eta)
+                progress_callback(*arguments)
+    
+    def download(self, progress=True, filepath=""):
+        def prepare_cb(total):
+            print("Downloading '{}' [{:,}] Bytes".format(self.filename, total))
+        
+        def progress_cb(*args):
+            status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
+                             'kbps].  ETA: [{:.0f} secs]')
+            sys.stdout.write("\r" + status_string.format(*args) + ' ' * 4 + "\r")
+            sys.stdout.flush()
+        
+        if progress:
+            self.download_with_callback(prepare_callback=prepare_cb,
+                                        progress_callback=progress_cb,
+                                        filepath=filepath)
+        else:
+            self.download_with_callback(prepare_callback=prepare_cb,
+                                        progress_callback=None,
+                                        filepath=filepath)
         print("\nDone")
 
 
