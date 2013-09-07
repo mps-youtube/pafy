@@ -36,11 +36,13 @@ def processurl(url):
         return vid
 
 def download(video, stream=None):
-    #print "Downloading %s.." % video.title
     if not stream:
         stream = video.getbest(preftype="mp4")
-    print((stream.resolution, stream.extension))
-    stream.download()
+    size = stream.get_filesize()
+    print("-Downloading '{}' [{:,} Bytes]".format(stream.filename, size))
+    print("-Resolution %s; Format: %s" % (stream.resolution, stream.extension))
+    stream.download(quiet=False)
+    print("\nDone")
 
 def printstreams(vid):
     print("Stream\tFormat\tResolution\tSize")

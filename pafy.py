@@ -156,40 +156,39 @@ class Stream():
         self.itag = streammap['itag'][0]
         self.title = title
         self.filename = self.title + "." + self.extension
+        self.filesize = None
         self._opener = opener
 
     def get_filesize(self):
-        opener = self._opener
-        return int(opener.open(self.url).headers['content-length'])
+        if not self.filesize:
+            opener = self._opener
+            self.filesize = int(opener.open(self.url).headers['content-length'])
+        return self.filesize
 
-    def download(self, progress=True, filepath="", callback=None):
-        response = self._opener.open(self.url)
-        total = int(response.info()['Content-Length'].strip())
-        print("-Downloading '{}' [{:,} Bytes]".format(self.filename,
-            total))
+    def download(self, filepath="", quiet=False, callback=None):
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
+        response = self._opener.open(self.url)
+        total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 1024, 0, time.time()
         outfh = open(filepath or self.filename, 'wb')
-        while 1:
+        while True:
             chunk = response.read(chunksize)
-            elapsed = time.time() - t0
             outfh.write(chunk)
+            elapsed = time.time() - t0
             bytesdone += len(chunk)
+            rate = (bytesdone / 1024) / elapsed
+            eta = (total - bytesdone) / (rate * 1024)
+            display = (bytesdone, bytesdone * 1.0 / total, rate, eta)
             if not chunk:
                 outfh.close()
                 break
-            if callback or progress:
-                rate = (bytesdone / 1024) / elapsed
-                eta = (total - bytesdone) / (rate * 1024)
-                display = (bytesdone, bytesdone * 1.0 / total, rate, eta)
+            if not quiet:
                 status = status_string.format(*display)
-            if progress:
                 sys.stdout.write("\r" + status + ' ' * 4 + "\r")
                 sys.stdout.flush()
             if callback:
-                callback(bytesdone, total, rate, eta)
-        print("\nDone")
+                callback(total, *display)
 
 
 class Pafy():
