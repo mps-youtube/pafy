@@ -162,7 +162,7 @@ class Stream():
         opener = self._opener
         return int(opener.open(self.url).headers['content-length'])
 
-    def download(self, progress=True, filepath=""):
+    def download(self, progress=True, filepath="", callback=None):
         response = self._opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         print("-Downloading '{}' [{:,} Bytes]".format(self.filename,
@@ -179,13 +179,16 @@ class Stream():
             if not chunk:
                 outfh.close()
                 break
-            if progress:
+            if callback or progress:
                 rate = (bytesdone / 1024) / elapsed
                 eta = (total - bytesdone) / (rate * 1024)
                 display = (bytesdone, bytesdone * 1.0 / total, rate, eta)
                 status = status_string.format(*display)
+            if progress:
                 sys.stdout.write("\r" + status + ' ' * 4 + "\r")
                 sys.stdout.flush()
+            if callback:
+                callback(bytesdone, total, rate, eta)
         print("\nDone")
 
 
