@@ -79,7 +79,7 @@ print("\n")
 print("Download video, show progress")
 print("-----------------------------")
 print("Uncomment line in example.py source file to enable")
-#best.download(progress=True)
+best.download(quiet=False)
 print("\n")
 
 # download, specify output filepath
