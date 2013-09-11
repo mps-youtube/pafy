@@ -121,7 +121,7 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, Gunna, Giv
 
     # Download video and show progress:
     
->>> best.download(progress=True)
+>>> best.download(quiet=False)
 -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
   56,858,674 Bytes [100.00%] received. Rate: [ 720 kbps].  ETA: [0 secs]    
 Done
@@ -130,7 +130,7 @@ Done
     # Download video, use specific filepath:
     
 >>> myfilename = "/tmp/" + best.title + "." + best.extension
->>> best.download(progress=False, filepath=myfilename)
+>>> best.download(filepath=myfilename)
 -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
 Done
 ```
