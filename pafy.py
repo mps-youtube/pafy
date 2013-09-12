@@ -113,8 +113,8 @@ def _decodesig(sig, js):
     # get main function name from a function call
     sigargument = "g.s"
     sigprefix = "g.sig"
-    match = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
-    funcname = match.group(1)
+    m = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
+    funcname = m.group(1)
     function = _extract_function_from_js(funcname, js)
     if not len(function['parameters']) == 1:
         raise RuntimeError("Main sig js function has more than one arg: %s" %
@@ -254,9 +254,9 @@ class Pafy():
         if not smap[0].get("sig", ""):  # vevo!
             watchurl = "https://www.youtube.com/watch?v=" + vidid
             watchinfo = opener.open(watchurl).read().decode("UTF-8")
-            match = re.search(r';ytplayer.config = ({.*?});', watchinfo)
+            m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
             try:
-                myjson = json.loads(match.group(1))
+                myjson = json.loads(m.group(1))
             except:
                 raise RuntimeError('Problem handling this video')
             args = myjson['args']
