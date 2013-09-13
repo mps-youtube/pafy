@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.07"
+__version__ = "0.3.08"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -69,8 +69,8 @@ def _solve(f, js):
     parts = f['body'].split(";")
     for part in parts:
         logging.debug("Working on part: %s" % part)
-        # split, do nothing
-        m = re.match(r'(\w+)=(\w+)\.split\(""\)', part)
+        # split or join, do nothing
+        m = re.match(r'(\w+)=(\w+)\.(?:split|join)\(""\)', part)
         if m and m.group(1) == m.group(2):
             continue
         m = re.match(r'(\w+)=(\w+)\(((?:\w+,?)+)\)', part)
