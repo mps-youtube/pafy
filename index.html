@@ -149,7 +149,7 @@
 
     <span class="c"># Download video and show progress:</span>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">quiet</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 <span class="o">-</span><span class="n">Downloading</span> <span class="s">'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm'</span> <span class="p">[</span><span class="mi">56</span><span class="p">,</span><span class="mi">858</span><span class="p">,</span><span class="mi">674</span> <span class="n">Bytes</span><span class="p">]</span>
   <span class="mi">56</span><span class="p">,</span><span class="mi">858</span><span class="p">,</span><span class="mi">674</span> <span class="n">Bytes</span> <span class="p">[</span><span class="mf">100.00</span><span class="o">%</span><span class="p">]</span> <span class="n">received</span><span class="o">.</span> <span class="n">Rate</span><span class="p">:</span> <span class="p">[</span> <span class="mi">720</span> <span class="n">kbps</span><span class="p">]</span><span class="o">.</span>  <span class="n">ETA</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span> <span class="n">secs</span><span class="p">]</span>    
 <span class="n">Done</span>
@@ -158,7 +158,7 @@
     <span class="c"># Download video, use specific filepath:</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">myfilename</span> <span class="o">=</span> <span class="s">"/tmp/"</span> <span class="o">+</span> <span class="n">best</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s">"."</span> <span class="o">+</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">myfilename</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">quiet</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">myfilename</span><span class="p">)</span>
 <span class="o">-</span><span class="n">Downloading</span> <span class="s">'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm'</span> <span class="p">[</span><span class="mi">56</span><span class="p">,</span><span class="mi">858</span><span class="p">,</span><span class="mi">674</span> <span class="n">Bytes</span><span class="p">]</span>
 <span class="n">Done</span>
 </pre></div>
