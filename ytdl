@@ -25,15 +25,8 @@ import argparse
 import sys
 
 def processurl(url):
-    # Check whether supplied url argument is a valid youtube vid identifier
-    # valid urls contain a v=vidid pattern or are simply the vidid
-    if not "v=" in url and 8 < len(url) < 12:
-        return Pafy("v=" + url)
-    elif not "v=" in url:
-        return False
-    else:
-        vid = Pafy(url)
-        return vid
+    vid = Pafy(url)
+    return vid
 
 def download(video, stream=None):
     if not stream:
