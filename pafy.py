@@ -236,10 +236,12 @@ class Pafy():
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
-        try:
-            vidid = re.search(r'v=([a-zA-Z0-9-_]{11})', video_url).group(1)
-        except:
-            raise RuntimeError("bad video url")
+        m = re.search(r'\bv=([a-zA-Z0-9-_]{11})', video_url)
+        if not m:
+            m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
+        if not m:
+            raise RuntimeError('Bad video: %s' % video_url)
+        vidid = m.group(1)
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
         opener = build_opener()
         ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
