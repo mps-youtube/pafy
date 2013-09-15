@@ -240,7 +240,8 @@ class Pafy():
         if not m:
             m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
         if not m:
-            raise RuntimeError('Bad video: %s' % video_url)
+            error = "Need 11 character video id or the URL of the video. Got %s"
+            raise RuntimeError(error % video_url)
         vidid = m.group(1)
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
         opener = build_opener()
@@ -249,6 +250,10 @@ class Pafy():
         opener.addheaders = [('User-Agent', ua)]
         self.keywords = ""
         allinfo = parse_qs(decode_if_py3(opener.open(infoUrl).read()))
+        if allinfo['status'][0] == "fail":
+            reason = allinfo['reason'][0] or "Bad video argument"
+            raise RuntimeError("Youtube says: %s" % reason)
+        print allinfo
         self._setmetadata(allinfo)
         streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
