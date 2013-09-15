@@ -142,7 +142,7 @@ class Stream():
     
     def __init__(self, streammap, opener, title="ytvid", js=None):
         if not streammap.get("sig", ""):
-            logging.debug("Decrypting sig: %s" % streammap['s'])
+            logging.debug("Decrypting sig: %s" % streammap['s'][0])
             streammap['sig'] = [_decodesig(streammap['s'][0], js)]
             logging.debug("Calculated decrypted sig: %s" % streammap['sig'][0])
         self.url = streammap['url'][0] + '&signature=' + streammap['sig'][0]
@@ -193,7 +193,6 @@ class Pafy():
         return self.length
 
     def __repr__(self):
-        out = ""
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
         keywords = ", ".join(self.keywords)
@@ -206,12 +205,7 @@ class Pafy():
                     ID=self.videoid,
                     Thumbnail=self.thumb,
                     Keywords=keywords)
-        for k in keys: 
-            try:
-                out += "%s: %s\n" % (k, info[k])
-            except KeyError:
-                pass
-        return out
+        return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
     def _setmetadata(self, allinfo):
         f = lambda x: allinfo[x][0]
