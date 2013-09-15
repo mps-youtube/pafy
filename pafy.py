@@ -216,23 +216,24 @@ class Pafy():
         return out
 
     def _setmetadata(self, allinfo):
-        self.title = allinfo['title'][0]
-        self.author = allinfo['author'][0]
-        self.videoid = allinfo['video_id'][0]
-        self.rating = float(allinfo['avg_rating'][0])
-        self.length = int(allinfo['length_seconds'][0])
+        f = lambda x: allinfo[x][0]
+        self.title = f('title')
+        self.author = f('author')
+        self.videoid = f('video_id')
+        self.rating = float(f('avg_rating'))
+        self.length = int(f('length_seconds'))
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
-        self.viewcount = int(allinfo['view_count'][0])
-        self.thumb = unquote_plus(allinfo['thumbnail_url'][0])
-        self.formats = allinfo['fmt_list'][0].split(",")
+        self.viewcount = int(f('view_count'))
+        self.thumb = unquote_plus(f('thumbnail_url'))
+        self.formats = f('fmt_list').split(",")
         self.formats = [x.split("/") for x in self.formats]
         if 'keywords' in allinfo:
-            self.keywords = allinfo['keywords'][0].split(',')
+            self.keywords = f('keywords').split(',')
         if allinfo.get('iurlsd'):
-            self.bigthumb = allinfo['iurlsd'][0]
+            self.bigthumb = f('iurlsd')
         if allinfo.get('iurlmaxres'):
-            self.bigthumbhd = allinfo['iurlmaxres'][0]
-        return 
+            self.bigthumbhd = f('iurlmaxres')
+        return
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
@@ -253,7 +254,6 @@ class Pafy():
         if allinfo['status'][0] == "fail":
             reason = allinfo['reason'][0] or "Bad video argument"
             raise RuntimeError("Youtube says: %s" % reason)
-        print allinfo
         self._setmetadata(allinfo)
         streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
