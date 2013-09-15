@@ -24,10 +24,6 @@ from pafy import Pafy
 import argparse
 import sys
 
-def processurl(url):
-    vid = Pafy(url)
-    return vid
-
 def download(video, stream=None):
     if not stream:
         stream = video.getbest(preftype="mp4")
@@ -68,10 +64,7 @@ def main():
     
 
     args = parser.parse_args()
-    vid = processurl(args.url)
-    # check valid video
-    if not vid:
-        sys.exit("Invalid YouTube Video URL, " + args.url)
+    vid = Pafy(args.url)
     # resolution and format, if present, must both be present.
     if args.f and not args.r or args.r and not args.f:
         parser.print_help()
