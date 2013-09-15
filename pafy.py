@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 ''' Python API for YouTube
     Copyright (C)  2013 nagev
 
@@ -222,9 +220,9 @@ class Pafy():
         self.videoid = f('video_id')
         self.rating = float(f('avg_rating'))
         self.length = int(f('length_seconds'))
-        self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
         self.viewcount = int(f('view_count'))
         self.thumb = unquote_plus(f('thumbnail_url'))
+        self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
         self.formats = f('fmt_list').split(",")
         self.formats = [x.split("/") for x in self.formats]
         if 'keywords' in allinfo:
