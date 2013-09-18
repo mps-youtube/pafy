@@ -36,7 +36,7 @@ else:
     from urllib import unquote_plus
     from urlparse import parse_qs
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 def _extract_function_from_js(name, js):
     # Find a function called `name` and extract components
