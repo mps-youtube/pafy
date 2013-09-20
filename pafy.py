@@ -36,7 +36,7 @@ else:
     from urllib import unquote_plus
     from urlparse import parse_qs
 
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 def _extract_function_from_js(name, js):
     # Find a function called `name` and extract components
@@ -109,9 +109,7 @@ def _solve(f, js):
 
 def _decodesig(sig, js):
     # get main function name from a function call
-    sigargument = "e.s"
-    sigprefix = "e.sig"
-    m = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
+    m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
     function = _extract_function_from_js(funcname, js)
     if not len(function['parameters']) == 1:
