@@ -109,8 +109,8 @@ def _solve(f, js):
 
 def _decodesig(sig, js):
     # get main function name from a function call
-    sigargument = "g.s"
-    sigprefix = "g.sig"
+    sigargument = "e.s"
+    sigprefix = "e.sig"
     m = re.search(r'%s\|\|(\w+)\(%s\)' % (sigprefix, sigargument), js)
     funcname = m.group(1)
     function = _extract_function_from_js(funcname, js)
