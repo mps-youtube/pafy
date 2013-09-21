@@ -2,8 +2,7 @@ PAFY
 ====
 
 Python API for YouTube
-
-ddby nagev
+by nagev
 
 
 Features:
