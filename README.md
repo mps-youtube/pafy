@@ -3,21 +3,23 @@ PAFY
 
 Python API for YouTube
 
-by nagev
+ddby nagev
 
 
 Features:
 ---------
 
- - Download any stream for a particular video
- - Select best quality stream for download
  - Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords
- - Retrieve all availabe streams for a YouTube video (all resolutions and formats)
- - Retrieve the Download URL to download or stream the video
- - Small, standalone, single importable module file.
+ - Download video at required resolution / format / filesize
+ - Retrieve the URL to stream the video in a player such as vlc or mplayer
+ - Retrieve all availabe resolutions and formats for a YouTube video
  - Works with age-restricted videos and non-embeddable videos
+ - Small, standalone, single importable module file.
+ - Select best quality stream for download
+ - Works with Python 2.7 and 3.x
  - No dependencies
  - Command line tool (ytdl) for downloading directly from the command line
+
 
 Usage Examples:
 ---------------
@@ -27,13 +29,13 @@ Here is how to use the module in your own python code.  For command line tool
 
 ```python
 
->>> from pafy import Pafy
->>> url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
+>>> import pafy
 
 
-    # create a video instance
+    # create a video instance from a YouTube
     
->>> video = Pafy(url)
+>>> url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
+>>> video = pafy.new(url)
 
 
     # get certain attributes

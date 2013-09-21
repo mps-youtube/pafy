@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.08"
+__version__ = "0.3.09"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -36,7 +36,7 @@ else:
     from urllib import unquote_plus
     from urlparse import parse_qs
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 def _extract_function_from_js(name, js):
     # Find a function called `name` and extract components
@@ -117,6 +117,9 @@ def _decodesig(sig, js):
             function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
     return _solve(function, js)
+
+def new(url):
+    return Pafy(url)
 
 class Stream():
     resolutions = {
