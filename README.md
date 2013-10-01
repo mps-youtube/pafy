@@ -30,7 +30,7 @@ Here is how to use the module in your own python code.  For command line tool
 >>> import pafy
 
 
-    # create a video instance from a YouTube
+    # create a video instance from a YouTube video url
     
 >>> url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
 >>> video = pafy.new(url)
