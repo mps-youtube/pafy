@@ -2,20 +2,18 @@ PAFY
 ====
 
 Python API for YouTube
-
-ddby nagev
+by nagev
 
 
 Features:
 ---------
 
  - Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords
- - Download video at required resolution / format / filesize
+ - Download video at requested resolution / format / filesize
  - Retrieve the URL to stream the video in a player such as vlc or mplayer
- - Retrieve all availabe resolutions and formats for a YouTube video
+ - Select highest quality stream for download or streaming
  - Works with age-restricted videos and non-embeddable videos
  - Small, standalone, single importable module file.
- - Select best quality stream for download
  - Works with Python 2.7 and 3.x
  - No dependencies
  - Command line tool (ytdl) for downloading directly from the command line
@@ -68,6 +66,7 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, Gunna, Giv
 >>> streams = video.streams
 >>> for s in streams:
 >>>     print s.resolution, s.extension
+
 480x854 webm
 480x854 flv
 360x640 webm
@@ -78,18 +77,19 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, Gunna, Giv
 144x176 3gp
 
 
-    # show all formats and their download url:
+    # show all formats, file-sizes and their download url:
 
 >>> for s in streams:
->>>     print s.resolution, s.extension, s.url
-480x854 webm http://r12--sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-480x854 flv http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-360x640 webm http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-360x640 flv http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-360x640 mp4 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-240x400 flv http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-320x240 3gp http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-144x176 3gp http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+>>>     print s.resolution, s.extension, s.get_filesize(), s.url
+
+480x854 webm 56858674 http://r12--sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+480x854 flv 53066081 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+360x640 webm 34775366 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+360x640 flv 32737100 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+360x640 mp4 25919932 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+240x400 flv 14341366 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+320x240 3gp 11083585 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+144x176 3gp 3891135 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
 
 
     # get best resolution regardless of file format:
