@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.09"
+__version__ = "0.3.10"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -23,6 +23,7 @@ import sys
 import time
 import json
 import logging
+
 
 def decode_if_py3(data):
     return data.decode("UTF-8")
@@ -38,13 +39,15 @@ else:
 
 #logging.basicConfig(level=logging.DEBUG)
 
+
 def _extract_function_from_js(name, js):
     # Find a function called `name` and extract components
     m = re.search(r'function %s\(((?:\w+,?)+)\)\{([^}]+)\}' % name, js)
     return {'name': name, 'parameters': m.group(1).split(","),
-        'body': m.group(2) }
+            'body': m.group(2)}
 
-def _getval(val, argsdict): # resolves variable values. preserves int literals
+
+def _getval(val, argsdict):  # resolves variable values. preserves int literals
     m = re.match(r'(\d+)', val)
     if m:
         return(int(m.group(1)))
@@ -52,6 +55,7 @@ def _getval(val, argsdict): # resolves variable values. preserves int literals
         return argsdict[val]
     else:
         raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
+
 
 def _get_func_from_call(caller_function, name, arguments, js):
     newfunction = _extract_function_from_js(name, js)
@@ -61,6 +65,7 @@ def _get_func_from_call(caller_function, name, arguments, js):
         param = newfunction['parameters'][n]
         newfunction['args'][param] = value
     return newfunction
+
 
 def _solve(f, js):
     # solve basic javascript function
@@ -72,40 +77,41 @@ def _solve(f, js):
         if m and m.group(1) == m.group(2):
             continue
         m = re.match(r'(\w+)=(\w+)\(((?:\w+,?)+)\)', part)
-        if m: # a function call
-            lhs, funcname, args = m.group(*range(1,4))
+        if m:  # a function call
+            lhs, funcname, args = m.group(*range(1, 4))
             newfunc = _get_func_from_call(f, funcname, args.split(","), js)
-            f['args'][lhs] = _solve(newfunc, js) # recursive call
+            f['args'][lhs] = _solve(newfunc, js)  # recursive call
             continue
         m = re.match(r'var\s(\w+)=(\w+)\[(\w+)\]', part)
-        if m: # new var is an index of another var; eg: var a = b[c]
-            b, c = [_getval(x, f['args']) for x in m.group(*range(2,4))]
+        if m:  # new var is an index of another var; eg: var a = b[c]
+            b, c = [_getval(x, f['args']) for x in m.group(*range(2, 4))]
             f['args'][m.group(1)] = b[c]
             continue
         m = re.match(r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]', part)
-        if m: # a[b]=c[d%e.length]
-            vals = m.group(*range(1,6))
+        if m:  # a[b]=c[d%e.length]
+            vals = m.group(*range(1, 6))
             a, b, c, d, e = [_getval(x, f['args']) for x in vals]
-            f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:] 
+            f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:]
             continue
         m = re.match(r'(\w+)\[(\w+)\]=(\w+)', part)
-        if m: # a[b]=c
-            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1,4))]
-            f['args'][m.group(1)] = a[:b] + c + a[b + 1:] # a[b] = c
+        if m:  # a[b]=c
+            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1, 4))]
+            f['args'][m.group(1)] = a[:b] + c + a[b + 1:]  # a[b] = c
             continue
-        m= re.match(r'return (\w+)(\.join\(""\))?', part)
-        if m: # return
+        m = re.match(r'return (\w+)(\.join\(""\))?', part)
+        if m:  # return
             return f['args'][m.group(1)]
         m = re.match(r'(\w+)=(\w+)\.reverse\(\)', part)
-        if m: # reverse        
+        if m:  # reverse
             f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
             continue
         m = re.match(r'(\w+)=(\w+)\.slice\((\w+)\)', part)
         if m:  # slice a=b.slice(c)
-            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1,4))]
+            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1, 4))]
             f['args'][m.group(1)] = b[c:]
             continue
         raise RuntimeError("no match for %s" % part)
+
 
 def _decodesig(sig, js):
     # get main function name from a function call
@@ -114,12 +120,14 @@ def _decodesig(sig, js):
     function = _extract_function_from_js(funcname, js)
     if not len(function['parameters']) == 1:
         raise RuntimeError("Main sig js function has more than one arg: %s" %
-            function['parameters'])
+                           function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
     return _solve(function, js)
 
+
 def new(url):
     return Pafy(url)
+
 
 class Stream():
     resolutions = {
@@ -140,7 +148,7 @@ class Stream():
         '84': ('1280x720-3D', 'mp4'),
         '100': ('640x360-3D', 'webm'),
         '102': ('1280x720-3D', 'webm')}
-    
+
     def __init__(self, streammap, opener, title="ytvid", js=None):
         if not streammap.get("sig", ""):
             logging.debug("Decrypting sig: %s" % streammap['s'][0])
@@ -153,14 +161,14 @@ class Stream():
         self.itag = streammap['itag'][0]
         self.title = title
         self.filename = self.title + "." + self.extension
-        self.filesize = None
+        self.fsize = None
         self._opener = opener
 
     def get_filesize(self):
-        if not self.filesize:
+        if not self.fsize:
             opener = self._opener
-            self.filesize = int(opener.open(self.url).headers['content-length'])
-        return self.filesize
+            self.fsize = int(opener.open(self.url).headers['content-length'])
+        return self.fsize
 
     def download(self, filepath="", quiet=False, callback=None):
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
@@ -234,8 +242,8 @@ class Pafy():
         if not m:
             m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
         if not m:
-            error = "Need 11 character video id or the URL of the video. Got %s"
-            raise RuntimeError(error % video_url)
+            err = "Need 11 character video id or the URL of the video. Got %s"
+            raise RuntimeError(err % video_url)
         vidid = m.group(1)
         infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
         opener = build_opener()
