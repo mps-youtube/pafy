@@ -1,0 +1,22 @@
+19 October 2013
+Version 0.3.20
+Authors: nagev
+
+[Feature] Added support for audio only stream download (m4a and ogg vorbis)
+[Feature] Added support for audio only stream download (m4v)
+[Feature] Added bitrate property for audio streams
+[Feature] Added quality property to return bitrate or resolution depending on stream type (audio or video)
+[Feature] Updated ytdl command line tool to incorporate download choices from above streams
+[Feature] Added getbestaudio() function to automatically select best quality audio stream
+[Bugfix] Allow downloading of videos with no title
+[Docs] Updated documentation for pafy and ytdl demonstrating usage of above features (README.md)
+[Docs] Added this changelog.txt file
+
+Notes:
+
+This version should be fully backward compatible with the previous version.
+Pafy objects retain the pafy.streams list containing regular streams as before (video + audio)
+In addition, there are now two new stream lists;
+	pafy.audiostreams is a list of audio only streams (m4a and ogg vorbis where available)
+	pafy.videostreams is a list of video only streams (m4v)
+Further, there is a pafy.allstreams list containing the union of all three aforementioned lists
