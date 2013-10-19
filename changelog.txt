@@ -2,8 +2,8 @@
 Version 0.3.20
 Authors: nagev
 
-[Feature] Added support for audio only stream download (m4a and ogg vorbis)
-[Feature] Added support for audio only stream download (m4v)
+[Feature] Added support for audio-only stream download (m4a and ogg vorbis)
+[Feature] Added support for video-only stream download (m4v)
 [Feature] Added bitrate property for audio streams
 [Feature] Added quality property to return bitrate or resolution depending on stream type (audio or video)
 [Feature] Updated ytdl command line tool to incorporate download choices from above streams
