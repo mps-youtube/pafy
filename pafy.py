@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.10"
+__version__ = "0.3.20"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -43,6 +43,7 @@ else:
 def _extract_function_from_js(name, js):
     # Find a function called `name` and extract components
     m = re.search(r'function %s\(((?:\w+,?)+)\)\{([^}]+)\}' % name, js)
+    logging.debug(m.group(0))
     return {'name': name, 'parameters': m.group(1).split(","),
             'body': m.group(2)}
 
@@ -130,44 +131,74 @@ def new(url):
 
 
 class Stream():
-    resolutions = {
-        '5': ('240x400', 'flv'),
-        '17': ('144x176', '3gp'),
-        '18': ('360x640', 'mp4'),
-        '22': ('720x1280', 'mp4'),
-        '34': ('360x640', 'flv'),
-        '35': ('480x854', 'flv'),
-        '36': ('320x240', '3gp'),
-        '37': ('1080x1920', 'mp4'),
-        '38': ('3072x4096', 'superHD'),
-        '43': ('360x640', 'webm'),
-        '44': ('480x854', 'webm'),
-        '45': ('720x1280', 'webm'),
-        '46': ('1080x1920', 'webm'),
-        '82': ('640x360-3D', 'mp4'),
-        '84': ('1280x720-3D', 'mp4'),
-        '100': ('640x360-3D', 'webm'),
-        '102': ('1280x720-3D', 'webm')}
+    itags = {
+        '5': ('320x240', 'flv', "a/v"),
+        '17': ('176x144', '3gp', "a/v"),
+        '18': ('640x360', 'mp4', "a/v"),
+        '22': ('1280x720', 'mp4', "a/v"),
+        '34': ('360x640', 'flv', "a/v"),
+        '35': ('480x854', 'flv', "a/v"),
+        '36': ('320x240', '3gp', "a/v"),
+        '37': ('1920x1080', 'mp4', "a/v"),
+        '38': ('4096x3072', 'superHD', "a/v"),
+        '43': ('640x360', 'webm', "a/v"),
+        '44': ('480x854', 'webm', "a/v"),
+        '45': ('720x1280', 'webm', "a/v"),
+        '46': ('1080x1920', 'webm', "a/v"),
+        '82': ('640x360-3D', 'mp4', "a/v"),
+        '84': ('1280x720-3D', 'mp4', "a/v"),
+        '100': ('640x360-3D', 'webm', "a/v"),
+        '102': ('1280x720-3D', 'webm', "a/v"),
+        '133': ('426x240', 'm4v', 'video'),
+        '134': ('640x360', 'm4v', 'video'),
+        '135': ('854x480', 'm4v', 'video'),
+        '136': ('1280x720', 'm4v', 'video'),
+        '137': ('1920x1080', 'm4v', 'video'),
+        '138': ('4096x3072', 'm4v', 'video'),
+        '139': ('48k', 'm4a', 'audio'),
+        '140': ('128k', 'm4a', 'audio'),
+        '141': ('256k', 'm4a', 'audio'),
+        '160': ('256x144', 'm4v', 'video'),
+        '171': ('128k', 'ogg', 'audio'),
+        '172': ('256k', 'ogg', 'audio'),
+        '248': ('unknown', 'unknown', 'unknown')
+    }
 
     def __init__(self, streammap, opener, title="ytvid", js=None):
-        if not streammap.get("sig", ""):
-            logging.debug("Decrypting sig: %s" % streammap['s'][0])
+
+        self.url = streammap['url'][0]
+        if streammap.get("s"):
             streammap['sig'] = [_decodesig(streammap['s'][0], js)]
             logging.debug("Calculated decrypted sig: %s" % streammap['sig'][0])
-        self.url = streammap['url'][0] + '&signature=' + streammap['sig'][0]
-        self.vidformat = streammap['type'][0].split(';')[0]
-        self.resolution = self.resolutions[streammap['itag'][0]][0]
-        self.extension = self.resolutions[streammap['itag'][0]][1]
+        if not "signature=" in self.url:
+            self.url += '&signature=' + streammap['sig'][0]
+        if not "ratebypass=" in self.url:
+            self.url = self.url + "&ratebypass=yes"
         self.itag = streammap['itag'][0]
+        logging.debug("itag %s" % self.itag)
+        self.vidformat = streammap['type'][0].split(';')[0]
+        self.resolution = self.itags[self.itag][0]
+        self.quality = self.resolution
+        self.extension = self.itags[self.itag][1]
         self.title = title
         self.filename = self.title + "." + self.extension
         self.fsize = None
         self._opener = opener
+        self.bitrate = None
+        self.mediatype = self.itags[self.itag][2]
+        if self.mediatype == "audio":
+            self.bitrate = self.resolution
+            self.resolution = "0x0"
+            self.quality = self.bitrate
 
     def get_filesize(self):
         if not self.fsize:
-            opener = self._opener
-            self.fsize = int(opener.open(self.url).headers['content-length'])
+            try:
+                opener = self._opener
+                cl = "content-length"
+                self.fsize = int(opener.open(self.url).headers[cl])
+            except:
+                self.fsize = 0
         return self.fsize
 
     def download(self, filepath="", quiet=False, callback=None):
@@ -176,7 +207,9 @@ class Stream():
         response = self._opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
-        outfh = open(filepath or self.filename, 'wb')
+        filetosave = filepath or self.filename
+        filetosave = filetosave.replace("/", "-")
+        outfh = open(filetosave, 'wb')
         while True:
             chunk = response.read(chunksize)
             outfh.write(chunk)
@@ -217,7 +250,8 @@ class Pafy():
         return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
     def _setmetadata(self, allinfo):
-        f = lambda x: allinfo[x][0]
+        f = lambda x: allinfo.get(x, ["unknown"])[0]
+        self.js = None
         self.title = f('title')
         self.author = f('author')
         self.videoid = f('video_id')
@@ -235,6 +269,34 @@ class Pafy():
         if allinfo.get('iurlmaxres'):
             self.bigthumbhd = f('iurlmaxres')
         return
+
+    def get_js(self, opener):
+        logging.debug("call to get js")
+        if not self.js or not self.args:
+            watchurl = "https://www.youtube.com/watch?v=" + self.videoid
+            watchinfo = opener.open(watchurl).read().decode("UTF-8")
+            m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
+            try:
+                myjson = json.loads(m.group(1))
+            except:
+                raise RuntimeError('Problem handling this video')
+            args = myjson['args']
+            html5player = myjson['assets']['js']
+            logging.debug("opening js url")
+            js = opener.open(html5player).read().decode("UTF-8")
+            self.js, self.args = js, args
+        return(self.js, self.args)
+
+    def getstreammap(self, allinfo, key, opener):
+        js = self.js
+        streamMap = allinfo[key][0].split(',')
+        smap = [parse_qs(sm) for sm in streamMap]
+        if smap[0].get("s"):
+            logging.debug("encrypted sig")
+            js, args = self.get_js(opener)
+            streamMap = args[key].split(",")
+            smap = [parse_qs(sm) for sm in streamMap]
+        return(smap, js)
 
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
@@ -256,23 +318,17 @@ class Pafy():
             reason = allinfo['reason'][0] or "Bad video argument"
             raise RuntimeError("Youtube says: %s" % reason)
         self._setmetadata(allinfo)
-        streamMap = allinfo['url_encoded_fmt_stream_map'][0].split(',')
-        smap = [parse_qs(sm) for sm in streamMap]
-        js = None
-        if not smap[0].get("sig", ""):  # vevo!
-            watchurl = "https://www.youtube.com/watch?v=" + vidid
-            watchinfo = opener.open(watchurl).read().decode("UTF-8")
-            m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
-            try:
-                myjson = json.loads(m.group(1))
-            except:
-                raise RuntimeError('Problem handling this video')
-            args = myjson['args']
-            streamMap = args['url_encoded_fmt_stream_map'].split(",")
-            html5player = myjson['assets']['js']
-            js = opener.open(html5player).read().decode("UTF-8")
-            smap = [parse_qs(sm) for sm in streamMap]
+        smap, js = self.getstreammap(
+            allinfo, 'url_encoded_fmt_stream_map', opener)
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
+        self.videostreams = self.audiostreams = []
+        if "adaptive_fmts" in allinfo:
+            smap_adpt, js = self.getstreammap(allinfo, 'adaptive_fmts', opener)
+            self.streams_ad = [Stream(sm, opener, self.title, js) for sm in
+                               smap_adpt]
+            self.audiostreams = [x for x in self.streams_ad if x.bitrate]
+            self.videostreams = [x for x in self.streams_ad if not x.bitrate]
+        self.allstreams = self.streams + self.videostreams + self.audiostreams
 
     def getbest(self, preftype="any", ftypestrict=True):
         # set ftypestrict to False to use a non preferred format if that
@@ -286,3 +342,13 @@ class Pafy():
             else:
                 return (key3d, keyres, keyftype)
         return max(self.streams, key=_sortkey)
+
+    def getbestaudio(self, preftype="any", ftypestrict=True):
+        def _sortkey(x, keybitrate=0, keyftype=0):
+            keybitrate = int(x.bitrate.split("k")[0])
+            keyftype = preftype == x.extension
+            if ftypestrict:
+                return(keyftype, keybitrate)
+            else:
+                return(keybitrate, keyftype)
+        return max(self.audiostreams, key=_sortkey)
