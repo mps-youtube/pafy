@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.09"
+__version__ = "0.3.20"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -24,51 +24,60 @@ from pafy import Pafy
 import argparse
 import sys
 
+
 def download(video, stream=None):
     if not stream:
         stream = video.getbest(preftype="mp4")
     size = stream.get_filesize()
     print("-Downloading '{}' [{:,} Bytes]".format(stream.filename, size))
-    print("-Resolution %s; Format: %s" % (stream.resolution, stream.extension))
+    print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
     stream.download(quiet=False)
     print("\nDone")
 
+
 def printstreams(vid):
-    print("Stream\tFormat\tResolution\tSize")
-    print("------\t------\t----------\t----")
-    for n,s in enumerate(vid.streams):
-        megs = "%3.f" % (s.get_filesize() / 1024**2) + " MB"
-        print("{} \t {} \t {} \t {}".format(n+1, s.extension, s.resolution, megs))
+    fstring = "{:<7}{:<8}{:<7}{:<16}{:<10}"
+    print(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
+    print(fstring.format("------", "----", "------", "-------", " ----"))
+    for n, s in enumerate(vid.allstreams):
+        megs = "%3.f" % (s.get_filesize() / 1024 ** 2) + " MB"
+        q = "[%s]" % s.quality
+        print(fstring.format(n + 1, s.mediatype, s.extension, q, megs))
+
 
 def main():
     description = "YouTube Download Tool"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('url', help="YouTube video URL to download")
-    parser.add_argument('-i', required=False, help="Display vid info", 
-        action="store_true")
+    parser.add_argument('-i', required=False, help="Display vid info",
+                        action="store_true")
     parser.add_argument('-s', help="Display available streams", action=
-        "store_true")
-    fq = parser.add_argument_group("format and quality", description=
-        "Specify the stream to download by resolution and file format")
-    fq.add_argument('-f', type=str, help='format of the'
-        ' video to download', required=False, choices=
-        'webm mp4 3gp flv'.split())
-    fq.add_argument('-r', type=str, help='resolution of the'
-        ' video to download',required=False, metavar='NNNxNNN')
-    parser.add_argument('-n', required=False, metavar="N", type=int, help=
-        "Specify stream to download by stream number (use -s to list,\
-            ignores -f and -r)")
-    parser.add_argument('-b', required=False, help=
-        'Download the best quality video (ignores -n, -f and -r)', action=
-        "store_true")
-    
+                        "store_true")
+    fq = parser.add_argument_group(
+        "format and quality", description="Specify the stream to download by"
+        " quality (ie. resolution or bitrate) and file format"
+    )
+    fq.add_argument(
+        '-f', type=str, help='format of the file to download',
+        required=False, choices='webm mp4 3gp flv m4v m4a ogg'.split()
+    )
+    fq.add_argument('-q', type=str, help='quality of the file to download',
+                    required=False, metavar='{NNN}x{NNN} | {NNN}k')
+    parser.add_argument(
+        '-n', required=False, metavar="N", type=int, help="Specify stream to "
+        "download by stream number (use -s to list, ignores -f and -q)"
+    )
+    parser.add_argument(
+        '-b', required=False, help='Download the best quality video (ignores '
+        '-n, -f and -q)', action="store_true"
+    )
 
     args = parser.parse_args()
     vid = Pafy(args.url)
-    # resolution and format, if present, must both be present.
-    if args.f and not args.r or args.r and not args.f:
+    # quality and format, if present, must both be present.
+    if args.f and not args.q or args.q and not args.f:
         parser.print_help()
-        sys.exit("\n-f and -r cannot be used independently of each other!")
+        sys.exit("\n-f and -q cannot be used independently of each other!")
     # if requested print vid info and list streams
     if args.i:
         print(vid)
@@ -82,29 +91,28 @@ def main():
             sys.exit()
     elif args.n:
         streamnumber = int(args.n) - 1
-        download(vid, vid.streams[streamnumber])
+        download(vid, vid.allstreams[streamnumber])
 
-    elif args.f and args.r:
-        print((args.f, args.r))
+    elif args.f and args.q:
+        print((args.f, args.q))
         print("Getting streams...")
         matchres, matchformat = 0, 0
-        for n, stream in enumerate(vid.streams):
+        for n, stream in enumerate(vid.allstreams):
             if args.f == stream.extension:
                 matchformat = 1
-                if str(args.r) in stream.resolution:
+                if str(args.q) in stream.quality:
                     matchres = 1
                     # matching video found, download it
                     download(vid, stream)
         if not matchres:
-            print(("No stream found matching resolution " + str(args.r) +\
-            ". Try checking available resolutions using '-s'"))
-        if not matchformat: 
-            print(("no stream found matching format %s" % str(args.f) +\
-            ". Try checking available formats using '-s'"))
-    if not args.i and not args.s and not args.b and not args.n and not \
-        args.r:
-        print(("Nothing to do!  Try -b to download highest quality or" +\
-           " -s to list available streams"))
+            print("No stream found matching resolution " + str(args.q) +
+                  ". Try checking available resolutions using '-s'")
+        if not matchformat:
+            print("no stream found matching format %s" % str(args.f) +
+                  ". Try checking available formats using '-s'")
+    if not args.i and not args.s and not args.b and not args.n and not args.q:
+        print("Nothing to do!  Try -b to download highest quality or"
+              " -s to list available streams")
 
-    
+
 main()
