@@ -37,12 +37,21 @@ def download(video, stream=None):
 
 def printstreams(vid):
     fstring = "{:<7}{:<8}{:<7}{:<16}{:<10}"
-    print(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
-    print(fstring.format("------", "----", "------", "-------", " ----"))
+    out = []
+    l = len(vid.allstreams)
+    sys.stdout.write("\n[Fetching stream info]  " + l * "_" + "\r")
+    sys.stdout.write("\r[Fetching stream info]  ")
     for n, s in enumerate(vid.allstreams):
+        sys.stdout.write("*")
+        sys.stdout.flush()
         megs = "%3.f" % (s.get_filesize() / 1024 ** 2) + " MB"
         q = "[%s]" % s.quality
-        print(fstring.format(n + 1, s.mediatype, s.extension, q, megs))
+        out.append(fstring.format(n + 1, s.mediatype, s.extension, q, megs))
+    sys.stdout.write("\r")
+    print(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
+    print(fstring.format("------", "----", "------", "-------", " ----"))
+    for x in out:
+        print(x)
 
 
 def main():
