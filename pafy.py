@@ -157,10 +157,10 @@ class Stream():
         '138': ('4096x3072', 'm4v', 'video'),
         '139': ('48k', 'm4a', 'audio'),
         '140': ('128k', 'm4a', 'audio'),
-        '141': ('256k', 'm4a', 'audio'),
+        '141': ('192k', 'm4a', 'audio'),
         '160': ('256x144', 'm4v', 'video'),
         '171': ('128k', 'ogg', 'audio'),
-        '172': ('256k', 'ogg', 'audio'),
+        '172': ('192k', 'ogg', 'audio'),
         '248': ('unknown', 'unknown', 'unknown')
     }
 

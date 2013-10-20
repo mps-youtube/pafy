@@ -10,7 +10,7 @@ Authors: nagev
 [Feature] Added getbestaudio() function to automatically select best quality audio stream
 [Bugfix] Allow downloading of videos with no title
 [Docs] Updated documentation for pafy and ytdl demonstrating usage of above features (README.md)
-[Docs] Added this changelog.txt file
+[Docs] Added this changelog file
 
 Notes:
 
