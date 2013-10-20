@@ -22,7 +22,13 @@ __license__ = "GPLv3"
 
 from pafy import Pafy
 import argparse
+import logging
 import sys
+import os
+
+
+if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
+    logging.basicConfig(level=logging.DEBUG)
 
 
 def download(video, stream=None):

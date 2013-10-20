@@ -19,6 +19,7 @@ __author__ = "nagev"
 __license__ = "GPLv3"
 
 import re
+import os
 import sys
 import time
 import json
@@ -37,7 +38,8 @@ else:
     from urllib import unquote_plus
     from urlparse import parse_qs
 
-#logging.basicConfig(level=logging.DEBUG)
+if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
+    logging.basicConfig(level=logging.DEBUG)
 
 
 def _extract_function_from_js(name, js):
@@ -176,6 +178,7 @@ class Stream():
             self.url = self.url + "&ratebypass=yes"
         self.itag = streammap['itag'][0]
         logging.debug("itag %s" % self.itag)
+        logging.debug("stream map: %s" % streammap)
         self.vidformat = streammap['type'][0].split(';')[0]
         self.resolution = self.itags[self.itag][0]
         self.quality = self.resolution
