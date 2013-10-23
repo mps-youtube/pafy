@@ -199,9 +199,12 @@ Command Line Tool (ytdl) Usage:
 
 ```
 
-usage: ytdl [-h] [-i] [-s] [-f {webm,mp4,3gp,flv,m4v,m4a,ogg}]
-            [-q {NNN}x{NNN} | {NNN}k] [-n N] [-b]
+usage: ytdl [-h] [-i] [-s]
+            [-t {audio,video,normal,all} [{audio,video,normal,all} ...]]
+            [-n N] [-b] [-a]
             url
+
+YouTube Download Tool
 
 positional arguments:
   url                   YouTube video URL to download
@@ -210,19 +213,12 @@ optional arguments:
   -h, --help            show this help message and exit
   -i                    Display vid info
   -s                    Display available streams
+  -t {audio,video,normal,all} [{audio,video,normal,all} ...]
+                        Stream types to display
   -n N                  Specify stream to download by stream number (use -s to
-                        list, ignores -f and -q)
-  -b                    Download the best quality video (ignores -n, -f and -q)
-
-format and quality:
-  Specify the stream to download by quality (ie. resolution or bitrate) and
-  file format
-
-  -f {webm,mp4,3gp,flv,m4v,m4a,ogg}
-                        format of the file to download
-  -q {NNN}x{NNN} | {NNN}k
-                        quality of the file to download
-
+                        list available streams)
+  -b                    Download the best quality video (ignores -n)
+  -a                    Download the best quality audio (ignores -n)
 
 
 Examples:
@@ -231,39 +227,43 @@ Examples:
 
     ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
 
+
+# Download best available audio stream (-a):
+# (note; the full url is not required, just the video id will suffice)
+
+    ytdl cyMHZVT91Dw -a
+
+
 # get video info (-i):
 
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
+    ytdl cyMHZVT91Dw -i
 
-# list available download formats (-s):
 
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -s
+# list available download streams:
+
+    ytdl cyMHZVT91Dw
  
-
-    Stream Type    Format Quality          Size     
-    ------ ----    ------ -------          ----     
-    1      a/v     webm   [640x360]        33 MB    
-    2      a/v     mp4    [640x360]        24 MB    
-    3      a/v     flv    [320x240]        13 MB    
-    4      a/v     3gp    [320x240]        10 MB    
-    5      a/v     3gp    [176x144]         3 MB    
-    6      video   m4v    [854x480]        39 MB    
-    7      video   m4v    [640x360]        17 MB    
-    8      video   m4v    [426x240]        11 MB    
-    9      video   m4v    [256x144]         4 MB    
-    10     audio   m4a    [48k]             2 MB    
-    11     audio   m4a    [128k]            5 MB    
-    12     audio   m4a    [256k]           10 MB 
+Stream Type    Format Quality         Size            
+------ ----    ------ -------         ----            
+1      normal  webm   [640x360]       33 MB           
+2      normal  mp4    [640x360]       24 MB           
+3      normal  flv    [320x240]       13 MB           
+4      normal  3gp    [320x240]       10 MB           
+5      normal  3gp    [176x144]        3 MB           
+6      audio   m4a    [48k]            2 MB           
+7      audio   m4a    [128k]           5 MB           
+8      audio   m4a    [256k]          10 MB     
 
  
 # Download mp4 640x360 (ie. stream number 2)
 
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 2
+    ytdl cyMHZVT91Dw -n2
 
 
-# Download flv at 320x240 
+# Download m4a audio stream at 256k bitrate:
 
-    ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -q 320x240 
+    ytdl cyMHZVT91Dw -n8
+
 
 ```
 
