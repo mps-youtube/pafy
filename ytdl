@@ -31,9 +31,11 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
     logging.basicConfig(level=logging.DEBUG)
 
 
-def download(video, stream=None):
-    if not stream:
+def download(video, audio=False, stream=None):
+    if not stream and not audio:
         stream = video.getbest(preftype="mp4")
+    if not stream and audio:
+        stream = video.getbestaudio()
     size = stream.get_filesize()
     print("-Downloading '{}' [{:,} Bytes]".format(stream.filename, size))
     print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
@@ -41,17 +43,18 @@ def download(video, stream=None):
     print("\nDone")
 
 
-def printstreams(vid):
-    fstring = "{:<7}{:<8}{:<7}{:<16}{:<10}       "
+def printstreams(streams):
+    fstring = "{:<7}{:<8}{:<7}{:<15}{:<10}       "
     out = []
-    l = len(vid.allstreams)
+    l = len(streams)
     text = " [Fetching stream info]      >"
-    for n, s in enumerate(vid.allstreams):
+    for n, s in enumerate(streams):
         sys.stdout.write(text + "-" * n + ">" + " " * (l - n - 1) + "<\r")
         sys.stdout.flush()
         megs = "%3.f" % (s.get_filesize() / 1024 ** 2) + " MB"
         q = "[%s]" % s.quality
         out.append(fstring.format(n + 1, s.mediatype, s.extension, q, megs))
+                                  #i, b, g))  # s.get("size", [0])[0]))
     sys.stdout.write("\r")
     print(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
     print(fstring.format("------", "----", "------", "-------", " ----"))
@@ -67,66 +70,61 @@ def main():
                         action="store_true")
     parser.add_argument('-s', help="Display available streams", action=
                         "store_true")
-    fq = parser.add_argument_group(
-        "format and quality", description="Specify the stream to download by"
-        " quality (ie. resolution or bitrate) and file format"
-    )
-    fq.add_argument(
-        '-f', type=str, help='format of the file to download',
-        required=False, choices='webm mp4 3gp flv m4v m4a ogg'.split()
-    )
-    fq.add_argument('-q', type=str, help='quality of the file to download',
-                    required=False, metavar='{NNN}x{NNN} | {NNN}k')
+    parser.add_argument('-t', help="Stream types to display", type=str,
+                        nargs="+", choices="audio video normal all".split())
     parser.add_argument(
         '-n', required=False, metavar="N", type=int, help="Specify stream to "
-        "download by stream number (use -s to list, ignores -f and -q)"
+        "download by stream number (use -s to list available streams)"
     )
     parser.add_argument(
         '-b', required=False, help='Download the best quality video (ignores '
-        '-n, -f and -q)', action="store_true"
+        '-n)', action="store_true"
+    )
+    parser.add_argument(
+        '-a', required=False, help='Download the best quality audio (ignores '
+        '-n)', action="store_true"
     )
 
     args = parser.parse_args()
     vid = Pafy(args.url)
-    # quality and format, if present, must both be present.
-    if args.f and not args.q or args.q and not args.f:
-        parser.print_help()
-        sys.exit("\n-f and -q cannot be used independently of each other!")
+    streams = []
+    if args.t:
+        if "video" in args.t:
+            streams += vid.videostreams
+        if "audio" in args.t:
+            streams += vid.audiostreams[::-1]
+        if "normal" in args.t:
+            streams += vid.streams
+        if "all" in args.t:
+            streams = vid.allstreams
+    else:
+        streams = vid.streams + vid.audiostreams[::-1]
     # if requested print vid info and list streams
     if args.i:
         print(vid)
     if args.s:
-        printstreams(vid)
-    if args.b:
-        if args.n:
-            print("-b and -n cannot be used together! Use one or the other.")
+        printstreams(streams)
+    if args.b or args.a:
+        if args.a and args.b:
+            print("-a and -b cannot be used together! Use only one.")
         else:
-            download(vid)
+            download(vid, audio=args.a)
             sys.exit()
     elif args.n:
         streamnumber = int(args.n) - 1
-        download(vid, vid.allstreams[streamnumber])
+        try:
+            download(vid, stream=streams[streamnumber])
+        except IndexError:
+            print("Sorry, %s is not a valid option, use 1-%s" % (
+                int(args.n), len(streams)))
 
-    elif args.f and args.q:
-        print((args.f, args.q))
-        print("Getting streams...")
-        matchres, matchformat = 0, 0
-        for n, stream in enumerate(vid.allstreams):
-            if args.f == stream.extension:
-                matchformat = 1
-                if str(args.q) in stream.quality:
-                    matchres = 1
-                    # matching video found, download it
-                    download(vid, stream)
-        if not matchres:
-            print("No stream found matching resolution " + str(args.q) +
-                  ". Try checking available resolutions using '-s'")
-        if not matchformat:
-            print("no stream found matching format %s" % str(args.f) +
-                  ". Try checking available formats using '-s'")
-    if not args.i and not args.s and not args.b and not args.n and not args.q:
-        print("Nothing to do!  Try -b to download highest quality or"
-              " -s to list available streams")
+    if not args.i and not args.s and not args.b and not args.n and not args.t\
+       and not args.a:
+        streams = vid.streams + vid.audiostreams[::-1]
+        printstreams(streams)
+
+    elif args.t and not args.a and not args.b and not args.s:
+        printstreams(streams)
 
 
 main()
