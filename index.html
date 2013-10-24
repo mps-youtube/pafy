@@ -28,13 +28,7 @@
 
     <div class="container">
       <section id="main_content">
-        <h1>
-<a name="pafy" class="anchor" href="#pafy"><span class="octicon octicon-link"></span></a>PAFY</h1>
-
-<p>Python API for YouTube
-by nagev</p>
-
-<h2>
+        <h2>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features:</h2>
 
 <ul>
@@ -53,180 +47,189 @@ by nagev</p>
 <a name="usage-examples" class="anchor" href="#usage-examples"><span class="octicon octicon-link"></span></a>Usage Examples:</h2>
 
 <p>Here is how to use the module in your own python code.  For command line tool
-(ytdl) instructions, see further below:</p>
+(ytdl) instructions, see further below::</p>
 
-<div class="highlight highlight-python"><pre>
-<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">pafy</span>
+<pre><code>&gt;&gt;&gt; import pafy
+</code></pre>
 
+<p>create a video instance from a YouTube url::</p>
 
-    <span class="c"># create a video instance from a YouTube video url</span>
+<pre><code>&gt;&gt;&gt; url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
+&gt;&gt;&gt; video = pafy.new(url)
+</code></pre>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">url</span> <span class="o">=</span> <span class="s">"http://www.youtube.com/watch?v=cyMHZVT91Dw"</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<p>get certain attributes::</p>
 
-
-    <span class="c"># get certain attributes</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span><span class="o">.</span><span class="n">title</span>
-<span class="s">u'Rick Astley Sings Live - Never Gonna Give You Up - This Morning'</span>
-
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span><span class="o">.</span><span class="n">rating</span>
-<span class="mf">4.93608852755</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">video</span><span class="o">.</span><span class="n">length</span>
-<span class="mi">355</span>
-
-    <span class="c"># display video metadata</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">video</span>
-<span class="n">Title</span><span class="p">:</span> <span class="n">Rick</span> <span class="n">Astley</span> <span class="n">Sings</span> <span class="n">Live</span> <span class="o">-</span> <span class="n">Never</span> <span class="n">Gonna</span> <span class="n">Give</span> <span class="n">You</span> <span class="n">Up</span> <span class="o">-</span> <span class="n">This</span> <span class="n">Morning</span>
-<span class="n">Author</span><span class="p">:</span> <span class="n">Ryan915</span>
-<span class="n">ID</span><span class="p">:</span> <span class="n">cyMHZVT91Dw</span>
-<span class="n">Duration</span><span class="p">:</span> <span class="mo">00</span><span class="p">:</span><span class="mo">05</span><span class="p">:</span><span class="mi">55</span>
-<span class="n">Rating</span><span class="p">:</span> <span class="mf">4.93608852755</span>
-<span class="n">Views</span><span class="p">:</span> <span class="mi">672583</span>
-<span class="n">Thumbnail</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">i1</span><span class="o">.</span><span class="n">ytimg</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">vi</span><span class="o">/</span><span class="n">cyMHZVT91Dw</span><span class="o">/</span><span class="n">default</span><span class="o">.</span><span class="n">jpg</span>
-<span class="n">Keywords</span><span class="p">:</span> <span class="n">Rick</span><span class="p">,</span> <span class="n">Astley</span><span class="p">,</span> <span class="n">Sings</span><span class="p">,</span> <span class="n">Live</span><span class="p">,</span> <span class="n">on</span><span class="p">,</span> <span class="n">This</span><span class="p">,</span> <span class="n">Morning</span><span class="p">,</span> <span class="n">Never</span><span class="p">,</span> <span class="n">Gonna</span><span class="p">,</span> <span class="n">Gunna</span><span class="p">,</span> <span class="n">Give</span><span class="p">,</span> <span class="n">You</span><span class="p">,</span><span class="o">...</span>
+<pre><code>&gt;&gt;&gt; video.title
+u'Rick Astley Sings Live - Never Gonna Give You Up - This Morning'
 
 
-    <span class="c"># show regular formats for a video (video files with audio):</span>
+&gt;&gt;&gt; video.rating
+4.93608852755
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">streams</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">streams</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
-<span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span>
+&gt;&gt;&gt; video.length
+355
+</code></pre>
 
-<span class="mi">480</span><span class="n">x854</span> <span class="n">webm</span>
-<span class="mi">480</span><span class="n">x854</span> <span class="n">flv</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">webm</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">flv</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">mp4</span>
-<span class="mi">240</span><span class="n">x400</span> <span class="n">flv</span>
-<span class="mi">320</span><span class="n">x240</span> <span class="mi">3</span><span class="n">gp</span>
-<span class="mi">144</span><span class="n">x176</span> <span class="mi">3</span><span class="n">gp</span>
+<p>display video metadata::</p>
 
+<pre><code>&gt;&gt;&gt; print video
 
-    <span class="c"># show all formats, file-sizes and their download url:</span>
+Title: Rick Astley Sings Live - Never Gonna Give You Up - This Morning
+Author: Ryan915
+ID: cyMHZVT91Dw
+Duration: 00:05:55
+Rating: 4.93608852755
+Views: 672583
+Thumbnail: https://i1.ytimg.com/vi/cyMHZVT91Dw/default.jpg
+Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, You...  
+</code></pre>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
-<span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">get_filesize</span><span class="p">(),</span> <span class="n">s</span><span class="o">.</span><span class="n">url</span>
+<p>show regular formats for a video (video files with audio)::</p>
 
-<span class="mi">480</span><span class="n">x854</span> <span class="n">webm</span> <span class="mi">56858674</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r12</span><span class="o">--</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">480</span><span class="n">x854</span> <span class="n">flv</span> <span class="mi">53066081</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">webm</span> <span class="mi">34775366</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">flv</span> <span class="mi">32737100</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">360</span><span class="n">x640</span> <span class="n">mp4</span> <span class="mi">25919932</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">240</span><span class="n">x400</span> <span class="n">flv</span> <span class="mi">14341366</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">320</span><span class="n">x240</span> <span class="mi">3</span><span class="n">gp</span> <span class="mi">11083585</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
-<span class="mi">144</span><span class="n">x176</span> <span class="mi">3</span><span class="n">gp</span> <span class="mi">3891135</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">r11</span><span class="o">---</span><span class="n">sn</span><span class="o">-</span><span class="n">aoh8kier</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">youtube</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">videoplayback</span><span class="err">?</span><span class="n">expire</span><span class="o">=</span><span class="mf">1369.</span><span class="o">..</span>
+<pre><code>&gt;&gt;&gt; streams = video.streams
+&gt;&gt;&gt; for s in streams:
+&gt;&gt;&gt;     print s.resolution, s.extension
 
+480x854 webm
+480x854 flv
+360x640 webm
+360x640 flv
+360x640 mp4
+240x400 flv
+320x240 3gp
+144x176 3gp
+</code></pre>
 
-    <span class="c"># get best resolution regardless of file format:</span>
+<p>show all formats, file-sizes and their download url::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbest</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
-<span class="p">(</span><span class="s">'480x854'</span><span class="p">,</span> <span class="s">'webm'</span><span class="p">)</span>
+<pre><code>&gt;&gt;&gt; for s in streams:
+&gt;&gt;&gt;     print s.resolution, s.extension, s.get_filesize(), s.url
 
+480x854 webm 56858674 http://r12--sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+480x854 flv 53066081 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+360x640 webm 34775366 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+360x640 flv 32737100 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+360x640 mp4 25919932 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+240x400 flv 14341366 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+320x240 3gp 11083585 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+144x176 3gp 3891135 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+</code></pre>
 
-    <span class="c"># get best resolution for a particular file format:</span>
-    <span class="c"># (mp4, webm, flv or 3gp)</span>
+<p>get best resolution regardless of file format::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbest</span><span class="p">(</span><span class="n">preftype</span><span class="o">=</span><span class="s">"mp4"</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
-<span class="p">(</span><span class="s">'360x640'</span><span class="p">,</span> <span class="s">'mp4'</span><span class="p">)</span>
+<pre><code>&gt;&gt;&gt; best = video.getbest()
+&gt;&gt;&gt; best.resolution, best.extension
 
+('480x854', 'webm')
+</code></pre>
 
-    <span class="c"># get best resolution for a particular file format, or return</span>
-    <span class="c"># a different format if it has the best resolution</span>
+<p>get best resolution for a particular file format:
+(mp4, webm, flv or 3gp)::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbest</span><span class="p">(</span><span class="n">preftype</span><span class="o">=</span><span class="s">"mp4"</span><span class="p">,</span> <span class="n">ftypestrict</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
-<span class="p">(</span><span class="s">'480x854'</span><span class="p">,</span> <span class="s">'webm'</span><span class="p">)</span>
+<pre><code>&gt;&gt;&gt; best = video.getbest(preftype="mp4")
+&gt;&gt;&gt; best.resolution, best.extension
 
+('360x640', 'mp4')
+</code></pre>
 
-    <span class="c"># get url, for download or streaming in mplayer / vlc etc</span>
+<p>get best resolution for a particular file format, or return
+different format if it has the best resolution::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">url</span>
-<span class="s">'http://r12---sn-aig7kner.c.youtube.com/videoplayback?expire=1369...</span>
+<pre><code>&gt;&gt;&gt; best = video.getbest(preftype="mp4", ftypestrict=False)
+&gt;&gt;&gt; best.resolution, best.extension
 
+('480x854', 'webm')
+</code></pre>
 
-    <span class="c"># Download video and show progress:</span>
+<p>get url, for download or streaming in mplayer / vlc etc::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">quiet</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="o">-</span><span class="n">Downloading</span> <span class="s">'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm'</span> <span class="p">[</span><span class="mi">56</span><span class="p">,</span><span class="mi">858</span><span class="p">,</span><span class="mi">674</span> <span class="n">Bytes</span><span class="p">]</span>
-  <span class="mi">56</span><span class="p">,</span><span class="mi">858</span><span class="p">,</span><span class="mi">674</span> <span class="n">Bytes</span> <span class="p">[</span><span class="mf">100.00</span><span class="o">%</span><span class="p">]</span> <span class="n">received</span><span class="o">.</span> <span class="n">Rate</span><span class="p">:</span> <span class="p">[</span> <span class="mi">720</span> <span class="n">kbps</span><span class="p">]</span><span class="o">.</span>  <span class="n">ETA</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span> <span class="n">secs</span><span class="p">]</span>    
-<span class="n">Done</span>
+<pre><code>&gt;&gt;&gt; best.url
 
+'http://r12---sn-aig7kner.c.youtube.com/videoplayback?expire=1369...
+</code></pre>
 
-    <span class="c"># Download video, use specific filepath:</span>
+<p>Download video and show progress::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">myfilename</span> <span class="o">=</span> <span class="s">"/tmp/"</span> <span class="o">+</span> <span class="n">best</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s">"."</span> <span class="o">+</span> <span class="n">best</span><span class="o">.</span><span class="n">extension</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">best</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">myfilename</span><span class="p">)</span>
-<span class="o">-</span><span class="n">Downloading</span> <span class="s">'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm'</span> <span class="p">[</span><span class="mi">56</span><span class="p">,</span><span class="mi">858</span><span class="p">,</span><span class="mi">674</span> <span class="n">Bytes</span><span class="p">]</span>
-<span class="n">Done</span>
+<pre><code>&gt;&gt;&gt; best.download(quiet=False)
+-Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
 
+  56,858,674 Bytes [100.00%] received. Rate: [ 720 kbps].  ETA: [0 secs]    
+Done
+</code></pre>
 
-    <span class="c"># Get audio-only streams (m4a and/or ogg vorbis)</span>
-    <span class="c"># (use video.videostreams to get video-only streams)</span>
+<p>Download video, use specific filepath::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">audiostreams</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">audiostreams</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">audiostreams</span><span class="p">:</span>
-<span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">quality</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">get_filesize</span><span class="p">())</span>
-<span class="p">(</span><span class="s">'48k'</span><span class="p">,</span> <span class="s">'m4a'</span><span class="p">,</span> <span class="mi">2109164</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'128k'</span><span class="p">,</span> <span class="s">'m4a'</span><span class="p">,</span> <span class="mi">5630839</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'256k'</span><span class="p">,</span> <span class="s">'m4a'</span><span class="p">,</span> <span class="mi">11302824</span><span class="p">)</span>
+<pre><code>&gt;&gt;&gt; myfilename = "/tmp/" + best.title + "." + best.extension
+&gt;&gt;&gt; best.download(filepath=myfilename)
+</code></pre>
 
+<p>Get audio-only streams (m4a and/or ogg vorbis)
+(use video.videostreams to get video-only streams)::</p>
 
-    <span class="c"># Download the 3rd audio stream from the above list</span>
+<pre><code>&gt;&gt;&gt; audiostreams = video.audiostreams
+&gt;&gt;&gt; for a in audiostreams:
+&gt;&gt;&gt;     print(a.quality, a.extension, a.get_filesize())
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">audiostreams</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">download</span><span class="p">()</span>
+('48k', 'm4a', 2109164)
+('128k', 'm4a', 5630839)
+('256k', 'm4a', 11302824)
+</code></pre>
 
+<p>Download the 3rd audio stream from the above list::</p>
 
-    <span class="c"># Get the best quality audio stream</span>
+<pre><code>&gt;&gt;&gt; audiostreams[2].download()
+</code></pre>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">bestaudio</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">getbestaudio</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">bestaudio</span><span class="o">.</span><span class="n">bitrate</span>
-<span class="s">'256k'</span>
+<p>Get the best quality audio stream::</p>
 
+<pre><code>&gt;&gt;&gt; bestaudio = video.getbestaudio()
+&gt;&gt;&gt; bestaudio.bitrate
 
-    <span class="c"># Download the best quality audio file</span>
+'256k'
+</code></pre>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">bestaudio</span><span class="o">.</span><span class="n">download</span><span class="p">()</span>
+<p>Download the best quality audio file::</p>
 
+<pre><code>&gt;&gt;&gt; bestaudio.download()
+</code></pre>
 
-    <span class="c"># show ALL formats for a video (video+audio, video-only and audio-only)</span>
+<p>show ALL formats for a video (video+audio, video-only and audio-only)::</p>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">allstreams</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">allstreams</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">allstreams</span><span class="p">:</span>
-<span class="o">&gt;&gt;&gt;</span>     <span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">quality</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">extension</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">mediatype</span><span class="p">)</span>
+<pre><code>&gt;&gt;&gt; allstreams = video.allstreams
+&gt;&gt;&gt; for s in allstreams:
+&gt;&gt;&gt;     print(s.quality, s.extension, s.mediatype)
 
-<span class="p">(</span><span class="s">'1280x720'</span><span class="p">,</span> <span class="s">'mp4'</span><span class="p">,</span> <span class="s">'a/v'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'640x360'</span><span class="p">,</span> <span class="s">'webm'</span><span class="p">,</span> <span class="s">'a/v'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'640x360'</span><span class="p">,</span> <span class="s">'mp4'</span><span class="p">,</span> <span class="s">'a/v'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'320x240'</span><span class="p">,</span> <span class="s">'flv'</span><span class="p">,</span> <span class="s">'a/v'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'320x240'</span><span class="p">,</span> <span class="s">'3gp'</span><span class="p">,</span> <span class="s">'a/v'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'176x144'</span><span class="p">,</span> <span class="s">'3gp'</span><span class="p">,</span> <span class="s">'a/v'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'1920x1080'</span><span class="p">,</span> <span class="s">'m4v'</span><span class="p">,</span> <span class="s">'video'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'1280x720'</span><span class="p">,</span> <span class="s">'m4v'</span><span class="p">,</span> <span class="s">'video'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'854x480'</span><span class="p">,</span> <span class="s">'m4v'</span><span class="p">,</span> <span class="s">'video'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'640x360'</span><span class="p">,</span> <span class="s">'m4v'</span><span class="p">,</span> <span class="s">'video'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'426x240'</span><span class="p">,</span> <span class="s">'m4v'</span><span class="p">,</span> <span class="s">'video'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'256x144'</span><span class="p">,</span> <span class="s">'m4v'</span><span class="p">,</span> <span class="s">'video'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'48k'</span><span class="p">,</span> <span class="s">'m4a'</span><span class="p">,</span> <span class="s">'audio'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'128k'</span><span class="p">,</span> <span class="s">'m4a'</span><span class="p">,</span> <span class="s">'audio'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'256k'</span><span class="p">,</span> <span class="s">'m4a'</span><span class="p">,</span> <span class="s">'audio'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'128k'</span><span class="p">,</span> <span class="s">'ogg'</span><span class="p">,</span> <span class="s">'audio'</span><span class="p">)</span>
-<span class="p">(</span><span class="s">'256k'</span><span class="p">,</span> <span class="s">'ogg'</span><span class="p">,</span> <span class="s">'audio'</span><span class="p">)</span>
+('1280x720', 'mp4', 'a/v')
+('640x360', 'webm', 'a/v')
+('640x360', 'mp4', 'a/v')
+('320x240', 'flv', 'a/v')
+('320x240', '3gp', 'a/v')
+('176x144', '3gp', 'a/v')
+('1920x1080', 'm4v', 'video')
+('1280x720', 'm4v', 'video')
+('854x480', 'm4v', 'video')
+('640x360', 'm4v', 'video')
+('426x240', 'm4v', 'video')
+('256x144', 'm4v', 'video')
+('48k', 'm4a', 'audio')
+('128k', 'm4a', 'audio')
+('256k', 'm4a', 'audio')
+('128k', 'ogg', 'audio')
+('256k', 'ogg', 'audio')
+</code></pre>
 
-</pre></div>
+<h2>
+<a name="command-line-tool-ytdl-usage" class="anchor" href="#command-line-tool-ytdl-usage"><span class="octicon octicon-link"></span></a>Command Line Tool (ytdl) Usage:</h2>
 
-<h1>
-<a name="command-line-tool-ytdl-usage" class="anchor" href="#command-line-tool-ytdl-usage"><span class="octicon octicon-link"></span></a>Command Line Tool (ytdl) Usage:</h1>
+<p>::</p>
 
-<pre><code>
-usage: ytdl [-h] [-i] [-s] [-f {webm,mp4,3gp,flv,m4v,m4a,ogg}]
-            [-q {NNN}x{NNN} | {NNN}k] [-n N] [-b]
+<pre><code>usage: ytdl [-h] [-i] [-s]
+            [-t {audio,video,normal,all} [{audio,video,normal,all} ...]]
+            [-n N] [-b] [-a]
             url
+
+YouTube Download Tool
 
 positional arguments:
   url                   YouTube video URL to download
@@ -235,61 +238,57 @@ optional arguments:
   -h, --help            show this help message and exit
   -i                    Display vid info
   -s                    Display available streams
+  -t {audio,video,normal,all} [{audio,video,normal,all} ...]
+                        Stream types to display
   -n N                  Specify stream to download by stream number (use -s to
-                        list, ignores -f and -q)
-  -b                    Download the best quality video (ignores -n, -f and -q)
+                        list available streams)
+  -b                    Download the best quality video (ignores -n)
+  -a                    Download the best quality audio (ignores -n)
+</code></pre>
 
-format and quality:
-  Specify the stream to download by quality (ie. resolution or bitrate) and
-  file format
+<h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples:</h2>
 
-  -f {webm,mp4,3gp,flv,m4v,m4a,ogg}
-                        format of the file to download
-  -q {NNN}x{NNN} | {NNN}k
-                        quality of the file to download
+<p>Download best available resolution (-b)::</p>
 
+<pre><code>ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
+</code></pre>
 
+<p>Download best available audio stream (-a):
+(note; the full url is not required, just the video id will suffice)::</p>
 
-Examples:
+<pre><code>ytdl cyMHZVT91Dw -a
+</code></pre>
 
-# Download best available resolution (-b):
+<p>get video info (-i)::</p>
 
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
+<pre><code>ytdl cyMHZVT91Dw -i
+</code></pre>
 
-# get video info (-i):
+<p>list available dowload streams::</p>
 
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -i
+<pre><code>ytdl cyMHZVT91Dw
 
-# list available download formats (-s):
+Stream Type    Format Quality         Size            
+------ ----    ------ -------         ----            
+1      normal  webm   [640x360]       33 MB           
+2      normal  mp4    [640x360]       24 MB           
+3      normal  flv    [320x240]       13 MB           
+4      normal  3gp    [320x240]       10 MB           
+5      normal  3gp    [176x144]        3 MB           
+6      audio   m4a    [48k]            2 MB           
+7      audio   m4a    [128k]           5 MB           
+8      audio   m4a    [256k]          10 MB     
+</code></pre>
 
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -s
+<p>Download mp4 640x360 (ie. stream number 2)::</p>
 
+<pre><code>ytdl cyMHZVT91Dw -n2
+</code></pre>
 
-    Stream Type    Format Quality          Size     
-    ------ ----    ------ -------          ----     
-    1      a/v     webm   [640x360]        33 MB    
-    2      a/v     mp4    [640x360]        24 MB    
-    3      a/v     flv    [320x240]        13 MB    
-    4      a/v     3gp    [320x240]        10 MB    
-    5      a/v     3gp    [176x144]         3 MB    
-    6      video   m4v    [854x480]        39 MB    
-    7      video   m4v    [640x360]        17 MB    
-    8      video   m4v    [426x240]        11 MB    
-    9      video   m4v    [256x144]         4 MB    
-    10     audio   m4a    [48k]             2 MB    
-    11     audio   m4a    [128k]            5 MB    
-    12     audio   m4a    [256k]           10 MB 
+<p>Download m4a audio stream at 256k bitrate::</p>
 
-
-# Download mp4 640x360 (ie. stream number 2)
-
-    ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -n 2
-
-
-# Download flv at 320x240 
-
-    ytdl "youtube.com/watch?v=cyMHZVT91Dw" -f flv -q 320x240 
-
+<pre><code>ytdl cyMHZVT91Dw -n8
 </code></pre>
       </section>
     </div>
