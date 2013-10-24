@@ -20,22 +20,16 @@ Usage Examples:
 ---------------
 
 Here is how to use the module in your own python code.  For command line tool
-(ytdl) instructions, see further below:
-
-::
+(ytdl) instructions, see further below::
 
     >>> import pafy
 
-create a video instance from a YouTube url:
-
-::
+create a video instance from a YouTube url::
 
     >>> url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
     >>> video = pafy.new(url)
 
-get certain attributes
-
-::
+get certain attributes::
     
     >>> video.title
     u'Rick Astley Sings Live - Never Gonna Give You Up - This Morning'
@@ -47,9 +41,7 @@ get certain attributes
     >>> video.length
     355
 
-display video metadata
-    
-::
+display video metadata::
 
     >>> print video
 
@@ -62,9 +54,7 @@ display video metadata
     Thumbnail: https://i1.ytimg.com/vi/cyMHZVT91Dw/default.jpg
     Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, You...  
 
-show regular formats for a video (video files with audio):
-    
-::
+show regular formats for a video (video files with audio)::
 
     >>> streams = video.streams
     >>> for s in streams:
@@ -80,9 +70,7 @@ show regular formats for a video (video files with audio):
     144x176 3gp
 
 
-show all formats, file-sizes and their download url:
-
-::
+show all formats, file-sizes and their download url::
 
     >>> for s in streams:
     >>>     print s.resolution, s.extension, s.get_filesize(), s.url
@@ -97,9 +85,7 @@ show all formats, file-sizes and their download url:
     144x176 3gp 3891135 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
 
 
-get best resolution regardless of file format:
-    
-::
+get best resolution regardless of file format::
 
     >>> best = video.getbest()
     >>> best.resolution, best.extension
@@ -108,9 +94,7 @@ get best resolution regardless of file format:
 
 
 get best resolution for a particular file format:
-(mp4, webm, flv or 3gp)
-    
-::
+(mp4, webm, flv or 3gp)::
 
     >>> best = video.getbest(preftype="mp4")
     >>> best.resolution, best.extension
@@ -119,9 +103,7 @@ get best resolution for a particular file format:
 
 
 get best resolution for a particular file format, or return
-different format if it has the best resolution
-    
-::
+different format if it has the best resolution::
 
     >>> best = video.getbest(preftype="mp4", ftypestrict=False)
     >>> best.resolution, best.extension
@@ -129,18 +111,14 @@ different format if it has the best resolution
     ('480x854', 'webm')
 
 
-get url, for download or streaming in mplayer / vlc etc
-
-::
+get url, for download or streaming in mplayer / vlc etc::
     
     >>> best.url
 
     'http://r12---sn-aig7kner.c.youtube.com/videoplayback?expire=1369...
 
 
-Download video and show progress:
-    
-::
+Download video and show progress::
 
     >>> best.download(quiet=False)
     -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
@@ -149,18 +127,14 @@ Download video and show progress:
     Done
 
 
-Download video, use specific filepath:
-    
-::
+Download video, use specific filepath::
 
     >>> myfilename = "/tmp/" + best.title + "." + best.extension
     >>> best.download(filepath=myfilename)
 
 
 Get audio-only streams (m4a and/or ogg vorbis)
-(use video.videostreams to get video-only streams)
-
-::
+(use video.videostreams to get video-only streams)::
 
     >>> audiostreams = video.audiostreams
     >>> for a in audiostreams:
@@ -171,15 +145,11 @@ Get audio-only streams (m4a and/or ogg vorbis)
     ('256k', 'm4a', 11302824)
 
 
-Download the 3rd audio stream from the above list
-
-::
+Download the 3rd audio stream from the above list::
 
     >>> audiostreams[2].download()
 
-Get the best quality audio stream
-
-::
+Get the best quality audio stream::
 
     >>> bestaudio = video.getbestaudio()
     >>> bestaudio.bitrate
@@ -187,15 +157,11 @@ Get the best quality audio stream
     '256k'
 
 
-Download the best quality audio file
-
-::
+Download the best quality audio file::
 
     >>> bestaudio.download()
 
-show ALL formats for a video (video+audio, video-only and audio-only)
-
-::
+show ALL formats for a video (video+audio, video-only and audio-only)::
 
     >>> allstreams = video.allstreams
     >>> for s in allstreams:
@@ -222,7 +188,7 @@ show ALL formats for a video (video+audio, video-only and audio-only)
 
 
 Command Line Tool (ytdl) Usage:
-===============================
+-------------------------------
 
 
 ::
@@ -250,31 +216,24 @@ Command Line Tool (ytdl) Usage:
 
 
 Examples:
+---------
 
-Download best available resolution (-b):
-
-::
+Download best available resolution (-b)::
 
     ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
 
 
 Download best available audio stream (-a):
-(note; the full url is not required, just the video id will suffice)
-
-::
+(note; the full url is not required, just the video id will suffice)::
 
     ytdl cyMHZVT91Dw -a
 
 
-get video info (-i):
-
-::
+get video info (-i)::
 
     ytdl cyMHZVT91Dw -i
 
-list available download streams:
-
-::
+list available dowload streams::
 
     ytdl cyMHZVT91Dw
  
@@ -290,15 +249,11 @@ list available download streams:
     8      audio   m4a    [256k]          10 MB     
 
  
-Download mp4 640x360 (ie. stream number 2)
-
-::
+Download mp4 640x360 (ie. stream number 2)::
 
     ytdl cyMHZVT91Dw -n2
 
-Download m4a audio stream at 256k bitrate:
-
-::
+Download m4a audio stream at 256k bitrate::
 
     ytdl cyMHZVT91Dw -n8
 
