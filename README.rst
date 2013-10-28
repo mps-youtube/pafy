@@ -19,7 +19,7 @@ Features
 Documentation
 -------------
 
-Full documentation is hosted at `pythonhosted.org
+Full documentation is available at `pythonhosted.org
 <http://pythonhosted.org/Pafy/code.html>`_
 
 Usage Examples
