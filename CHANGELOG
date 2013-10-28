@@ -1,3 +1,18 @@
+27 October 2013
+Version 0.3.22
+Authors: nagev
+
+[Feature] Added Pafy.oggstreams and Pafy.m4astreams codec specific stream lists
+[Feature] Added Pafy.dimensions attribute to return resolution as a 2-tuple
+[Feature] Added Pafy.rawbitrate attribute for more precise bitrates of audio streams
+[Feature] Added Pafy.threed attribute to reflect whether a stream is 3D 
+[Feature] Added Stream.__repr__() to output more meaningful info when printing Stream objects
+[Bugfix] Fix for getbest() and getbestaudio() returning wrong filetype in some cases
+[Bugfix] Fixed some incorrect reporting of resolutions
+[Docs] Using reStructured text instead of GitHub markdown for README
+[Docs] Added full documentation at http://pythonhosted.org/Pafy/
+
+
 19 October 2013
 Version 0.3.20
 Authors: nagev
