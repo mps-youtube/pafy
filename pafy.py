@@ -129,24 +129,26 @@ def _decodesig(sig, js):
 
 
 def new(url):
+    ''' Creates a new pafy instance given a url or video id '''
     return Pafy(url)
 
 
 class Stream():
+
     itags = {
         '5': ('320x240', 'flv', "normal"),
         '17': ('176x144', '3gp', "normal"),
         '18': ('640x360', 'mp4', "normal"),
         '22': ('1280x720', 'mp4', "normal"),
-        '34': ('360x640', 'flv', "normal"),
+        '34': ('640x360', 'flv', "normal"),
         '35': ('854x480', 'flv', "normal"),
         '36': ('320x240', '3gp', "normal"),
         '37': ('1920x1080', 'mp4', "normal"),
         '38': ('4096x3072', 'superHD', "normal"),
         '43': ('640x360', 'webm', "normal"),
         '44': ('854x480', 'webm', "normal"),
-        '45': ('720x1280', 'webm', "normal"),
-        '46': ('1080x1920', 'webm', "normal"),
+        '45': ('1280x720', 'webm', "normal"),
+        '46': ('1920x1080', 'webm', "normal"),
         '82': ('640x360-3D', 'mp4', "normal"),
         '84': ('1280x720-3D', 'mp4', "normal"),
         '100': ('640x360-3D', 'webm', "normal"),
@@ -163,38 +165,48 @@ class Stream():
         '160': ('256x144', 'm4v', 'video'),
         '171': ('128k', 'ogg', 'audio'),
         '172': ('192k', 'ogg', 'audio'),
+        '247': ('unknown', 'unknown', 'unknown'),
         '248': ('unknown', 'unknown', 'unknown')
     }
 
-    def __init__(self, streammap, opener, title="ytvid", js=None):
+    def __init__(self, sm, opener, title="ytvid", js=None):
 
-        self.url = streammap['url'][0]
-        if streammap.get("s"):
-            streammap['sig'] = [_decodesig(streammap['s'][0], js)]
-            logging.debug("Calculated decrypted sig: %s" % streammap['sig'][0])
+        self.url = sm['url'][0]
+        if sm.get("s"):
+            sm['sig'] = [_decodesig(sm['s'][0], js)]
+            logging.debug("Calculated decrypted sig: %s" % sm['sig'][0])
         if not "signature=" in self.url:
-            self.url += '&signature=' + streammap['sig'][0]
+            self.url += '&signature=' + sm['sig'][0]
         if not "ratebypass=" in self.url:
             self.url = self.url + "&ratebypass=yes"
-        self.itag = streammap['itag'][0]
+        self.itag = sm['itag'][0]
         logging.debug("itag %s" % self.itag)
-        logging.debug("stream map: %s" % streammap)
-        self.vidformat = streammap['type'][0].split(';')[0]
+        logging.debug("stream map: %s" % sm)
+        self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = self.itags[self.itag][0]
+        self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
+        self.vidformat = sm['type'][0].split(';')[0]
         self.quality = self.resolution
         self.extension = self.itags[self.itag][1]
         self.title = title
         self.filename = self.title + "." + self.extension
         self.fsize = None
         self._opener = opener
-        self.bitrate = None
+        self.bitrate = self.rawbitrate = None
         self.mediatype = self.itags[self.itag][2]
         if self.mediatype == "audio":
             self.bitrate = self.resolution
+            self.rawbitrate = int(sm["bitrate"][0])
+            self.dimensions = (0, 0)
             self.resolution = "0x0"
             self.quality = self.bitrate
 
+    def __repr__(self):
+        out = "%s:%s@%s" % (self.mediatype, self.extension, self.quality)
+        return(out)
+
     def get_filesize(self):
+        ''' Returns filesize of the stream in bytes '''
         if not self.fsize:
             try:
                 opener = self._opener
@@ -205,6 +217,7 @@ class Stream():
         return self.fsize
 
     def download(self, filepath="", quiet=False, callback=None):
+        ''' Downloads the stream.  Use quiet=True to supress output '''
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         response = self._opener.open(self.url)
@@ -265,6 +278,7 @@ class Pafy():
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
         self.formats = f('fmt_list').split(",")
         self.formats = [x.split("/") for x in self.formats]
+        self.keywords = self.bigthumb = self.bigthumbhd = None
         if 'keywords' in allinfo:
             self.keywords = f('keywords').split(',')
         if allinfo.get('iurlsd'):
@@ -331,9 +345,13 @@ class Pafy():
                                smap_adpt]
             self.audiostreams = [x for x in self.streams_ad if x.bitrate]
             self.videostreams = [x for x in self.streams_ad if not x.bitrate]
+            m4astreams = [x for x in self.audiostreams if x.extension == "m4a"]
+            oggstreams = [x for x in self.audiostreams if x.extension == "ogg"]
+            self.m4astreams, self.oggstreams = m4astreams, oggstreams
         self.allstreams = self.streams + self.videostreams + self.audiostreams
 
     def getbest(self, preftype="any", ftypestrict=True):
+        ''' Returns the best resolution available '''
         # set ftypestrict to False to use a non preferred format if that
         # has a higher resolution
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
@@ -344,14 +362,22 @@ class Pafy():
                 return (key3d, keyftype, keyres)
             else:
                 return (key3d, keyres, keyftype)
-        return max(self.streams, key=_sortkey)
+        r = max(self.streams, key=_sortkey)
+        if ftypestrict and preftype != "any" and r.extension != preftype:
+            return None
+        else:
+            return r
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
         def _sortkey(x, keybitrate=0, keyftype=0):
-            keybitrate = int(x.bitrate.split("k")[0])
+            keybitrate = int(x.rawbitrate)
             keyftype = preftype == x.extension
             if ftypestrict:
                 return(keyftype, keybitrate)
             else:
                 return(keybitrate, keyftype)
-        return max(self.audiostreams, key=_sortkey)
+        r = max(self.audiostreams, key=_sortkey)
+        if ftypestrict and preftype != "any" and r.extension != preftype:
+            return None
+        else:
+            return r
