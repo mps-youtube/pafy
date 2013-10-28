@@ -1,7 +1,7 @@
 
 
-Features:
----------
+Features
+--------
 
 - Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords
 - Download video or audio at requested resolution / bitrate / format / filesize
@@ -16,8 +16,14 @@ Features:
 - No dependencies
 
 
-Usage Examples:
----------------
+Documentation
+-------------
+
+Full documentation is hosted at `pythonhosted.org
+<http://pythonhosted.org/Pafy/code.html>`_
+
+Usage Examples
+--------------
 
 Here is how to use the module in your own python code.  For command line tool
 (ytdl) instructions, see further below::
@@ -187,8 +193,8 @@ show ALL formats for a video (video+audio, video-only and audio-only)::
 
 
 
-Command Line Tool (ytdl) Usage:
--------------------------------
+Command Line Tool (ytdl) Usage
+------------------------------
 
 
 ::
@@ -215,8 +221,8 @@ Command Line Tool (ytdl) Usage:
       -a                    Download the best quality audio (ignores -n)
 
 
-Examples:
----------
+YTDL Examples
+-------------
 
 Download best available resolution (-b)::
 
