@@ -1,3 +1,5 @@
+.sphinx
+.test
 *.pyc
 .pypi
 __pycache__
