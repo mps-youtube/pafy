@@ -18,7 +18,7 @@ Documentation
 -------------
 
 Full documentation is available at `pythonhosted.org
-<http://pythonhosted.org/Pafy/code.html/>`_
+<http://pythonhosted.org/Pafy/code.html>`_
 
 Usage Examples
 --------------
