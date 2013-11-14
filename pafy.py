@@ -253,6 +253,7 @@ class Pafy():
     def __repr__(self):
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
+        self.keywords = self.keywords or ""
         keywords = ", ".join(self.keywords)
         length = time.strftime('%H:%M:%S', time.gmtime(self.length))
         info = dict(Title=self.title,
