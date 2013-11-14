@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 ''' Python API for YouTube
     Copyright (C)  2013 nagev
 
