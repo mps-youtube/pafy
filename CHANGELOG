@@ -1,3 +1,13 @@
+14 November 2013
+Version 0.3.23
+Authors: davidfischer-ch, nagev
+
+[Bugfix] Fixed issue when no keywords specified for YouTube video
+[Bugfix] added UTF8 encoding declaration
+[Bugfix] Update shebang to /usr/bin/env python instead of /usr/bin/python
+[Docs] Added README to PyPI
+
+
 27 October 2013
 Version 0.3.22
 Authors: nagev
