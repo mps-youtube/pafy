@@ -245,6 +245,7 @@ class Stream():
                 sys.stdout.flush()
             if callback:
                 callback(total, *progress_stats)
+        return filetosave
 
 
 class Pafy():
