@@ -226,7 +226,6 @@ class Stream():
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
         filetosave = filepath or self.filename
-        filetosave = filetosave.replace("/", "-")
         outfh = open(filetosave, 'wb')
         while True:
             chunk = response.read(chunksize)
@@ -272,7 +271,7 @@ class Pafy():
     def _setmetadata(self, allinfo):
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         self.js = None
-        self.title = f('title')
+        self.title = f('title').replace("/", "-")
         self.author = f('author')
         self.videoid = f('video_id')
         self.rating = float(f('avg_rating'))
