@@ -302,6 +302,8 @@ class Pafy():
                 raise RuntimeError('Problem handling this video')
             args = myjson['args']
             html5player = myjson['assets']['js']
+            if html5player.startswith("//"):
+                html5player = "https:" + html5player
             logging.debug("opening js url")
             js = opener.open(html5player).read().decode("UTF-8")
             self.js, self.args = js, args
