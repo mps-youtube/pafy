@@ -1,3 +1,9 @@
+.. image:: http://badge.fury.io/py/Pafy.png
+    :target: https://pypi.python.org/pypi/Pafy
+.. image:: https://pypip.in/d/Pafy/badge.png
+    :target: https://pypi.python.org/pypi/Pafy
+
+
 Features
 --------
 
