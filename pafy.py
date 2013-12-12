@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
 
-__version__ = "0.3.23"
+__version__ = "0.3.24"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -26,6 +26,7 @@ import sys
 import time
 import json
 import logging
+from xml.etree import ElementTree as etree
 
 
 def decode_if_py3(data):
@@ -270,6 +271,7 @@ class Pafy():
 
     def _setmetadata(self, allinfo):
         f = lambda x: allinfo.get(x, ["unknown"])[0]
+        self.gdata = None
         self.js = None
         self.title = f('title').replace("/", "-")
         self.author = f('author')
@@ -281,6 +283,7 @@ class Pafy():
         self.duration = time.strftime('%H:%M:%S', time.gmtime(self.length))
         self.formats = f('fmt_list').split(",")
         self.formats = [x.split("/") for x in self.formats]
+        self._description = None
         self.keywords = self.bigthumb = self.bigthumbhd = None
         if 'keywords' in allinfo:
             self.keywords = f('keywords').split(',')
@@ -320,6 +323,23 @@ class Pafy():
             smap = [parse_qs(sm) for sm in streamMap]
         return(smap, js)
 
+    def get_video_gdata(self):
+        if not self.gdata:
+            url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
+            url = url % self.videoid
+            self.gdata = self._opener.open(url).read()
+        return self.gdata
+
+    @property
+    def description(self):
+        if not self._description:
+            t0 = "{http://search.yahoo.com/mrss/}"
+            gdata = self.get_video_gdata()
+            tree = etree.fromstring(gdata)
+            d = (tree.findall("%s%s/%s%s" % (t0, "group", t0, "description")))
+            self._description = d[0].text
+        return self._description
+
     def __init__(self, video_url):
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
         m = re.search(r'\bv=([a-zA-Z0-9-_]{11})', video_url)
@@ -340,6 +360,7 @@ class Pafy():
             reason = allinfo['reason'][0] or "Bad video argument"
             raise RuntimeError("Youtube says: %s" % reason)
         self._setmetadata(allinfo)
+        self._opener = opener
         smap, js = self.getstreammap(
             allinfo, 'url_encoded_fmt_stream_map', opener)
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
