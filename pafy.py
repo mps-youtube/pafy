@@ -1,20 +1,26 @@
 # -*- coding: utf-8 -*-
 
-''' Python API for YouTube
-    Copyright (C)  2013 nagev
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+"""
+Python API for YouTube.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+Copyright (C)  2013 nagev
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.  '''
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
 
 __version__ = "0.3.24"
 __author__ = "nagev"
@@ -29,15 +35,19 @@ import logging
 from xml.etree import ElementTree as etree
 
 
-def decode_if_py3(data):
-    return data.decode("UTF-8")
+#def decode_if_py3(data):
+    #return data.decode("UTF-8")
+decode_if_py3 = lambda x: x.decode("utf8")
 
 if sys.version_info[:2] >= (3, 0):
+    # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
+    from urllib.error import HTTPError, URLError
     from urllib.parse import parse_qs, unquote_plus
+
 else:
     decode_if_py3 = lambda x: x
-    from urllib2 import build_opener
+    from urllib2 import build_opener, HTTPError, URLError
     from urllib import unquote_plus
     from urlparse import parse_qs
 
@@ -46,97 +56,146 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
 
 
 def _extract_function_from_js(name, js):
-    # Find a function called `name` and extract components
+
+    " Find a function definition called `name` and extract components "
+
     m = re.search(r'function %s\(((?:\w+,?)+)\)\{([^}]+)\}' % name, js)
     logging.debug(m.group(0))
     return {'name': name, 'parameters': m.group(1).split(","),
             'body': m.group(2)}
 
 
-def _getval(val, argsdict):  # resolves variable values. preserves int literals
+def _getval(val, argsdict):
+
+    """ resolves variable values, preserves int literals """
+
     m = re.match(r'(\d+)', val)
+
     if m:
-        return(int(m.group(1)))
+        return int(m.group(1))
+
     elif val in argsdict:
         return argsdict[val]
+
     else:
         raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
 
 
 def _get_func_from_call(caller_function, name, arguments, js):
+
+    """
+    Searches js string for function call to `name`
+    Returns dict representation of the funtion
+    Places argument values specified in `arguments` list parameter into
+    the returned function representations `args` dict
+    """
+
     newfunction = _extract_function_from_js(name, js)
     newfunction['args'] = {}
+
     for n, arg in enumerate(arguments):
         value = _getval(arg, caller_function['args'])
         param = newfunction['parameters'][n]
         newfunction['args'][param] = value
+
     return newfunction
 
 
 def _solve(f, js):
-    # solve basic javascript function
+
+    ''' solve basic javascript function '''
+
+    # pylint: disable=R0914
+
+    patterns = {
+        'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)',
+        'func_call': r'(\w+)=(\w+)\(((?:\w+,?)+)\)',
+        'x1': r'var\s(\w+)=(\w+)\[(\w+)\]',
+        'x2': r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]',
+        'x3': r'(\w+)\[(\w+)\]=(\w+)',
+        'return': r'return (\w+)(\.join\(""\))?',
+        'reverse': r'(\w+)=(\w+)\.reverse\(\)',
+        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)'
+    }
+
     parts = f['body'].split(";")
+
     for part in parts:
-        logging.debug("Working on part: %s" % part)
-        # split or join, do nothing
-        m = re.match(r'(\w+)=(\w+)\.(?:split|join)\(""\)', part)
-        if m and m.group(1) == m.group(2):
-            continue
-        m = re.match(r'(\w+)=(\w+)\(((?:\w+,?)+)\)', part)
-        if m:  # a function call
-            lhs, funcname, args = m.group(*range(1, 4))
+        logging.debug("Working on part: " + part)
+
+        name = ""
+
+        for n, p in patterns.items():
+            m, name = re.match(p, part), n
+            if m:
+                break
+
+        if name == "split_or_join":
+            pass
+
+        elif name == "func_call":
+            lhs, funcname, args = m.group(1, 2, 3)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js)
             f['args'][lhs] = _solve(newfunc, js)  # recursive call
-            continue
-        m = re.match(r'var\s(\w+)=(\w+)\[(\w+)\]', part)
-        if m:  # new var is an index of another var; eg: var a = b[c]
-            b, c = [_getval(x, f['args']) for x in m.group(*range(2, 4))]
+
+        # new var is an index of another var; eg: var a = b[c]
+        elif name == "x1":
+            b, c = [_getval(x, f['args']) for x in m.group(2, 3)]
             f['args'][m.group(1)] = b[c]
-            continue
-        m = re.match(r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]', part)
-        if m:  # a[b]=c[d%e.length]
+
+        # a[b]=c[d%e.length]
+        elif name == "x2":
             vals = m.group(*range(1, 6))
             a, b, c, d, e = [_getval(x, f['args']) for x in vals]
             f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:]
-            continue
-        m = re.match(r'(\w+)\[(\w+)\]=(\w+)', part)
-        if m:  # a[b]=c
-            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1, 4))]
+
+        # a[b]=c
+        elif name == "x3":
+            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
             f['args'][m.group(1)] = a[:b] + c + a[b + 1:]  # a[b] = c
-            continue
-        m = re.match(r'return (\w+)(\.join\(""\))?', part)
-        if m:  # return
+
+        elif name == "return":
             return f['args'][m.group(1)]
-        m = re.match(r'(\w+)=(\w+)\.reverse\(\)', part)
-        if m:  # reverse
+
+        elif name == "reverse":
             f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
-            continue
-        m = re.match(r'(\w+)=(\w+)\.slice\((\w+)\)', part)
-        if m:  # slice a=b.slice(c)
-            a, b, c = [_getval(x, f['args']) for x in m.group(*range(1, 4))]
+
+        elif name == "slice":
+            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
             f['args'][m.group(1)] = b[c:]
-            continue
-        raise RuntimeError("no match for %s" % part)
+
+        else:
+            raise RuntimeError("no match for %s" % part)
+
+    raise RuntimeError("Processed js funtion parts without finding return")
 
 
 def _decodesig(sig, js):
-    # get main function name from a function call
+
+    " get main function name from a function call "
+
     m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
     function = _extract_function_from_js(funcname, js)
+
     if not len(function['parameters']) == 1:
         raise RuntimeError("Main sig js function has more than one arg: %s" %
+
                            function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
     return _solve(function, js)
 
 
 def new(url):
+
     ''' Creates a new pafy instance given a url or video id '''
+
     return Pafy(url)
 
 
-class Stream():
+class Stream(object):
+
+    " YouTube video stream "
 
     itags = {
         '5': ('320x240', 'flv', "normal"),
@@ -175,16 +234,20 @@ class Stream():
     def __init__(self, sm, opener, title="ytvid", js=None):
 
         self.url = sm['url'][0]
+
         if sm.get("s"):
             sm['sig'] = [_decodesig(sm['s'][0], js)]
-            logging.debug("Calculated decrypted sig: %s" % sm['sig'][0])
+            logging.debug("Calculated decrypted sig: " + sm['sig'][0])
+
         if not "signature=" in self.url:
             self.url += '&signature=' + sm['sig'][0]
+
         if not "ratebypass=" in self.url:
             self.url = self.url + "&ratebypass=yes"
+
         self.itag = sm['itag'][0]
-        logging.debug("itag %s" % self.itag)
-        logging.debug("stream map: %s" % sm)
+        logging.debug("itag " + self.itag)
+        logging.debug("stream map: " + str(sm))
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = self.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
@@ -197,6 +260,7 @@ class Stream():
         self._opener = opener
         self.bitrate = self.rawbitrate = None
         self.mediatype = self.itags[self.itag][2]
+
         if self.mediatype == "audio":
             self.bitrate = self.resolution
             self.rawbitrate = int(sm["bitrate"][0])
@@ -206,21 +270,30 @@ class Stream():
 
     def __repr__(self):
         out = "%s:%s@%s" % (self.mediatype, self.extension, self.quality)
-        return(out)
+        return out
 
     def get_filesize(self):
+
         ''' Returns filesize of the stream in bytes '''
+
         if not self.fsize:
+
             try:
                 opener = self._opener
                 cl = "content-length"
                 self.fsize = int(opener.open(self.url).headers[cl])
-            except:
+
+            except (HTTPError, URLError):
                 self.fsize = 0
+
         return self.fsize
 
+    # pylint: disable=R0914
+    # Too many local variables - who cares?
     def download(self, filepath="", quiet=False, callback=None):
+
         ''' Downloads the stream.  Use quiet=True to supress output '''
+
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
         response = self._opener.open(self.url)
@@ -228,6 +301,7 @@ class Stream():
         chunksize, bytesdone, t0 = 16384, 0, time.time()
         filetosave = filepath or self.filename
         outfh = open(filetosave, 'wb')
+
         while True:
             chunk = response.read(chunksize)
             outfh.write(chunk)
@@ -236,29 +310,40 @@ class Stream():
             rate = (bytesdone / 1024) / elapsed
             eta = (total - bytesdone) / (rate * 1024)
             progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
+
             if not chunk:
                 outfh.close()
                 break
+
             if not quiet:
                 status = status_string.format(*progress_stats)
                 sys.stdout.write("\r" + status + ' ' * 4 + "\r")
                 sys.stdout.flush()
+
             if callback:
                 callback(total, *progress_stats)
+
         return filetosave
 
 
-class Pafy():
+class Pafy(object):
 
+    ''' Class to represent a YouTube video '''
+
+    # This is probably not the recommended way to use len()
+    # R0924: implemented __len__ but not __getitem__
+    # pylint: disable=R0924
     def __len__(self):
         return self.length
 
     def __repr__(self):
+
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
         self.keywords = self.keywords or ""
         keywords = ", ".join(self.keywords)
         length = time.strftime('%H:%M:%S', time.gmtime(self.length))
+
         info = dict(Title=self.title,
                     Author=self.author,
                     Views=self.viewcount,
@@ -267,11 +352,107 @@ class Pafy():
                     ID=self.videoid,
                     Thumbnail=self.thumb,
                     Keywords=keywords)
+
         return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
-    def _setmetadata(self, allinfo):
+    def get_js(self, opener):
+
+        """ Get location of html5player javascript file and fetch """
+
+        logging.debug("call to get js")
+
+        if not self.js or not self.xargs:
+            watchurl = "https://www.youtube.com/watch?v=" + self.videoid
+            watchinfo = opener.open(watchurl).read().decode("UTF-8")
+            m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
+
+            try:
+                myjson = json.loads(m.group(1))
+
+            except:
+                raise RuntimeError('Problem handling this video')
+
+            args = myjson['args']
+            html5player = myjson['assets']['js']
+
+            if html5player.startswith("//"):
+                html5player = "https:" + html5player
+
+            logging.debug("opening js url")
+            js = opener.open(html5player).read().decode("UTF-8")
+            self.js, self.xargs = js, args
+
+        return(self.js, self.xargs)
+
+    def getstreammap(self, allinfo, key, opener):
+
+        """ get stream map! """
+
+        js = self.js
+        streamMap = allinfo[key][0].split(',')
+        smap = [parse_qs(sm) for sm in streamMap]
+        if smap[0].get("s"):
+            logging.debug("encrypted sig")
+            js, args = self.get_js(opener)
+            streamMap = args[key].split(",")
+            smap = [parse_qs(sm) for sm in streamMap]
+        return(smap, js)
+
+    def get_video_gdata(self):
+
+        """ Fetch video data using GData API if not previously fetched """
+
+        if not self.gdata:
+            url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
+            url = url % self.videoid
+            self.gdata = self._opener.open(url).read()
+        return self.gdata
+
+    @property
+    def description(self):
+
+        """ Extract description, fetch gdata if necessary """
+
+        if not self._description:
+            t0 = "{http://search.yahoo.com/mrss/}"
+            gdata = self.get_video_gdata()
+            tree = etree.fromstring(gdata)
+            d = (tree.findall("%s%s/%s%s" % (t0, "group", t0, "description")))
+            self._description = d[0].text
+
+        return self._description
+
+    # pylint: disable=R0914
+    # Too many local variables - who cares?
+    def __init__(self, video_url):
+
+        infoUrl = 'https://www.youtube.com/get_video_info?video_id='
+        m = re.search(r'\bv=([a-zA-Z0-9-_]{11})', video_url)
+
+        if not m:
+            m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
+
+        if not m:
+            err = "Need 11 character video id or the URL of the video. Got %s"
+            raise RuntimeError(err % video_url)
+
+        vidid = m.group(1)
+        infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
+        opener = build_opener()
+        ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
+              "Trident/5.0)")
+
+        opener.addheaders = [('User-Agent', ua)]
+        self.keywords = ""
+        allinfo = parse_qs(decode_if_py3(opener.open(infoUrl).read()))
+
+        if allinfo['status'][0] == "fail":
+            reason = allinfo['reason'][0] or "Bad video argument"
+            raise RuntimeError("Youtube says: %s" % reason)
+
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         self.gdata = None
+        self.xargs = None
         self.js = None
         self.title = f('title').replace("/", "-")
         self.author = f('author')
@@ -285,86 +466,22 @@ class Pafy():
         self.formats = [x.split("/") for x in self.formats]
         self._description = None
         self.keywords = self.bigthumb = self.bigthumbhd = None
+
         if 'keywords' in allinfo:
             self.keywords = f('keywords').split(',')
+
         if allinfo.get('iurlsd'):
             self.bigthumb = f('iurlsd')
+
         if allinfo.get('iurlmaxres'):
             self.bigthumbhd = f('iurlmaxres')
-        return
 
-    def get_js(self, opener):
-        logging.debug("call to get js")
-        if not self.js or not self.args:
-            watchurl = "https://www.youtube.com/watch?v=" + self.videoid
-            watchinfo = opener.open(watchurl).read().decode("UTF-8")
-            m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
-            try:
-                myjson = json.loads(m.group(1))
-            except:
-                raise RuntimeError('Problem handling this video')
-            args = myjson['args']
-            html5player = myjson['assets']['js']
-            if html5player.startswith("//"):
-                html5player = "https:" + html5player
-            logging.debug("opening js url")
-            js = opener.open(html5player).read().decode("UTF-8")
-            self.js, self.args = js, args
-        return(self.js, self.args)
-
-    def getstreammap(self, allinfo, key, opener):
-        js = self.js
-        streamMap = allinfo[key][0].split(',')
-        smap = [parse_qs(sm) for sm in streamMap]
-        if smap[0].get("s"):
-            logging.debug("encrypted sig")
-            js, args = self.get_js(opener)
-            streamMap = args[key].split(",")
-            smap = [parse_qs(sm) for sm in streamMap]
-        return(smap, js)
-
-    def get_video_gdata(self):
-        if not self.gdata:
-            url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
-            url = url % self.videoid
-            self.gdata = self._opener.open(url).read()
-        return self.gdata
-
-    @property
-    def description(self):
-        if not self._description:
-            t0 = "{http://search.yahoo.com/mrss/}"
-            gdata = self.get_video_gdata()
-            tree = etree.fromstring(gdata)
-            d = (tree.findall("%s%s/%s%s" % (t0, "group", t0, "description")))
-            self._description = d[0].text
-        return self._description
-
-    def __init__(self, video_url):
-        infoUrl = 'https://www.youtube.com/get_video_info?video_id='
-        m = re.search(r'\bv=([a-zA-Z0-9-_]{11})', video_url)
-        if not m:
-            m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
-        if not m:
-            err = "Need 11 character video id or the URL of the video. Got %s"
-            raise RuntimeError(err % video_url)
-        vidid = m.group(1)
-        infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
-        opener = build_opener()
-        ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-              "Trident/5.0)")
-        opener.addheaders = [('User-Agent', ua)]
-        self.keywords = ""
-        allinfo = parse_qs(decode_if_py3(opener.open(infoUrl).read()))
-        if allinfo['status'][0] == "fail":
-            reason = allinfo['reason'][0] or "Bad video argument"
-            raise RuntimeError("Youtube says: %s" % reason)
-        self._setmetadata(allinfo)
         self._opener = opener
         smap, js = self.getstreammap(
             allinfo, 'url_encoded_fmt_stream_map', opener)
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
         self.videostreams = self.audiostreams = []
+
         if "adaptive_fmts" in allinfo:
             smap_adpt, js = self.getstreammap(allinfo, 'adaptive_fmts', opener)
             self.streams_ad = [Stream(sm, opener, self.title, js) for sm in
@@ -374,36 +491,60 @@ class Pafy():
             m4astreams = [x for x in self.audiostreams if x.extension == "m4a"]
             oggstreams = [x for x in self.audiostreams if x.extension == "ogg"]
             self.m4astreams, self.oggstreams = m4astreams, oggstreams
+
         self.allstreams = self.streams + self.videostreams + self.audiostreams
 
     def getbest(self, preftype="any", ftypestrict=True):
-        ''' Returns the best resolution available '''
-        # set ftypestrict to False to use a non preferred format if that
-        # has a higher resolution
+
+        """
+        Returns the best resolution available
+        set ftypestrict to False to use a non preferred format if that
+        has a higher resolution
+        """
+
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
+
+            """ sort function for max() """
+
             key3d = "3D" not in x.resolution
             keyres = int(x.resolution.split("x")[0])
             keyftype = preftype == x.extension
+
             if ftypestrict:
                 return (key3d, keyftype, keyres)
+
             else:
                 return (key3d, keyres, keyftype)
+
         r = max(self.streams, key=_sortkey)
+
         if ftypestrict and preftype != "any" and r.extension != preftype:
             return None
+
         else:
             return r
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
+
+        ''' Return the highest bitrate audio Stream object '''
+
         def _sortkey(x, keybitrate=0, keyftype=0):
+
+            """ sort function for sort by bitrates """
+
             keybitrate = int(x.rawbitrate)
             keyftype = preftype == x.extension
+
             if ftypestrict:
                 return(keyftype, keybitrate)
+
             else:
                 return(keybitrate, keyftype)
+
         r = max(self.audiostreams, key=_sortkey)
+
         if ftypestrict and preftype != "any" and r.extension != preftype:
             return None
+
         else:
             return r
