@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 """
 Python API for YouTube.
 
@@ -56,8 +55,11 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
 
 
 def _extract_function_from_js(name, js):
+    """ Find a function definition called `name` and extract components.
 
-    " Find a function definition called `name` and extract components "
+    Return a dict representation of the function.
+
+    """
 
     m = re.search(r'function %s\(((?:\w+,?)+)\)\{([^}]+)\}' % name, js)
     logging.debug(m.group(0))
@@ -66,8 +68,7 @@ def _extract_function_from_js(name, js):
 
 
 def _getval(val, argsdict):
-
-    """ resolves variable values, preserves int literals """
+    """ resolve variable values, preserve int literals. Return dict."""
 
     m = re.match(r'(\d+)', val)
 
@@ -82,12 +83,13 @@ def _getval(val, argsdict):
 
 
 def _get_func_from_call(caller_function, name, arguments, js):
-
     """
-    Searches js string for function call to `name`
+    Search js string for function call to `name`.
+
     Returns dict representation of the funtion
     Places argument values specified in `arguments` list parameter into
     the returned function representations `args` dict
+
     """
 
     newfunction = _extract_function_from_js(name, js)
@@ -102,11 +104,9 @@ def _get_func_from_call(caller_function, name, arguments, js):
 
 
 def _solve(f, js):
-
-    ''' solve basic javascript function '''
+    """Solve basic javascript function. Return dict function representation."""
 
     # pylint: disable=R0914
-
     patterns = {
         'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)',
         'func_call': r'(\w+)=(\w+)\(((?:\w+,?)+)\)',
@@ -171,8 +171,7 @@ def _solve(f, js):
 
 
 def _decodesig(sig, js):
-
-    " get main function name from a function call "
+    """Get sig func name from a function call. Return function dict, js."""
 
     m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
@@ -187,15 +186,14 @@ def _decodesig(sig, js):
 
 
 def new(url):
-
-    ''' Creates a new pafy instance given a url or video id '''
+    """ Return a new pafy instance given a url or video id. """
 
     return Pafy(url)
 
 
 class Stream(object):
 
-    " YouTube video stream "
+    """ YouTube video stream class. """
 
     itags = {
         '5': ('320x240', 'flv', "normal"),
@@ -273,8 +271,7 @@ class Stream(object):
         return out
 
     def get_filesize(self):
-
-        ''' Returns filesize of the stream in bytes '''
+        """ Return filesize of the stream in bytes.  Set member variable. """
 
         if not self.fsize:
 
@@ -291,8 +288,7 @@ class Stream(object):
     # pylint: disable=R0914
     # Too many local variables - who cares?
     def download(self, filepath="", quiet=False, callback=None):
-
-        ''' Downloads the stream.  Use quiet=True to supress output '''
+        """ Download.  Use quiet=True to supress output. Return filename. """
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'kbps].  ETA: [{:.0f} secs]')
@@ -328,7 +324,7 @@ class Stream(object):
 
 class Pafy(object):
 
-    ''' Class to represent a YouTube video '''
+    """ Class to represent a YouTube video. """
 
     # This is probably not the recommended way to use len()
     # R0924: implemented __len__ but not __getitem__
@@ -356,8 +352,11 @@ class Pafy(object):
         return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
     def get_js(self, opener):
+        """ Get location of html5player javascript file and fetch.
 
-        """ Get location of html5player javascript file and fetch """
+        Return javascript as string and args.
+
+        """
 
         logging.debug("call to get js")
 
@@ -385,8 +384,7 @@ class Pafy(object):
         return(self.js, self.xargs)
 
     def getstreammap(self, allinfo, key, opener):
-
-        """ get stream map! """
+        """ get stream map. Return stream map and javascript."""
 
         js = self.js
         streamMap = allinfo[key][0].split(',')
@@ -399,8 +397,11 @@ class Pafy(object):
         return(smap, js)
 
     def get_video_gdata(self):
+        """ Fetch video data using GData API if not previously fetched.
 
-        """ Fetch video data using GData API if not previously fetched """
+        Return xml string
+
+        """
 
         if not self.gdata:
             url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
@@ -410,8 +411,7 @@ class Pafy(object):
 
     @property
     def description(self):
-
-        """ Extract description, fetch gdata if necessary """
+        """ Extract description, fetch gdata if necessary. Return string."""
 
         if not self._description:
             t0 = "{http://search.yahoo.com/mrss/}"
@@ -495,11 +495,12 @@ class Pafy(object):
         self.allstreams = self.streams + self.videostreams + self.audiostreams
 
     def getbest(self, preftype="any", ftypestrict=True):
-
         """
-        Returns the best resolution available
+        Return the best resolution available.
+
         set ftypestrict to False to use a non preferred format if that
         has a higher resolution
+
         """
 
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
@@ -525,12 +526,10 @@ class Pafy(object):
             return r
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
-
-        ''' Return the highest bitrate audio Stream object '''
+        """ Return the highest bitrate audio Stream object."""
 
         def _sortkey(x, keybitrate=0, keyftype=0):
-
-            """ sort function for sort by bitrates """
+            """ Sort function for sort by bitrates. """
 
             keybitrate = int(x.rawbitrate)
             keyftype = preftype == x.extension
