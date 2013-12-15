@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.24"
+__version__ = "0.3.25"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -35,8 +35,6 @@ import logging
 from xml.etree import ElementTree as etree
 
 
-#def decode_if_py3(data):
-    #return data.decode("UTF-8")
 decode_if_py3 = lambda x: x.decode("utf8")
 
 if sys.version_info[:2] >= (3, 0):
@@ -423,8 +421,22 @@ class Pafy(object):
 
         return self._description
 
+    @property
+    def category(self):
+        """Extract category label from gdata. Return string."""
+
+        if not self._category:
+            t0 = "{http://search.yahoo.com/mrss/}"
+            gdata = self.get_video_gdata()
+            tree = etree.fromstring(gdata)
+            d = (tree.findall("%s%s/%s%s" % (t0, "group", t0, "category")))
+            self._category = d[0].text
+
+        return self._category
+
     # pylint: disable=R0914
     # Too many local variables - who cares?
+
     def __init__(self, video_url):
 
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
@@ -466,6 +478,7 @@ class Pafy(object):
         self.formats = f('fmt_list').split(",")
         self.formats = [x.split("/") for x in self.formats]
         self._description = None
+        self._category = None
         self.keywords = self.bigthumb = self.bigthumbhd = None
 
         if 'keywords' in allinfo:
