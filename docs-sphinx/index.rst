@@ -1,4 +1,4 @@
-Pafy 0.3.26 Documentation
+Pafy 0.3.27 Documentation
 *************************
 .. module:: Pafy
 
