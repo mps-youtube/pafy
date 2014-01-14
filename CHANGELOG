@@ -1,3 +1,27 @@
+14 January 2014
+Version 0.3.26
+Authors: nagev
+
+[Feature] - Change dimensions property from (str, str) to (int, int)
+[Bugfix] - Replace bad characters in filenames
+
+
+15 December 2013
+Version 0.3.25
+Authors: nagev
+
+[Feature] Get video category metadata.
+
+
+12 December 2013
+Version 0.3.24
+Authors: hugovk, nagev
+
+[Feature] Download function to return the name of file saved
+[Feature] Get video description
+[Bugfix] Fix for js file without protocol specifier
+
+
 14 November 2013
 Version 0.3.23
 Authors: davidfischer-ch, nagev
