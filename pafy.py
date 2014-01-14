@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.25"
+__version__ = "0.3.26"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -248,6 +248,8 @@ class Stream(object):
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = self.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
+        safeint = lambda x: int(x) if x.isdigit() else x
+        self.dimensions = tuple(map(safeint, self.dimensions))
         self.vidformat = sm['type'][0].split(';')[0]
         self.quality = self.resolution
         self.extension = self.itags[self.itag][1]
@@ -294,8 +296,16 @@ class Stream(object):
         response = self._opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
-        filetosave = filepath or self.filename
-        outfh = open(filetosave, 'wb')
+        fname = filepath or self.filename
+
+        try:
+            outfh = open(fname, 'wb')
+
+        except IOError:
+            ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
+            fname = "".join(x if ok.match(x) else "_" for x in self.filename)
+            outfh = open(fname, 'wb')
+
 
         while True:
             chunk = response.read(chunksize)
@@ -318,7 +328,7 @@ class Stream(object):
             if callback:
                 callback(total, *progress_stats)
 
-        return filetosave
+        return fname
 
 
 class Pafy(object):
