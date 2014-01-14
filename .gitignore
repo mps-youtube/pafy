@@ -1,4 +1,5 @@
-.sphinx
+MANIFEST
+/dist
 .test
 *.pyc
 .pypi

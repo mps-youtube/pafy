@@ -1,0 +1,543 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pafy 0.3.26 Documentation &mdash; pafy 0.3.26 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.3.26',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="pafy 0.3.26 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">pafy 0.3.26 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-Pafy">
+<span id="pafy-0-3-26-documentation"></span><h1>Pafy 0.3.26 Documentation<a class="headerlink" href="#module-Pafy" title="Permalink to this headline">¶</a></h1>
+<p>This is the documentation for Pafy - Python API for YouTube</p>
+<p>A quick start intro with usage examples is available in the <a class="reference external" href="http://github.com/np1/pafy/blob/master/README.rst">README</a></p>
+<p>Development / Source code / Bug reporting: <a class="reference external" href="https://github.com/np1/pafy/">github.com/np1/pafy</a></p>
+<p>Homepage: <a class="reference external" href="http://np1.github.io/pafy/">np1.github.io/pafy</a></p>
+<div class="section" id="pafy-objects-and-stream-objects">
+<h2>Pafy Objects and Stream Objects<a class="headerlink" href="#pafy-objects-and-stream-objects" title="Permalink to this headline">¶</a></h2>
+<p>Pafy objects relate to videos hosted on YouTube.  They hold metadata such as
+<em>title</em>, <em>viewcount</em>, <em>author</em> and <em>video ID</em></p>
+<p>Stream objects relate to individual streams of a YouTube video. They hold
+stream-specific data such as <em>resolution</em>, <em>bitrate</em> and <em>url</em>.  Each Pafy
+object contains multiple stream objects.</p>
+</div>
+<div class="section" id="pafy-objects">
+<h2>Pafy Objects<a class="headerlink" href="#pafy-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pafy.Pafy">
+<em class="property">class </em><tt class="descclassname">pafy.</tt><tt class="descname">Pafy</tt><big>(</big><em>video_url</em><big>)</big><a class="headerlink" href="#pafy.Pafy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to represent a YouTube video.</p>
+</dd></dl>
+
+<p>Create a Pafy object using the <em>pafy.new()</em> function, giving a YouTube video URL as
+the argument</p>
+<dl class="function">
+<dt id="Pafy.new">
+<tt class="descclassname">Pafy.</tt><tt class="descname">new</tt><big>(</big><em>video_url</em><big>)</big><a class="headerlink" href="#Pafy.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Pafy object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> &#8211; The YouTube url or 11 character video id of the video</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Pafy object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pafy</span>
+<span class="n">myvid</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;http://www.youtube.com/watch?v=dQw4w9WgXc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="pafy-attributes">
+<h3>Pafy Attributes<a class="headerlink" href="#pafy-attributes" title="Permalink to this headline">¶</a></h3>
+<p>Once you have created a Pafy object using <tt class="xref py py-func docutils literal"><span class="pre">pafy.new()</span></tt>, several data
+attributes are available</p>
+<dl class="attribute">
+<dt id="Pafy.Pafy.author">
+<tt class="descclassname">Pafy.</tt><tt class="descname">author</tt><a class="headerlink" href="#Pafy.Pafy.author" title="Permalink to this definition">¶</a></dt>
+<dd><p>The author of the video (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.bigthumb">
+<tt class="descclassname">Pafy.</tt><tt class="descname">bigthumb</tt><big>(</big><em>*str*</em><big>)</big><a class="headerlink" href="#Pafy.Pafy.bigthumb" title="Permalink to this definition">¶</a></dt>
+<dd><p>The url of the video&#8217;s display image (not always available)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.bigthumbhd">
+<tt class="descclassname">Pafy.</tt><tt class="descname">bigthumbhd</tt><a class="headerlink" href="#Pafy.Pafy.bigthumbhd" title="Permalink to this definition">¶</a></dt>
+<dd><p>The url of the video&#8217;s larger display image (not always available) (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.category">
+<tt class="descclassname">Pafy.</tt><tt class="descname">category</tt><a class="headerlink" href="#Pafy.Pafy.category" title="Permalink to this definition">¶</a></dt>
+<dd><p>The category of the video (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.description">
+<tt class="descclassname">Pafy.</tt><tt class="descname">description</tt><a class="headerlink" href="#Pafy.Pafy.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>The video description text (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.duration">
+<tt class="descclassname">Pafy.</tt><tt class="descname">duration</tt><a class="headerlink" href="#Pafy.Pafy.duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>The duration of the stream (<em>string formatted as HH:MM:SS</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.keywords">
+<tt class="descclassname">Pafy.</tt><tt class="descname">keywords</tt><a class="headerlink" href="#Pafy.Pafy.keywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the video&#8217;s keywords (not always available) (<em>[str]</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.length">
+<tt class="descclassname">Pafy.</tt><tt class="descname">length</tt><a class="headerlink" href="#Pafy.Pafy.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The duration of the streams in seconds (<em>int</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.rating">
+<tt class="descclassname">Pafy.</tt><tt class="descname">rating</tt><a class="headerlink" href="#Pafy.Pafy.rating" title="Permalink to this definition">¶</a></dt>
+<dd><p>The rating of the video (0-5), (<em>float</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.thumb">
+<tt class="descclassname">Pafy.</tt><tt class="descname">thumb</tt><a class="headerlink" href="#Pafy.Pafy.thumb" title="Permalink to this definition">¶</a></dt>
+<dd><p>The url of the video&#8217;s thumbnail image (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.title">
+<tt class="descclassname">Pafy.</tt><tt class="descname">title</tt><a class="headerlink" href="#Pafy.Pafy.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>The title of the video (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.videoid">
+<tt class="descclassname">Pafy.</tt><tt class="descname">videoid</tt><a class="headerlink" href="#Pafy.Pafy.videoid" title="Permalink to this definition">¶</a></dt>
+<dd><p>The 11-character video id (<em>str</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.viewcount">
+<tt class="descclassname">Pafy.</tt><tt class="descname">viewcount</tt><a class="headerlink" href="#Pafy.Pafy.viewcount" title="Permalink to this definition">¶</a></dt>
+<dd><p>The viewcount of the video (<em>int</em>)</p>
+</dd></dl>
+
+<p>An example of accessing this video metadata is shown below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pafy</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;dQw4w9WgXcQ&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">rating</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">author</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">keywords</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">thumb</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">videoid</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">viewcount</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Which will result in this output:</p>
+<div class="highlight-python"><pre>Rick Astley - Never Gonna Give You Up
+00:03:33
+4.75177729422
+RickAstleyVEVO
+213
+['Rick', 'Astley', 'Sony', 'BMG', 'Music', 'UK', 'Pop']
+https://i1.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+dQw4w9WgXcQ
+69788014</pre>
+</div>
+</div>
+<div class="section" id="pafy-methods">
+<h3>Pafy Methods<a class="headerlink" href="#pafy-methods" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#Pafy.Pafy.getbest" title="Pafy.Pafy.getbest"><tt class="xref py py-func docutils literal"><span class="pre">Pafy.getbest()</span></tt></a> and <a class="reference internal" href="#Pafy.Pafy.getbestaudio" title="Pafy.Pafy.getbestaudio"><tt class="xref py py-func docutils literal"><span class="pre">Pafy.getbestaudio()</span></tt></a> methods are a quick
+way to access the highest quality streams for a particular video without
+needing to query the stream lists</p>
+<dl class="function">
+<dt id="Pafy.Pafy.getbest">
+<tt class="descclassname">Pafy.</tt><tt class="descname">getbest</tt><big>(</big><em>[preftype=&quot;any&quot;][, ftypestrict=True]</em><big>)</big><a class="headerlink" href="#Pafy.Pafy.getbest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects the stream with the highest resolution.  This will return a
+&#8220;normal&#8221; stream (ie. one with video and audio)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>preftype</strong> (<em>str</em>) &#8211; Preferred type, set to <em>mp4</em>, <em>webm</em>, <em>flv</em>, <em>3gp</em> or <em>any</em></li>
+<li><strong>ftypestrict</strong> (<em>boolean</em>) &#8211; Set to <em>False</em> to return a type other than that specified in preftype if it has a higher resolution</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#Pafy.pafy.Stream" title="Pafy.pafy.Stream"><tt class="xref py py-class docutils literal"><span class="pre">pafy.Stream</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Pafy.Pafy.getbestaudio">
+<tt class="descclassname">Pafy.</tt><tt class="descname">getbestaudio</tt><big>(</big><em>[preftype=&quot;any&quot;][, ftypestrict=True]</em><big>)</big><a class="headerlink" href="#Pafy.Pafy.getbestaudio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects the audio stream with the highest bitrate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>preftype</strong> (<em>str</em>) &#8211; Preferred type, set to <em>ogg</em> or <em>m4a</em> or <em>any</em></li>
+<li><strong>ftypestrict</strong> (<em>boolean</em>) &#8211; Set to <em>False</em> to return a type other than that specified in preftype if that has the highest bitrate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#Pafy.pafy.Stream" title="Pafy.pafy.Stream"><tt class="xref py py-class docutils literal"><span class="pre">pafy.Stream</span></tt></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="stream-lists">
+<h3>Stream Lists<a class="headerlink" href="#stream-lists" title="Permalink to this headline">¶</a></h3>
+<p>A Pafy object provides multiple stream lists.  These are:</p>
+<dl class="attribute">
+<dt id="Pafy.Pafy.streams">
+<tt class="descclassname">Pafy.</tt><tt class="descname">streams</tt><a class="headerlink" href="#Pafy.Pafy.streams" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of regular streams (streams containing both audio and video)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.audiostreams">
+<tt class="descclassname">Pafy.</tt><tt class="descname">audiostreams</tt><a class="headerlink" href="#Pafy.Pafy.audiostreams" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of audio-only streams (aac streams (.m4a) and ogg vorbis streams (.ogg))</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.videostreams">
+<tt class="descclassname">Pafy.</tt><tt class="descname">videostreams</tt><a class="headerlink" href="#Pafy.Pafy.videostreams" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of video-only streams (Note: these streams have no audio data)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.oggstreams">
+<tt class="descclassname">Pafy.</tt><tt class="descname">oggstreams</tt><a class="headerlink" href="#Pafy.Pafy.oggstreams" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of ogg vorbis encoded audio streams</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.m4astreams">
+<tt class="descclassname">Pafy.</tt><tt class="descname">m4astreams</tt><a class="headerlink" href="#Pafy.Pafy.m4astreams" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of aac encoded audio streams</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Pafy.allstreams">
+<tt class="descclassname">Pafy.</tt><tt class="descname">allstreams</tt><a class="headerlink" href="#Pafy.Pafy.allstreams" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of all available streams</p>
+</dd></dl>
+
+<p>An example of accessing stream lists:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pafy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;cyMHZVT91Dw&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">audiostreams</span>
+<span class="go">[audio:m4a@48k, audio:m4a@128k, audio:m4a@256k]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">streams</span>
+<span class="go">[normal:webm@640x360, normal:mp4@640x360, normal:flv@320x240, normal:3gp@320x240, normal:3gp@176x144]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">allstreams</span>
+<span class="go">[normal:webm@640x360, normal:mp4@640x360, normal:flv@320x240, normal:3gp@320x240, normal:3gp@176x144, video:m4v@854x480, video:m4v@640x360, video:m4v@426x240, video:m4v@256x144, audio:m4a@48k, audio:m4a@128k, audio:m4a@256k]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="stream-objects">
+<h2>Stream Objects<a class="headerlink" href="#stream-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Pafy.pafy.Stream">
+<em class="property">class </em><tt class="descclassname">pafy.</tt><tt class="descname">Stream</tt><a class="headerlink" href="#Pafy.pafy.Stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>After you have created a <a class="reference internal" href="#module-Pafy" title="Pafy"><tt class="xref py py-class docutils literal"><span class="pre">Pafy</span></tt></a> object using <a class="reference internal" href="#Pafy.new" title="Pafy.new"><tt class="xref py py-func docutils literal"><span class="pre">new()</span></tt></a>, you
+can then access the streams using one of the <a class="reference internal" href="#stream-lists">Stream Lists</a>, or by calling
+<a class="reference internal" href="#Pafy.Pafy.getbest" title="Pafy.Pafy.getbest"><tt class="xref py py-func docutils literal"><span class="pre">Pafy.getbest()</span></tt></a> or <a class="reference internal" href="#Pafy.Pafy.getbestaudio" title="Pafy.Pafy.getbestaudio"><tt class="xref py py-func docutils literal"><span class="pre">Pafy.getbestaudio()</span></tt></a> on the object.</p>
+<div class="section" id="stream-attributes">
+<h3>Stream Attributes<a class="headerlink" href="#stream-attributes" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div>A Stream object can be used to access the following attributes</div></blockquote>
+<dl class="attribute">
+<dt id="Pafy.Stream.bitrate">
+<tt class="descclassname">Stream.</tt><tt class="descname">bitrate</tt><a class="headerlink" href="#Pafy.Stream.bitrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>The bitrate of the stream - if it is an audio stream, otherwise None,
+This is a string of the form <em>&#8220;192k&#8221;</em>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.dimensions">
+<tt class="descclassname">Stream.</tt><tt class="descname">dimensions</tt><a class="headerlink" href="#Pafy.Stream.dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 2-tuple (x, y) representing the resolution of a video stream.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.extension">
+<tt class="descclassname">Stream.</tt><tt class="descname">extension</tt><a class="headerlink" href="#Pafy.Stream.extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>The format of the stream, will be one of: <tt class="docutils literal"><span class="pre">'ogg'</span></tt>, <tt class="docutils literal"><span class="pre">'m4a'</span></tt>, <tt class="docutils literal"><span class="pre">'mp4'</span></tt>,
+<tt class="docutils literal"><span class="pre">'flv'</span></tt>, <tt class="docutils literal"><span class="pre">'webm'</span></tt>, <tt class="docutils literal"><span class="pre">'3gp'</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.mediatype">
+<tt class="descclassname">Stream.</tt><tt class="descname">mediatype</tt><a class="headerlink" href="#Pafy.Stream.mediatype" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string attribute that is <tt class="docutils literal"><span class="pre">'normal'</span></tt>, <tt class="docutils literal"><span class="pre">'audio'</span></tt> or <tt class="docutils literal"><span class="pre">'video'</span></tt>,
+depending on the content of the stream</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.quality">
+<tt class="descclassname">Stream.</tt><tt class="descname">quality</tt><a class="headerlink" href="#Pafy.Stream.quality" title="Permalink to this definition">¶</a></dt>
+<dd><p>The resolution or the bitrate of the stream, depending on whether the
+stream is video or audio respectively</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.resolution">
+<tt class="descclassname">Stream.</tt><tt class="descname">resolution</tt><a class="headerlink" href="#Pafy.Stream.resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>The resolution of a video as a string, eg: &#8220;820x640&#8221;.  Note if the stream
+is 3D this will be appended; eg: &#8220;820x640-3D&#8221;.</p>
+<p>For audio streams, this will be set to &#8220;0x0&#8221;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.rawbitrate">
+<tt class="descclassname">Stream.</tt><tt class="descname">rawbitrate</tt><a class="headerlink" href="#Pafy.Stream.rawbitrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>The bitrate of an audio stream, <em>int</em></p>
+<p>For video streams, this will be set to <em>None</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.threed">
+<tt class="descclassname">Stream.</tt><tt class="descname">threed</tt><a class="headerlink" href="#Pafy.Stream.threed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the stream is a 3D video (<em>boolean</em>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.title">
+<tt class="descclassname">Stream.</tt><tt class="descname">title</tt><a class="headerlink" href="#Pafy.Stream.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>The title of the video, this will be the same as <a class="reference internal" href="#Pafy.Pafy.title" title="Pafy.Pafy.title"><tt class="xref py py-attr docutils literal"><span class="pre">Pafy.title</span></tt></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Pafy.Stream.url">
+<tt class="descclassname">Stream.</tt><tt class="descname">url</tt><a class="headerlink" href="#Pafy.Stream.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The direct access URL of the stream.  This can be used to stream the media
+in mplayer or vlc, or for downloading with wget or curl.  To download
+directly, use the <a class="reference internal" href="#Pafy.Stream.download" title="Pafy.Stream.download"><tt class="xref py py-func docutils literal"><span class="pre">Stream.download()</span></tt></a> method</p>
+</dd></dl>
+
+<p>An example of accessing Stream attributes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pafy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;cyMHZVT91Dw&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">audiostreams</span>
+<span class="go">[audio:m4a@48k, audio:m4a@128k, audio:m4a@256k]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mystream</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">audiostreams</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mystream</span><span class="o">.</span><span class="n">rawbitrate</span>
+<span class="go">255940</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mystream</span><span class="o">.</span><span class="n">bitrate</span>
+<span class="go">&#39;256k&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mystream</span><span class="o">.</span><span class="n">url</span>
+<span class="go">&#39;http://r20---sn-aigllnes.c.youtube.com/videoplayback?ipbits=8&amp;clen=1130...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="stream-methods">
+<h3>Stream Methods<a class="headerlink" href="#stream-methods" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="Pafy.Stream.get_filesize">
+<tt class="descclassname">Stream.</tt><tt class="descname">get_filesize</tt><big>(</big><big>)</big><a class="headerlink" href="#Pafy.Stream.get_filesize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the filesize of a stream</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Pafy.Stream.download">
+<tt class="descclassname">Stream.</tt><tt class="descname">download</tt><big>(</big><em>[filepath=&quot;&quot;][, quiet=False][, callback=None]</em><big>)</big><a class="headerlink" href="#Pafy.Stream.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the stream object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filepath</strong> (<em>string</em>) &#8211; The filepath to use to save the stream, defaults to <em>title.extension</em> if ommitted</li>
+<li><strong>quiet</strong> (<em>boolean</em>) &#8211; Whether to supress output of the download progress</li>
+<li><strong>callback</strong> (<em>function or None</em>) &#8211; Call back function to use for receiving download progress</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>If a callback function is provided, it will be called repeatedly for each
+chunk downloaded.  It must be a function that takes five arguments. These
+are:</p>
+<ul class="simple">
+<li>total bytes in stream, <em>int</em></li>
+<li>total bytes downloaded, <em>int</em></li>
+<li>ratio downloaded (0-1), <em>float</em></li>
+<li>download rate (kbps), <em>float</em></li>
+<li>ETA in seconds, <em>float</em></li>
+</ul>
+</dd></dl>
+
+<p>Download example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pafy</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;cyMHZVT91Dw&quot;</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">getbest</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Size is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">s</span><span class="o">.</span><span class="n">get_filesize</span><span class="p">())</span>
+<span class="n">s</span><span class="o">.</span><span class="n">download</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Will download the file to the current working directory with the filename
+<em>title.extension</em> (eg. &#8220;cute kittens.mp4&#8221;) and output the following progress statistics:</p>
+<div class="highlight-python"><pre>Size is 34775366
+1,015,808 Bytes [2.92%] received. Rate: [ 640 kbps].  ETA: [51 secs]</pre>
+</div>
+<p>Download using <em>callback</em> example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pafy</span>
+
+<span class="c"># callback function, this callback simply prints the bytes received,</span>
+<span class="c"># ratio downloaded and eta.</span>
+<span class="k">def</span> <span class="nf">mycb</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="n">recvd</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">eta</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">recvd</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">pafy</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;cyMHZVT91Dw&quot;</span><span class="p">)</span>
+<span class="n">ba</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">getbestaudio</span><span class="p">()</span>
+<span class="n">ba</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">quiet</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">mycb</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output of this will appear as follows, while the file is downloading:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">16384</span><span class="p">,</span> <span class="mf">0.001449549245392125</span><span class="p">,</span> <span class="mf">20.05230682669207</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">32768</span><span class="p">,</span> <span class="mf">0.00289909849078425</span><span class="p">,</span> <span class="mf">16.88200659636641</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">49152</span><span class="p">,</span> <span class="mf">0.004348647736176375</span><span class="p">,</span> <span class="mf">15.196503182407469</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">65536</span><span class="p">,</span> <span class="mf">0.0057981969815685</span><span class="p">,</span> <span class="mf">14.946467230009146</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">81920</span><span class="p">,</span> <span class="mf">0.007247746226960625</span><span class="p">,</span> <span class="mf">15.066431667096913</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">98304</span><span class="p">,</span> <span class="mf">0.00869729547235275</span><span class="p">,</span> <span class="mf">14.978577915171627</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">114688</span><span class="p">,</span> <span class="mf">0.010146844717744874</span><span class="p">,</span> <span class="mf">14.529802172976945</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">131072</span><span class="p">,</span> <span class="mf">0.011596393963137</span><span class="p">,</span> <span class="mf">14.31917945870373</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pafy 0.3.26 Documentation</a><ul>
+<li><a class="reference internal" href="#pafy-objects-and-stream-objects">Pafy Objects and Stream Objects</a></li>
+<li><a class="reference internal" href="#pafy-objects">Pafy Objects</a><ul>
+<li><a class="reference internal" href="#pafy-attributes">Pafy Attributes</a></li>
+<li><a class="reference internal" href="#pafy-methods">Pafy Methods</a></li>
+<li><a class="reference internal" href="#stream-lists">Stream Lists</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#stream-objects">Stream Objects</a><ul>
+<li><a class="reference internal" href="#stream-attributes">Stream Attributes</a></li>
+<li><a class="reference internal" href="#stream-methods">Stream Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">pafy 0.3.26 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014 nagev.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>
