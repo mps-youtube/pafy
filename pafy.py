@@ -306,7 +306,6 @@ class Stream(object):
             fname = "".join(x if ok.match(x) else "_" for x in self.filename)
             outfh = open(fname, 'wb')
 
-
         while True:
             chunk = response.read(chunksize)
             outfh.write(chunk)
