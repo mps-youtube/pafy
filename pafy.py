@@ -452,7 +452,7 @@ class Pafy(object):
         m = re.search(r'\bv=([a-zA-Z0-9-_]{11})', video_url)
 
         if not m:
-            m = re.search(r'\b|^([a-zA-Z0-9-_]{11})', video_url)
+            m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
 
         if not m:
             err = "Need 11 character video id or the URL of the video. Got %s"
