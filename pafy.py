@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.27"
+__version__ = "0.3.28"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -225,7 +225,8 @@ class Stream(object):
         '171': ('128k', 'ogg', 'audio'),
         '172': ('192k', 'ogg', 'audio'),
         '247': ('unknown', 'unknown', 'unknown'),
-        '248': ('unknown', 'unknown', 'unknown')
+        '248': ('unknown', 'unknown', 'unknown'),
+        '264': ('1920x1080', 'm4v', 'video')
     }
 
     def __init__(self, sm, opener, title="ytvid", js=None):
@@ -449,10 +450,9 @@ class Pafy(object):
     def __init__(self, video_url):
 
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
-        m = re.search(r'\bv=([a-zA-Z0-9-_]{11})', video_url)
-
-        if not m:
-            m = re.search(r'\b([a-zA-Z0-9-_]{11})', video_url)
+        ok = ("a-zA-Z0-9_-",) * 3
+        regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
+        m = regx.search(video_url)
 
         if not m:
             err = "Need 11 character video id or the URL of the video. Got %s"
