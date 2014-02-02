@@ -3,6 +3,8 @@
 """
 Python API for YouTube.
 
+https://github.com/np1/pafy
+
 Copyright (C)  2013-2014 nagev
 
 This program is free software: you can redistribute it and/or modify
@@ -21,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.28"
+__version__ = "0.3.29"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -107,14 +109,14 @@ def _solve(f, js):
 
     # pylint: disable=R0914
     patterns = {
-        'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)',
-        'func_call': r'(\w+)=(\w+)\(((?:\w+,?)+)\)',
-        'x1': r'var\s(\w+)=(\w+)\[(\w+)\]',
-        'x2': r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]',
-        'x3': r'(\w+)\[(\w+)\]=(\w+)',
-        'return': r'return (\w+)(\.join\(""\))?',
-        'reverse': r'(\w+)=(\w+)\.reverse\(\)',
-        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)'
+        'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)$',
+        'func_call': r'(\w+)=(\w+)\(((?:\w+,?)+)\)$',
+        'x1': r'var\s(\w+)=(\w+)\[(\w+)\]$',
+        'x2': r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]$',
+        'x3': r'(\w+)\[(\w+)\]=(\w+)$',
+        'return': r'return (\w+)(\.join\(""\))?$',
+        'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
+        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$'
     }
 
     parts = f['body'].split(";")
@@ -224,7 +226,10 @@ class Stream(object):
         '160': ('256x144', 'm4v', 'video'),
         '171': ('128k', 'ogg', 'audio'),
         '172': ('192k', 'ogg', 'audio'),
-        '247': ('unknown', 'unknown', 'unknown'),
+        '244': ('640x480', 'webm','normal'),
+        '245': ('640x480', 'webm','normal'),
+        '246': ('640x480', 'webm','normal'),
+        '247': ('720x480', 'webm','normal'),
         '248': ('unknown', 'unknown', 'unknown'),
         '264': ('1920x1080', 'm4v', 'video')
     }
@@ -244,8 +249,6 @@ class Stream(object):
             self.url = self.url + "&ratebypass=yes"
 
         self.itag = sm['itag'][0]
-        logging.debug("itag " + self.itag)
-        logging.debug("stream map: " + str(sm))
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = self.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
