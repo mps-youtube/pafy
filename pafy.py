@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.29"
+__version__ = "0.3.30"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -183,13 +183,16 @@ def _decodesig(sig, js):
 
                            function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
-    return _solve(function, js)
+    new.callback("Decrypting signature")
+    solved = _solve(function, js)
+    new.callback("Decrypted signature")
+    return solved
 
 
-def new(url):
+def new(url, callback=None):
     """ Return a new pafy instance given a url or video id. """
 
-    return Pafy(url)
+    return Pafy(url, callback=callback)
 
 
 class Stream(object):
@@ -226,10 +229,11 @@ class Stream(object):
         '160': ('256x144', 'm4v', 'video'),
         '171': ('128k', 'ogg', 'audio'),
         '172': ('192k', 'ogg', 'audio'),
-        '244': ('640x480', 'webm','normal'),
-        '245': ('640x480', 'webm','normal'),
-        '246': ('640x480', 'webm','normal'),
-        '247': ('720x480', 'webm','normal'),
+        '243': ('640x480', 'webm', 'normal'),
+        '244': ('640x480', 'webm', 'normal'),
+        '245': ('640x480', 'webm', 'normal'),
+        '246': ('640x480', 'webm', 'normal'),
+        '247': ('720x480', 'webm', 'normal'),
         '248': ('unknown', 'unknown', 'unknown'),
         '264': ('1920x1080', 'm4v', 'video')
     }
@@ -403,7 +407,9 @@ class Pafy(object):
         smap = [parse_qs(sm) for sm in streamMap]
         if smap[0].get("s"):
             logging.debug("encrypted sig")
+            new.callback("Getting javascript data..")
             js, args = self.get_js(opener)
+            new.callback("Got javascript")
             streamMap = args[key].split(",")
             smap = [parse_qs(sm) for sm in streamMap]
         return(smap, js)
@@ -450,7 +456,7 @@ class Pafy(object):
     # pylint: disable=R0914
     # Too many local variables - who cares?
 
-    def __init__(self, video_url):
+    def __init__(self, video_url, callback=None):
 
         infoUrl = 'https://www.youtube.com/get_video_info?video_id='
         ok = ("a-zA-Z0-9_-",) * 3
@@ -474,6 +480,12 @@ class Pafy(object):
         if allinfo['status'][0] == "fail":
             reason = allinfo['reason'][0] or "Bad video argument"
             raise RuntimeError("Youtube says: %s" % reason)
+
+        if callback:
+            new.callback = callback
+
+        else:
+            new.callback = lambda x: None
 
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         self.gdata = None
