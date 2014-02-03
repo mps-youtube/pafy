@@ -1,3 +1,11 @@
+3 February 2014
+Version 0.3.30
+Authors: nagev
+
+[Bugfix] - Fix regex for decrypting signatures
+[Feature] - Added callback function for status reporting
+
+
 14 January 2014
 Version 0.3.26
 Authors: nagev
