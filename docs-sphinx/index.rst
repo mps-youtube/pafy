@@ -1,5 +1,5 @@
-Pafy 0.3.27 Documentation
-*************************
+Pafy Documentation
+******************
 .. module:: Pafy
 
 This is the documentation for Pafy - Python API for YouTube
