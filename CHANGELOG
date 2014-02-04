@@ -3,6 +3,7 @@ Version 0.3.31
 Authors: nagev
 
 [Bugfix] - Handle error getting stream map
+[Bugfix] - Handle dollar character in js function name
 
 
 3 February 2014
