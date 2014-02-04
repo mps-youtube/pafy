@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.30"
+__version__ = "0.3.31"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -229,7 +229,8 @@ class Stream(object):
         '160': ('256x144', 'm4v', 'video'),
         '171': ('128k', 'ogg', 'audio'),
         '172': ('192k', 'ogg', 'audio'),
-        '243': ('640x480', 'webm', 'normal'),
+        '242': ('360x240', 'webm', 'normal'),
+        '243': ('480x360', 'webm', 'normal'),
         '244': ('640x480', 'webm', 'normal'),
         '245': ('640x480', 'webm', 'normal'),
         '246': ('640x480', 'webm', 'normal'),
@@ -515,8 +516,14 @@ class Pafy(object):
             self.bigthumbhd = f('iurlmaxres')
 
         self._opener = opener
-        smap, js = self.getstreammap(
-            allinfo, 'url_encoded_fmt_stream_map', opener)
+
+        try:
+            smap, js = self.getstreammap(
+                allinfo, 'url_encoded_fmt_stream_map', opener)
+
+        except KeyError:
+            raise IOError("Can't get video stream info")
+
         self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
         self.videostreams = self.audiostreams = []
 

@@ -6,7 +6,7 @@ from distutils.core import setup
 setup(
     name='Pafy',
     py_modules=['pafy'],
-    version='0.3.30',
+    version='0.3.31',
     description="Python API for YouTube, query and download YouTube content",
     keywords=["Pafy", "API", "YouTube", "youtube", "download", "video"],
     author="nagev",
