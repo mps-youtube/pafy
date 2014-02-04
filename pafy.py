@@ -62,6 +62,8 @@ def _extract_function_from_js(name, js):
 
     """
 
+    # handle dollar symbol in function name
+    name = name.replace("$", "\\$")
     m = re.search(r'function %s\(((?:\w+,?)+)\)\{([^}]+)\}' % name, js)
     logging.debug(m.group(0))
     return {'name': name, 'parameters': m.group(1).split(","),
@@ -110,7 +112,7 @@ def _solve(f, js):
     # pylint: disable=R0914
     patterns = {
         'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)$',
-        'func_call': r'(\w+)=(\w+)\(((?:\w+,?)+)\)$',
+        'func_call': r'(\w+)=([$\w]+)\(((?:\w+,?)+)\)$',
         'x1': r'var\s(\w+)=(\w+)\[(\w+)\]$',
         'x2': r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]$',
         'x3': r'(\w+)\[(\w+)\]=(\w+)$',
