@@ -62,12 +62,11 @@ def _extract_function_from_js(name, js):
 
     """
 
-    # handle dollar symbol in function name
-    name = name.replace("$", "\\$")
-    m = re.search(r'function %s\(((?:\w+,?)+)\)\{([^}]+)\}' % name, js)
-    logging.debug(m.group(0))
-    return {'name': name, 'parameters': m.group(1).split(","),
-            'body': m.group(2)}
+    fpattern = r'function\s%s\(((?:\w+,?)+)\)\{([^}]+)\}'
+    m = re.search(fpattern % re.escape(name), js)
+    args, body = m.groups()
+    logging.debug("extracted function %s(%s){%s};", name, args, body)
+    return {'name': name, 'parameters': args.split(","), 'body': body}
 
 
 def _getval(val, argsdict):
