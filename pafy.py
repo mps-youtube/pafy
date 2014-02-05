@@ -539,6 +539,7 @@ class Pafy(object):
             self.m4astreams, self.oggstreams = m4astreams, oggstreams
 
         self.allstreams = self.streams + self.videostreams + self.audiostreams
+        self.expires = int(time.time()) + (60 * 60 * 4.8)
 
     def getbest(self, preftype="any", ftypestrict=True):
         """
