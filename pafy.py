@@ -302,7 +302,7 @@ class Stream(object):
         """ Download.  Use quiet=True to supress output. Return filename. """
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
-                         'kbps].  ETA: [{:.0f} secs]')
+                         'KB/s].  ETA: [{:.0f} secs]')
         response = self._opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
