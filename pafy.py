@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-
 __version__ = "0.3.33"
 __author__ = "nagev"
 __license__ = "GPLv3"
@@ -56,15 +55,57 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
 
 
 class g(object):
-    """ Class for holding variables needed throughout the module. """
+
+    """ Class for holding vars / lambdas needed throughout the module. """
 
     infoUrl = 'https://www.youtube.com/get_video_info'
     infoUrlqs = 'video_id=%s&asv=3&el=detailpage&hl=en_US'
     ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-            "Trident/5.0)")
+          "Trident/5.0)")
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
     callback = lambda x: None
+    safeint = lambda x: int(x) if x.isdigit() else x
+    itags = {
+        '5': ('320x240', 'flv', "normal"),
+        '17': ('176x144', '3gp', "normal"),
+        '18': ('640x360', 'mp4', "normal"),
+        '22': ('1280x720', 'mp4', "normal"),
+        '34': ('640x360', 'flv', "normal"),
+        '35': ('854x480', 'flv', "normal"),
+        '36': ('320x240', '3gp', "normal"),
+        '37': ('1920x1080', 'mp4', "normal"),
+        '38': ('4096x3072', 'superHD', "normal"),
+        '43': ('640x360', 'webm', "normal"),
+        '44': ('854x480', 'webm', "normal"),
+        '45': ('1280x720', 'webm', "normal"),
+        '46': ('1920x1080', 'webm', "normal"),
+        '82': ('640x360-3D', 'mp4', "normal"),
+        '84': ('1280x720-3D', 'mp4', "normal"),
+        '100': ('640x360-3D', 'webm', "normal"),
+        '102': ('1280x720-3D', 'webm', "normal"),
+        '133': ('426x240', 'm4v', 'video'),
+        '134': ('640x360', 'm4v', 'video'),
+        '135': ('854x480', 'm4v', 'video'),
+        '136': ('1280x720', 'm4v', 'video'),
+        '137': ('1920x1080', 'm4v', 'video'),
+        '138': ('4096x3072', 'm4v', 'video'),
+        '139': ('48k', 'm4a', 'audio'),
+        '140': ('128k', 'm4a', 'audio'),
+        '141': ('256k', 'm4a', 'audio'),
+        '160': ('256x144', 'm4v', 'video'),
+        '171': ('128k', 'ogg', 'audio'),
+        '172': ('192k', 'ogg', 'audio'),
+        '242': ('360x240', 'webm', 'normal'),
+        '243': ('480x360', 'webm', 'normal'),
+        '244': ('640x480', 'webm', 'normal'),
+        '245': ('640x480', 'webm', 'normal'),
+        '246': ('640x480', 'webm', 'normal'),
+        '247': ('720x480', 'webm', 'normal'),
+        '248': ('unknown', 'unknown', 'unknown'),
+        '264': ('1920x1080', 'm4v', 'video')
+    }
+
 
 def _extract_function_from_js(name, js):
     """ Find a function definition called `name` and extract components.
@@ -198,6 +239,7 @@ def _decodesig(sig, js):
     g.callback("Decrypting signature")
     solved = _solve(function, js)
     g.callback("Decrypted signature")
+    g.callback(solved)
     return solved
 
 
@@ -211,46 +253,6 @@ class Stream(object):
 
     """ YouTube video stream class. """
 
-    itags = {
-        '5': ('320x240', 'flv', "normal"),
-        '17': ('176x144', '3gp', "normal"),
-        '18': ('640x360', 'mp4', "normal"),
-        '22': ('1280x720', 'mp4', "normal"),
-        '34': ('640x360', 'flv', "normal"),
-        '35': ('854x480', 'flv', "normal"),
-        '36': ('320x240', '3gp', "normal"),
-        '37': ('1920x1080', 'mp4', "normal"),
-        '38': ('4096x3072', 'superHD', "normal"),
-        '43': ('640x360', 'webm', "normal"),
-        '44': ('854x480', 'webm', "normal"),
-        '45': ('1280x720', 'webm', "normal"),
-        '46': ('1920x1080', 'webm', "normal"),
-        '82': ('640x360-3D', 'mp4', "normal"),
-        '84': ('1280x720-3D', 'mp4', "normal"),
-        '100': ('640x360-3D', 'webm', "normal"),
-        '102': ('1280x720-3D', 'webm', "normal"),
-        '133': ('426x240', 'm4v', 'video'),
-        '134': ('640x360', 'm4v', 'video'),
-        '135': ('854x480', 'm4v', 'video'),
-        '136': ('1280x720', 'm4v', 'video'),
-        '137': ('1920x1080', 'm4v', 'video'),
-        '138': ('4096x3072', 'm4v', 'video'),
-        '139': ('48k', 'm4a', 'audio'),
-        '140': ('128k', 'm4a', 'audio'),
-        '141': ('256k', 'm4a', 'audio'),
-        '160': ('256x144', 'm4v', 'video'),
-        '171': ('128k', 'ogg', 'audio'),
-        '172': ('192k', 'ogg', 'audio'),
-        '242': ('360x240', 'webm', 'normal'),
-        '243': ('480x360', 'webm', 'normal'),
-        '244': ('640x480', 'webm', 'normal'),
-        '245': ('640x480', 'webm', 'normal'),
-        '246': ('640x480', 'webm', 'normal'),
-        '247': ('720x480', 'webm', 'normal'),
-        '248': ('unknown', 'unknown', 'unknown'),
-        '264': ('1920x1080', 'm4v', 'video')
-    }
-
     def __init__(self, sm, title="ytvid", js=None):
 
         self.url = sm['url'][0]
@@ -259,26 +261,25 @@ class Stream(object):
             sm['sig'] = [_decodesig(sm['s'][0], js)]
             logging.debug("Calculated decrypted sig: " + sm['sig'][0])
 
-        if not "signature=" in self.url:
-            self.url += '&signature=' + sm['sig'][0]
-
         if not "ratebypass=" in self.url:
             self.url = self.url + "&ratebypass=yes"
 
+        if not "signature=" in self.url:
+            self.url += '&signature=' + sm['sig'][0]
+
         self.itag = sm['itag'][0]
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
-        self.resolution = self.itags[self.itag][0]
+        self.resolution = g.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        safeint = lambda x: int(x) if x.isdigit() else x
-        self.dimensions = tuple(map(safeint, self.dimensions))
+        self.dimensions = tuple(map(g.safeint, self.dimensions))
         self.vidformat = sm['type'][0].split(';')[0]
         self.quality = self.resolution
-        self.extension = self.itags[self.itag][1]
+        self.extension = g.itags[self.itag][1]
         self.title = title
         self.filename = self.title + "." + self.extension
         self.fsize = None
         self.bitrate = self.rawbitrate = None
-        self.mediatype = self.itags[self.itag][2]
+        self.mediatype = g.itags[self.itag][2]
 
         if self.mediatype == "audio":
             self.bitrate = self.resolution
@@ -384,8 +385,6 @@ class Pafy(object):
         Return javascript as string and args.
 
         """
-
-        logging.debug("call to get js")
 
         if not self.js or not self.xargs:
             watchurl = "https://www.youtube.com/watch?v=" + self.videoid
@@ -506,6 +505,7 @@ class Pafy(object):
         self._description = None
         self._category = None
         self.keywords = self.bigthumb = self.bigthumbhd = None
+        self.expires = int(time.time()) + (60 * 60 * 4)
 
         if 'keywords' in allinfo:
             self.keywords = f('keywords').split(',')
@@ -527,8 +527,7 @@ class Pafy(object):
 
         if "adaptive_fmts" in allinfo:
             smap_adpt, js = self.getstreammap(allinfo, 'adaptive_fmts')
-            self.streams_ad = [Stream(sm, self.title, js) for sm in
-                               smap_adpt]
+            self.streams_ad = [Stream(sm, self.title, js) for sm in smap_adpt]
             self.audiostreams = [x for x in self.streams_ad if x.bitrate]
             self.videostreams = [x for x in self.streams_ad if not x.bitrate]
             m4astreams = [x for x in self.audiostreams if x.extension == "m4a"]
@@ -536,7 +535,6 @@ class Pafy(object):
             self.m4astreams, self.oggstreams = m4astreams, oggstreams
 
         self.allstreams = self.streams + self.videostreams + self.audiostreams
-        self.expires = int(time.time()) + (60 * 60 * 4.8)
 
     def getbest(self, preftype="any", ftypestrict=True):
         """
