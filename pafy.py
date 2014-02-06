@@ -55,6 +55,17 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
     logging.basicConfig(level=logging.DEBUG)
 
 
+class g(object):
+    """ Class for holding variables needed throughout the module. """
+
+    infoUrl = 'https://www.youtube.com/get_video_info'
+    infoUrlqs = 'video_id=%s&asv=3&el=detailpage&hl=en_US'
+    ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
+            "Trident/5.0)")
+    opener = build_opener()
+    opener.addheaders = [('User-Agent', ua)]
+    callback = lambda x: None
+
 def _extract_function_from_js(name, js):
     """ Find a function definition called `name` and extract components.
 
@@ -184,9 +195,9 @@ def _decodesig(sig, js):
 
                            function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
-    new.callback("Decrypting signature")
+    g.callback("Decrypting signature")
     solved = _solve(function, js)
-    new.callback("Decrypted signature")
+    g.callback("Decrypted signature")
     return solved
 
 
@@ -240,7 +251,7 @@ class Stream(object):
         '264': ('1920x1080', 'm4v', 'video')
     }
 
-    def __init__(self, sm, opener, title="ytvid", js=None):
+    def __init__(self, sm, title="ytvid", js=None):
 
         self.url = sm['url'][0]
 
@@ -266,7 +277,6 @@ class Stream(object):
         self.title = title
         self.filename = self.title + "." + self.extension
         self.fsize = None
-        self._opener = opener
         self.bitrate = self.rawbitrate = None
         self.mediatype = self.itags[self.itag][2]
 
@@ -287,9 +297,8 @@ class Stream(object):
         if not self.fsize:
 
             try:
-                opener = self._opener
                 cl = "content-length"
-                self.fsize = int(opener.open(self.url).headers[cl])
+                self.fsize = int(g.opener.open(self.url).headers[cl])
 
             except (HTTPError, URLError):
                 self.fsize = 0
@@ -303,7 +312,7 @@ class Stream(object):
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
-        response = self._opener.open(self.url)
+        response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
         fname = filepath or self.filename
@@ -369,7 +378,7 @@ class Pafy(object):
 
         return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
-    def get_js(self, opener):
+    def get_js(self):
         """ Get location of html5player javascript file and fetch.
 
         Return javascript as string and args.
@@ -380,7 +389,7 @@ class Pafy(object):
 
         if not self.js or not self.xargs:
             watchurl = "https://www.youtube.com/watch?v=" + self.videoid
-            watchinfo = opener.open(watchurl).read().decode("UTF-8")
+            watchinfo = g.opener.open(watchurl).read().decode("UTF-8")
             m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
 
             try:
@@ -396,12 +405,12 @@ class Pafy(object):
                 html5player = "https:" + html5player
 
             logging.debug("opening js url")
-            js = opener.open(html5player).read().decode("UTF-8")
+            js = g.opener.open(html5player).read().decode("UTF-8")
             self.js, self.xargs = js, args
 
         return(self.js, self.xargs)
 
-    def getstreammap(self, allinfo, key, opener):
+    def getstreammap(self, allinfo, key):
         """ get stream map. Return stream map and javascript."""
 
         js = self.js
@@ -409,9 +418,9 @@ class Pafy(object):
         smap = [parse_qs(sm) for sm in streamMap]
         if smap[0].get("s"):
             logging.debug("encrypted sig")
-            new.callback("Getting javascript data..")
-            js, args = self.get_js(opener)
-            new.callback("Got javascript")
+            g.callback("Getting javascript data..")
+            js, args = self.get_js()
+            g.callback("Got javascript")
             streamMap = args[key].split(",")
             smap = [parse_qs(sm) for sm in streamMap]
         return(smap, js)
@@ -426,7 +435,7 @@ class Pafy(object):
         if not self.gdata:
             url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
             url = url % self.videoid
-            self.gdata = self._opener.open(url).read()
+            self.gdata = g.opener.open(url).read()
         return self.gdata
 
     @property
@@ -460,8 +469,7 @@ class Pafy(object):
 
     def __init__(self, video_url, callback=None):
 
-        infoUrl = 'https://www.youtube.com/get_video_info?video_id='
-        ok = ("a-zA-Z0-9_-",) * 3
+        ok = (r"\w-",) * 3
         regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
         m = regx.search(video_url)
 
@@ -470,26 +478,18 @@ class Pafy(object):
             raise RuntimeError(err % video_url)
 
         vidid = m.group(1)
-        infoUrl += vidid + "&asv=3&el=detailpage&hl=en_US"
-        opener = build_opener()
-        ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-              "Trident/5.0)")
-
-        opener.addheaders = [('User-Agent', ua)]
-        self.keywords = ""
-        allinfo = parse_qs(decode_if_py3(opener.open(infoUrl).read()))
+        info_url = "?".join([g.infoUrl, g.infoUrlqs % vidid])
+        allinfo = parse_qs(decode_if_py3(g.opener.open(info_url).read()))
 
         if allinfo['status'][0] == "fail":
             reason = allinfo['reason'][0] or "Bad video argument"
             raise RuntimeError("Youtube says: %s" % reason)
 
         if callback:
-            new.callback = callback
-
-        else:
-            new.callback = lambda x: None
+            g.callback = callback
 
         f = lambda x: allinfo.get(x, ["unknown"])[0]
+        self.keywords = ""
         self.gdata = None
         self.xargs = None
         self.js = None
@@ -516,21 +516,18 @@ class Pafy(object):
         if allinfo.get('iurlmaxres'):
             self.bigthumbhd = f('iurlmaxres')
 
-        self._opener = opener
-
         try:
-            smap, js = self.getstreammap(
-                allinfo, 'url_encoded_fmt_stream_map', opener)
+            smap, js = self.getstreammap(allinfo, 'url_encoded_fmt_stream_map')
 
         except KeyError:
             raise IOError("Can't get video stream info")
 
-        self.streams = [Stream(sm, opener, self.title, js) for sm in smap]
+        self.streams = [Stream(sm, self.title, js) for sm in smap]
         self.videostreams = self.audiostreams = []
 
         if "adaptive_fmts" in allinfo:
-            smap_adpt, js = self.getstreammap(allinfo, 'adaptive_fmts', opener)
-            self.streams_ad = [Stream(sm, opener, self.title, js) for sm in
+            smap_adpt, js = self.getstreammap(allinfo, 'adaptive_fmts')
+            self.streams_ad = [Stream(sm, self.title, js) for sm in
                                smap_adpt]
             self.audiostreams = [x for x in self.streams_ad if x.bitrate]
             self.videostreams = [x for x in self.streams_ad if not x.bitrate]
