@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-__version__ = "0.3.32"
+__version__ = "0.3.33"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
