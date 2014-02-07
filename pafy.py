@@ -54,6 +54,7 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
     logging.basicConfig(level=logging.DEBUG)
 
 
+
 class g(object):
 
     """ Class for holding vars / lambdas needed throughout the module. """
@@ -64,8 +65,9 @@ class g(object):
           "Trident/5.0)")
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
-    callback = lambda x: None
-    safeint = lambda x: int(x) if x.isdigit() else x
+    jsfuncs = {}
+    jsfunctimes = {}
+    funclife = 60 * 12
     itags = {
         '5': ('320x240', 'flv', "normal"),
         '17': ('176x144', '3gp', "normal"),
@@ -114,11 +116,19 @@ def _extract_function_from_js(name, js):
 
     """
 
+
+    # use cached js function
+    if g.jsfuncs.get(name) and g.jsfunctimes[name] > time.time() - g.funclife:
+        return g.jsfuncs.get(name)
+
     fpattern = r'function\s%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
-    logging.debug("extracted function %s(%s){%s};", name, args, body)
-    return {'name': name, 'parameters': args.split(","), 'body': body}
+    #logging.debug("extracted function %s(%s){%s};", name, args, body)
+    func = {'name': name, 'parameters': args.split(","), 'body': body}
+    g.jsfuncs[name] = func
+    g.jsfunctimes[name] = time.time()
+    return func
 
 
 def _getval(val, argsdict):
@@ -236,10 +246,9 @@ def _decodesig(sig, js):
 
                            function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
-    g.callback("Decrypting signature")
+    new.callback("Decrypting signature")
     solved = _solve(function, js)
-    g.callback("Decrypted signature")
-    g.callback(solved)
+    new.callback("Decrypted signature")
     return solved
 
 
@@ -247,6 +256,9 @@ def new(url, callback=None):
     """ Return a new pafy instance given a url or video id. """
 
     return Pafy(url, callback=callback)
+
+
+new.safeint = lambda x: int(x) if x.isdigit() else x
 
 
 class Stream(object):
@@ -259,7 +271,7 @@ class Stream(object):
 
         if sm.get("s"):
             sm['sig'] = [_decodesig(sm['s'][0], js)]
-            logging.debug("Calculated decrypted sig: " + sm['sig'][0])
+            #logging.debug("Calculated decrypted sig: " + sm['sig'][0])
 
         if not "ratebypass=" in self.url:
             self.url = self.url + "&ratebypass=yes"
@@ -271,7 +283,7 @@ class Stream(object):
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = g.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self.dimensions = tuple(map(g.safeint, self.dimensions))
+        self.dimensions = tuple(map(new.safeint, self.dimensions))
         self.vidformat = sm['type'][0].split(';')[0]
         self.quality = self.resolution
         self.extension = g.itags[self.itag][1]
@@ -403,8 +415,17 @@ class Pafy(object):
             if html5player.startswith("//"):
                 html5player = "https:" + html5player
 
-            logging.debug("opening js url")
-            js = g.opener.open(html5player).read().decode("UTF-8")
+            # check whether we already have this html5js file
+            h5 = g.jsfuncs.get(html5player)
+
+            if h5 and g.jsfunctimes[html5player] > time.time() - g.funclife:
+                js = h5
+
+            else:
+                js = g.opener.open(html5player).read().decode("UTF-8")
+                g.jsfunctimes[html5player] = time.time()
+                g.jsfuncs[html5player] = js
+
             self.js, self.xargs = js, args
 
         return(self.js, self.xargs)
@@ -417,9 +438,9 @@ class Pafy(object):
         smap = [parse_qs(sm) for sm in streamMap]
         if smap[0].get("s"):
             logging.debug("encrypted sig")
-            g.callback("Getting javascript data..")
+            new.callback("Encrypted signature detected")
             js, args = self.get_js()
-            g.callback("Got javascript")
+            new.callback("Fetched watchinfo page")
             streamMap = args[key].split(",")
             smap = [parse_qs(sm) for sm in streamMap]
         return(smap, js)
@@ -485,7 +506,10 @@ class Pafy(object):
             raise RuntimeError("Youtube says: %s" % reason)
 
         if callback:
-            g.callback = callback
+            new.callback = callback
+
+        else:
+            new.callback = lambda x: None
 
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         self.keywords = ""
