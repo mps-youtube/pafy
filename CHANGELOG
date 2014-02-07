@@ -1,3 +1,12 @@
+7 February 2014
+Version 0.3.33
+Authors: leokewitz, nagev
+
+[Feature] - Store html5player js data in memory to reduce repeat fetches
+[Feature] - Removed redundant looping in js function extraction
+[Bugfix] - Display correct units for data rate
+
+
 4 February 2014
 Version 0.3.31
 Authors: nagev
