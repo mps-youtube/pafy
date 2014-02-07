@@ -56,16 +56,16 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
 
 class g(object):
 
-    """ Class for holding items needed throughout the module. """
+    """ Class for holding vars / lambdas needed throughout the module. """
 
     infoUrl = 'https://www.youtube.com/get_video_info'
     infoUrlqs = 'video_id=%s&asv=3&el=detailpage&hl=en_US'
-    gdataUrl = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
-    ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; "
+    ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
           "Trident/5.0)")
-    jsfuncs = {}
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
+    callback = lambda x: None
+    safeint = lambda x: int(x) if x.isdigit() else x
     itags = {
         '5': ('320x240', 'flv', "normal"),
         '17': ('176x144', '3gp', "normal"),
@@ -114,17 +114,11 @@ def _extract_function_from_js(name, js):
 
     """
 
-    if name in g.jsfuncs:
-        return g.jsfuncs[name]
-
     fpattern = r'function\s%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
     logging.debug("extracted function %s(%s){%s};", name, args, body)
-    g.jsfuncs[name] = {'name': name,
-                       'parameters': args.split(","),
-                       'body': body}
-    return g.jsfuncs[name]
+    return {'name': name, 'parameters': args.split(","), 'body': body}
 
 
 def _getval(val, argsdict):
@@ -181,7 +175,7 @@ def _solve(f, js):
     parts = f['body'].split(";")
 
     for part in parts:
-        #logging.debug("Working on part: " + part)
+        logging.debug("Working on part: " + part)
 
         name = ""
 
@@ -238,13 +232,14 @@ def _decodesig(sig, js):
     function = _extract_function_from_js(funcname, js)
 
     if not len(function['parameters']) == 1:
-        err = "Main sig js function has more than one arg: %s"
-        raise RuntimeError(err  % function['parameters'])
+        raise RuntimeError("Main sig js function has more than one arg: %s" %
 
+                           function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
-    #new.callback("Decrypting signature")
+    g.callback("Decrypting signature")
     solved = _solve(function, js)
-    #new.callback("Decrypted signature")
+    g.callback("Decrypted signature")
+    g.callback(solved)
     return solved
 
 
@@ -253,9 +248,6 @@ def new(url, callback=None):
 
     return Pafy(url, callback=callback)
 
-
-new.callback = lambda x: None
-new.safeint = lambda x: int(x) if x.isdigit() else x
 
 class Stream(object):
 
@@ -279,7 +271,7 @@ class Stream(object):
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = g.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self.dimensions = tuple(map(new.safeint, self.dimensions))
+        self.dimensions = tuple(map(g.safeint, self.dimensions))
         self.vidformat = sm['type'][0].split(';')[0]
         self.quality = self.resolution
         self.extension = g.itags[self.itag][1]
@@ -307,9 +299,7 @@ class Stream(object):
 
             try:
                 cl = "content-length"
-                logging.debug("req filsize")
                 self.fsize = int(g.opener.open(self.url).headers[cl])
-                logging.debug("got filesize")
 
             except (HTTPError, URLError):
                 self.fsize = 0
@@ -367,10 +357,6 @@ class Pafy(object):
     # This is probably not the recommended way to use len()
     # R0924: implemented __len__ but not __getitem__
     # pylint: disable=R0924
-
-    html5playerjs = None
-    jsexpiry = None
-
     def __len__(self):
         return self.length
 
@@ -400,15 +386,9 @@ class Pafy(object):
 
         """
 
-        if Pafy.html5playerjs and time.time() < Pafy.jsexpiry:
-            logging.debug("nofetch - used class html5")
-            return Pafy.html5playerjs
-
-        else:
+        if not self.js or not self.xargs:
             watchurl = "https://www.youtube.com/watch?v=" + self.videoid
-            logging.debug("req watchurl")
             watchinfo = g.opener.open(watchurl).read().decode("UTF-8")
-            logging.debug("got watchurl")
             m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
 
             try:
@@ -423,13 +403,11 @@ class Pafy(object):
             if html5player.startswith("//"):
                 html5player = "https:" + html5player
 
-            logging.debug("req js url")
+            logging.debug("opening js url")
             js = g.opener.open(html5player).read().decode("UTF-8")
-            logging.debug("got html5 from web")
-            Pafy.html5playerjs = js, args
-            Pafy.jsexpiry = time.time() + 1200
+            self.js, self.xargs = js, args
 
-        return(js, args)
+        return(self.js, self.xargs)
 
     def getstreammap(self, allinfo, key):
         """ get stream map. Return stream map and javascript."""
@@ -439,9 +417,9 @@ class Pafy(object):
         smap = [parse_qs(sm) for sm in streamMap]
         if smap[0].get("s"):
             logging.debug("encrypted sig")
-            new.callback("Getting javascript data..")
+            g.callback("Getting javascript data..")
             js, args = self.get_js()
-            new.callback("Got javascript")
+            g.callback("Got javascript")
             streamMap = args[key].split(",")
             smap = [parse_qs(sm) for sm in streamMap]
         return(smap, js)
@@ -454,10 +432,9 @@ class Pafy(object):
         """
 
         if not self.gdata:
-            url = g.gdataUrl % self.videoid
-            logging.debug("req gdata")
+            url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
+            url = url % self.videoid
             self.gdata = g.opener.open(url).read()
-            logging.debug("got gdata")
         return self.gdata
 
     @property
@@ -499,19 +476,16 @@ class Pafy(object):
             err = "Need 11 character video id or the URL of the video. Got %s"
             raise RuntimeError(err % video_url)
 
-        if callback:
-            new.callback = callback
-
         vidid = m.group(1)
         info_url = "?".join([g.infoUrl, g.infoUrlqs % vidid])
-        logging.debug("req infourl")
         allinfo = parse_qs(decode_if_py3(g.opener.open(info_url).read()))
-        logging.debug("got infourl")
 
         if allinfo['status'][0] == "fail":
             reason = allinfo['reason'][0] or "Bad video argument"
             raise RuntimeError("Youtube says: %s" % reason)
 
+        if callback:
+            g.callback = callback
 
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         self.keywords = ""
