@@ -121,7 +121,7 @@ def _extract_function_from_js(name, js):
     if g.jsfuncs.get(name) and g.jsfunctimes[name] > time.time() - g.funclife:
         return g.jsfuncs.get(name)
 
-    fpattern = r'function\s%s\(((?:\w+,?)+)\)\{([^}]+)\}'
+    fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
     #logging.debug("extracted function %s(%s){%s};", name, args, body)
@@ -400,7 +400,9 @@ class Pafy(object):
 
         if not self.js or not self.xargs:
             watchurl = "https://www.youtube.com/watch?v=" + self.videoid
+            new.callback("Fetching watch?v page")
             watchinfo = g.opener.open(watchurl).read().decode("UTF-8")
+            new.callback("watch?v page fetched")
             m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
 
             try:
@@ -422,7 +424,9 @@ class Pafy(object):
                 js = h5
 
             else:
+                new.callback("Fetching html5player page")
                 js = g.opener.open(html5player).read().decode("UTF-8")
+                new.callback("html5player page fetched")
                 g.jsfunctimes[html5player] = time.time()
                 g.jsfuncs[html5player] = js
 
@@ -437,10 +441,8 @@ class Pafy(object):
         streamMap = allinfo[key][0].split(',')
         smap = [parse_qs(sm) for sm in streamMap]
         if smap[0].get("s"):
-            logging.debug("encrypted sig")
             new.callback("Encrypted signature detected")
             js, args = self.get_js()
-            new.callback("Fetched watchinfo page")
             streamMap = args[key].split(",")
             smap = [parse_qs(sm) for sm in streamMap]
         return(smap, js)
