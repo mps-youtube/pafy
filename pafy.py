@@ -54,7 +54,6 @@ if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
     logging.basicConfig(level=logging.DEBUG)
 
 
-
 class g(object):
 
     """ Class for holding vars / lambdas needed throughout the module. """
@@ -116,7 +115,6 @@ def _extract_function_from_js(name, js):
 
     """
 
-
     # use cached js function
     if g.jsfuncs.get(name) and g.jsfunctimes[name] > time.time() - g.funclife:
         return g.jsfuncs.get(name)
@@ -124,7 +122,7 @@ def _extract_function_from_js(name, js):
     fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
-    #logging.debug("extracted function %s(%s){%s};", name, args, body)
+    logging.debug("extracted function %s(%s){%s};", name, args, body)
     func = {'name': name, 'parameters': args.split(","), 'body': body}
     g.jsfuncs[name] = func
     g.jsfunctimes[name] = time.time()
@@ -243,7 +241,6 @@ def _decodesig(sig, js):
 
     if not len(function['parameters']) == 1:
         raise RuntimeError("Main sig js function has more than one arg: %s" %
-
                            function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
     new.callback("Decrypting signature")
@@ -571,6 +568,9 @@ class Pafy(object):
 
         """
 
+        if not self.streams:
+            return False
+
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
 
             """ sort function for max() """
@@ -595,6 +595,9 @@ class Pafy(object):
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
         """ Return the highest bitrate audio Stream object."""
+
+        if not self.audiostreams:
+            return False
 
         def _sortkey(x, keybitrate=0, keyftype=0):
             """ Sort function for sort by bitrates. """

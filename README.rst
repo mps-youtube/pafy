@@ -172,6 +172,25 @@ show ALL formats for a video (video+audio, video-only and audio-only)::
     ('audio', 'm4a', '128k')
 
 
+Installation
+------------
+
+Pafy can be installed using `pip <http://www.pip-installer.org>`_::
+
+    sudo pip install pafy
+
+or use a `virtualenv <http://virtualenv.org>`_ if you don't want to install it system-wide::
+
+    virtualenv venv
+    source venv/bin/activate
+    pip install pafy
+
+Alternatively you can just grab the pafy.py file and import it in your python
+code::
+
+    wget https://raw.github.com/np1/pafy/master/pafy.py
+
+
 Command Line Tool (ytdl) Usage
 ------------------------------
 
