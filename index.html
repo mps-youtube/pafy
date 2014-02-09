@@ -90,20 +90,17 @@ Thumbnail: https://i1.ytimg.com/vi/cyMHZVT91Dw/default.jpg
 Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, You...  
 </code></pre>
 
-<p>show regular formats for a video (video files with audio)::</p>
+<p>list available streams for a video::</p>
 
 <pre><code>&gt;&gt;&gt; streams = video.streams
 &gt;&gt;&gt; for s in streams:
-&gt;&gt;&gt;     print s.resolution, s.extension
+&gt;&gt;&gt;     print(s)
 
-480x854 webm
-480x854 flv
-360x640 webm
-360x640 flv
-360x640 mp4
-240x400 flv
-320x240 3gp
-144x176 3gp
+normal:webm@640x360
+normal:mp4@640x360
+normal:flv@320x240
+normal:3gp@320x240
+normal:3gp@176x144
 </code></pre>
 
 <p>show all formats, file-sizes and their download url::</p>
@@ -111,14 +108,11 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, You...
 <pre><code>&gt;&gt;&gt; for s in streams:
 &gt;&gt;&gt;     print s.resolution, s.extension, s.get_filesize(), s.url
 
-480x854 webm 56858674 http://r12--sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-480x854 flv 53066081 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-360x640 webm 34775366 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-360x640 flv 32737100 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-360x640 mp4 25919932 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-240x400 flv 14341366 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-320x240 3gp 11083585 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
-144x176 3gp 3891135 http://r11---sn-aoh8kier.c.youtube.com/videoplayback?expire=1369...
+('640x360', 'webm', 34775366, 'http://r20---sn-aiglln7e.googlevideo.com/v..
+('640x360', 'mp4', 25027697, 'http://r20---sn-aiglln7e.googlevideo.com/v..
+('320x240', 'flv', 15363436, 'http://r20---sn-aiglln7e.googlevideo.com/v..
+('320x240', '3gp', 10097332, 'http://r20---sn-aiglln7e.googlevideo.com/v..
+('176x144', '3gp', 3659867, 'http://r20---sn-aiglln7e.googlevideo.com/v..    
 </code></pre>
 
 <p>get best resolution regardless of file format::</p>
@@ -136,15 +130,6 @@ Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, You...
 &gt;&gt;&gt; best.resolution, best.extension
 
 ('360x640', 'mp4')
-</code></pre>
-
-<p>get best resolution for a particular file format, or return
-different format if it has the best resolution::</p>
-
-<pre><code>&gt;&gt;&gt; best = video.getbest(preftype="mp4", ftypestrict=False)
-&gt;&gt;&gt; best.resolution, best.extension
-
-('480x854', 'webm')
 </code></pre>
 
 <p>get url, for download or streaming in mplayer / vlc etc::</p>
@@ -169,21 +154,19 @@ Done
 &gt;&gt;&gt; best.download(filepath=myfilename)
 </code></pre>
 
-<p>Get audio-only streams (m4a and/or ogg vorbis)
-(use video.videostreams to get video-only streams)::</p>
+<p>Get audio-only streams (m4a and/or ogg vorbis)::</p>
 
 <pre><code>&gt;&gt;&gt; audiostreams = video.audiostreams
 &gt;&gt;&gt; for a in audiostreams:
-&gt;&gt;&gt;     print(a.quality, a.extension, a.get_filesize())
+&gt;&gt;&gt;     print(a.bitrate, a.extension, a.get_filesize())
 
 ('48k', 'm4a', 2109164)
 ('128k', 'm4a', 5630839)
-('256k', 'm4a', 11302824)
 </code></pre>
 
-<p>Download the 3rd audio stream from the above list::</p>
+<p>Download the 2nd audio stream from the above list::</p>
 
-<pre><code>&gt;&gt;&gt; audiostreams[2].download()
+<pre><code>&gt;&gt;&gt; audiostreams[1].download()
 </code></pre>
 
 <p>Get the best quality audio stream::</p>
@@ -203,25 +186,40 @@ Done
 
 <pre><code>&gt;&gt;&gt; allstreams = video.allstreams
 &gt;&gt;&gt; for s in allstreams:
-&gt;&gt;&gt;     print(s.quality, s.extension, s.mediatype)
+&gt;&gt;&gt;     print(s.mediatype, s.extension, s.quality)
 
-('1280x720', 'mp4', 'a/v')
-('640x360', 'webm', 'a/v')
-('640x360', 'mp4', 'a/v')
-('320x240', 'flv', 'a/v')
-('320x240', '3gp', 'a/v')
-('176x144', '3gp', 'a/v')
-('1920x1080', 'm4v', 'video')
-('1280x720', 'm4v', 'video')
-('854x480', 'm4v', 'video')
-('640x360', 'm4v', 'video')
-('426x240', 'm4v', 'video')
-('256x144', 'm4v', 'video')
-('48k', 'm4a', 'audio')
-('128k', 'm4a', 'audio')
-('256k', 'm4a', 'audio')
-('128k', 'ogg', 'audio')
-('256k', 'ogg', 'audio')
+('normal', 'webm', '640x360')
+('normal', 'mp4', '640x360')
+('normal', 'flv', '320x240')
+('normal', '3gp', '320x240')
+('normal', '3gp', '176x144')
+('video', 'm4v', '854x480')
+('video', 'm4v', '640x360')
+('video', 'm4v', '426x240')
+('video', 'm4v', '256x144')
+('audio', 'm4a', '48k')
+('audio', 'm4a', '128k')
+</code></pre>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Pafy can be installed using <a href="http://www.pip-installer.org">pip</a>::</p>
+
+<pre><code>sudo pip install pafy
+</code></pre>
+
+<p>or use a <a href="http://virtualenv.org">virtualenv</a> if you don't want to install it system-wide::</p>
+
+<pre><code>virtualenv vpafy
+source vpafy/bin/activate
+pip install pafy
+</code></pre>
+
+<p>Alternatively you can just grab the pafy.py file and import it in your python
+code::</p>
+
+<pre><code>wget https://raw.github.com/np1/pafy/master/pafy.py
 </code></pre>
 
 <h2>
@@ -252,22 +250,22 @@ optional arguments:
 </code></pre>
 
 <h2>
-<a name="ytdl-examples" class="anchor" href="#ytdl-examples"><span class="octicon octicon-link"></span></a>YTDL Examples</h2>
+<a name="ytdl-examples" class="anchor" href="#ytdl-examples"><span class="octicon octicon-link"></span></a>ytdl Examples</h2>
 
 <p>Download best available resolution (-b)::</p>
 
-<pre><code>ytdl "http://www.youtube.com/watch?v=cyMHZVT91Dw" -b
+<pre><code>ytdl -b "http://www.youtube.com/watch?v=cyMHZVT91Dw"
 </code></pre>
 
 <p>Download best available audio stream (-a):
 (note; the full url is not required, just the video id will suffice)::</p>
 
-<pre><code>ytdl cyMHZVT91Dw -a
+<pre><code>ytdl -a cyMHZVT91Dw
 </code></pre>
 
 <p>get video info (-i)::</p>
 
-<pre><code>ytdl cyMHZVT91Dw -i
+<pre><code>ytdl -i cyMHZVT91Dw
 </code></pre>
 
 <p>list available dowload streams::</p>
@@ -288,12 +286,12 @@ Stream Type    Format Quality         Size
 
 <p>Download mp4 640x360 (ie. stream number 2)::</p>
 
-<pre><code>ytdl cyMHZVT91Dw -n2
+<pre><code>ytdl -n2 cyMHZVT91Dw
 </code></pre>
 
 <p>Download m4a audio stream at 256k bitrate::</p>
 
-<pre><code>ytdl cyMHZVT91Dw -n8
+<pre><code>ytdl -n8 cyMHZVT91Dw
 </code></pre>
       </section>
     </div>
