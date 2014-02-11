@@ -1,4 +1,6 @@
 MANIFEST
+docs-sphinx/_build/
+*.help
 /dist
 .test
 *.pyc
