@@ -20,11 +20,12 @@ __version__ = "0.3.23"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
-from pafy import Pafy
+from pafy import Pafy, getPlaylist
 import argparse
 import logging
 import sys
 import os
+import re
 
 
 if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
@@ -62,6 +63,8 @@ def printstreams(streams):
         print(x)
 
 
+    
+
 def main():
     description = "YouTube Download Tool"
     parser = argparse.ArgumentParser(description=description)
@@ -84,47 +87,55 @@ def main():
         '-a', required=False, help='Download the best quality audio (ignores '
         '-n)', action="store_true"
     )
+    parser.add_argument(
+        '-p', required=False, help='Download a whole YouTube Playlist',
+        action="store_true"
+    )
 
     args = parser.parse_args()
-    vid = Pafy(args.url)
-    streams = []
-    if args.t:
-        if "video" in args.t:
-            streams += vid.videostreams
-        if "audio" in args.t:
-            streams += vid.audiostreams[::-1]
-        if "normal" in args.t:
-            streams += vid.streams
-        if "all" in args.t:
-            streams = vid.allstreams
+    if args.p:
+        vids = getPlaylist(args.url)
     else:
-        streams = vid.streams + vid.audiostreams[::-1]
-    # if requested print vid info and list streams
-    if args.i:
-        print(vid)
-    if args.s:
-        printstreams(streams)
-    if args.b or args.a:
-        if args.a and args.b:
-            print("-a and -b cannot be used together! Use only one.")
+        vids = [Pafy(args.url)]
+    for vid in vids:
+        streams = []
+        if args.t:
+            if "video" in args.t:
+                streams += vid.videostreams
+            if "audio" in args.t:
+                streams += vid.audiostreams[::-1]
+            if "normal" in args.t:
+                streams += vid.streams
+            if "all" in args.t:
+                streams = vid.allstreams
         else:
-            download(vid, audio=args.a)
-            sys.exit()
-    elif args.n:
-        streamnumber = int(args.n) - 1
-        try:
-            download(vid, stream=streams[streamnumber])
-        except IndexError:
-            print("Sorry, %s is not a valid option, use 1-%s" % (
-                int(args.n), len(streams)))
-
-    if not args.i and not args.s and not args.b and not args.n and not args.t\
-       and not args.a:
-        streams = vid.streams + vid.audiostreams[::-1]
-        printstreams(streams)
-
-    elif args.t and not args.a and not args.b and not args.s:
-        printstreams(streams)
-
+            streams = vid.streams + vid.audiostreams[::-1]
+        # if requested print vid info and list streams
+        if args.i:
+            print(vid)
+        if args.s:
+            printstreams(streams)
+        if args.b or args.a:
+            if args.a and args.b:
+                print("-a and -b cannot be used together! Use only one.")
+            else:
+                download(vid, audio=args.a)
+                if not args.p:
+                    sys.exit()
+        elif args.n:
+            streamnumber = int(args.n) - 1
+            try:
+                download(vid, stream=streams[streamnumber])
+            except IndexError:
+                print("Sorry, %s is not a valid option, use 1-%s" % (
+                    int(args.n), len(streams)))
+    
+        if not args.i and not args.s and not args.b and not args.n and not args.t\
+           and not args.a:
+            streams = vid.streams + vid.audiostreams[::-1]
+            printstreams(streams)
+    
+        elif args.t and not args.a and not args.b and not args.s:
+            printstreams(streams)
 
 main()
