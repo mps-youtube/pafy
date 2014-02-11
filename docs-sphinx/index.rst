@@ -132,7 +132,7 @@ Pafy Methods
 
 The :func:`Pafy.getbest` and :func:`Pafy.getbestaudio` methods are a quick
 way to access the highest quality streams for a particular video without
-needing to query the stream lists
+needing to query the stream lists. 
 
 .. function:: Pafy.getbest([preftype="any"][, ftypestrict=True])
 
@@ -214,6 +214,13 @@ Stream Attributes
 
     A Stream object can be used to access the following attributes
 
+
+.. attribute:: Stream.url
+
+    The direct access URL of the stream.  This can be used to stream the media
+    in mplayer or vlc, or for downloading with wget or curl.  To download
+    directly, use the :func:`Stream.download` method
+
 .. attribute:: Stream.bitrate
 
     The bitrate of the stream - if it is an audio stream, otherwise None,
@@ -258,12 +265,11 @@ Stream Attributes
 .. attribute:: Stream.title
 
     The title of the video, this will be the same as :attr:`Pafy.title`
-   
-.. attribute:: Stream.url
 
-    The direct access URL of the stream.  This can be used to stream the media
-    in mplayer or vlc, or for downloading with wget or curl.  To download
-    directly, use the :func:`Stream.download` method
+.. attribute:: Stream.notes
+
+    Any additional notes regarding the stream (eg, 6-channel surround) *str*
+   
 
 An example of accessing Stream attributes::
 
