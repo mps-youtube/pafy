@@ -638,12 +638,4 @@ def getPlaylist(playlist_url, callback=None):
         allinfo = json.loads(decode_if_py3(g.opener.open(info_url).read()))
     except:
         raise RuntimeError("Unable to get response from YouTube.")
-    videos = []
-    for v in allinfo['video']:
-        try:
-            video = Pafy(v['encrypted_id'])
-            videos.append(video)
-        except RuntimeError as e:
-            print("%s: %s"%(v['title'], e.message))
-            continue
-    return videos
+    return [v['encrypted_id'] for v in allinfo['video']]

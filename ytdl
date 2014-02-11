@@ -94,10 +94,11 @@ def main():
 
     args = parser.parse_args()
     if args.p:
-        vids = getPlaylist(args.url)
+        ids = getPlaylist(args.url)
     else:
-        vids = [Pafy(args.url)]
-    for vid in vids:
+        ids = [args.url]
+    for id in ids:
+        vid = Pafy(id)
         streams = []
         if args.t:
             if "video" in args.t:
