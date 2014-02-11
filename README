@@ -181,8 +181,8 @@ Pafy can be installed using `pip <http://www.pip-installer.org>`_::
 
 or use a `virtualenv <http://virtualenv.org>`_ if you don't want to install it system-wide::
 
-    virtualenv vpafy
-    source vpafy/bin/activate
+    virtualenv venv
+    source venv/bin/activate
     pip install pafy
 
 Alternatively you can just grab the pafy.py file and import it in your python
