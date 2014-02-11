@@ -60,6 +60,8 @@ class g(object):
 
     infoUrl = 'https://www.youtube.com/get_video_info'
     infoUrlqs = 'video_id=%s&asv=3&el=detailpage&hl=en_US'
+    playlistUrl = 'http://www.youtube.com/list_ajax'
+    playlistUrlqs = 'style=json&action_get_list=1&list=%s'
     ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
           "Trident/5.0)")
     opener = build_opener()
@@ -618,3 +620,30 @@ class Pafy(object):
 
         else:
             return r
+
+def getPlaylist(playlist_url, callback=None):
+    """ Get an array of Pafy objects from a YouTube Playlist. """
+    
+    ok = (r"\w-",) * 3
+    regx = re.compile(r'(?:^|[^%s]+)([%s]{18})(?:[^%s]+|$)' % ok)
+    m = regx.search(playlist_url)
+    
+    if not m:
+        err = "Need 18 character video id or the URL of the video. Got %s"
+        raise RuntimeError(err % playlist_url)
+    
+    playlistid = m.groups(0)
+    info_url = "?".join([g.playlistUrl, g.playlistUrlqs % playlistid])
+    try:
+        allinfo = json.loads(decode_if_py3(g.opener.open(info_url).read()))
+    except:
+        raise RuntimeError("Unable to get response from YouTube.")
+    videos = []
+    for v in allinfo['video']:
+        try:
+            video = Pafy(v['encrypted_id'])
+            videos.append(video)
+        except RuntimeError as e:
+            print("%s: %s"%(v['title'], e.message))
+            continue
+    return videos
