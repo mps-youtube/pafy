@@ -84,6 +84,7 @@ class g(object):
         '45': ('1280x720', 'webm', "normal", ''),
         '46': ('1920x1080', 'webm', "normal", ''),
         '82': ('640x360-3D', 'mp4', "normal", ''),
+        '83': ('640x480-3D', 'mp4', 'normal', ''),
         '84': ('1280x720-3D', 'mp4', "normal", ''),
         '100': ('640x360-3D', 'webm', "normal", ''),
         '102': ('1280x720-3D', 'webm', "normal", ''),
@@ -626,15 +627,15 @@ class Pafy(object):
 
 def getPlaylist(playlist_url, callback=None):
     """ Get an array of Pafy objects from a YouTube Playlist. """
-    
+
     ok = (r"\w-",) * 3
     regx = re.compile(r'(?:^|[^%s]+)([%s]{18})(?:[^%s]+|$)' % ok)
     m = regx.search(playlist_url)
-    
+
     if not m:
         err = "Need 18 character video id or the URL of the video. Got %s"
         raise RuntimeError(err % playlist_url)
-    
+
     playlistid = m.groups(0)
     info_url = "?".join([g.playlistUrl, g.playlistUrlqs % playlistid])
     try:
