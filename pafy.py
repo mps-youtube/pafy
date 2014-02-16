@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-__version__ = "0.3.35"
+__version__ = "0.3.34"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -70,45 +70,42 @@ class g(object):
     jsfunctimes = {}
     funclife = 60 * 12
     itags = {
-        '5': ('320x240', 'flv', "normal", ''),
-        '17': ('176x144', '3gp', "normal", ''),
-        '18': ('640x360', 'mp4', "normal", ''),
-        '22': ('1280x720', 'mp4', "normal", ''),
-        '34': ('640x360', 'flv', "normal", ''),
-        '35': ('854x480', 'flv', "normal", ''),
-        '36': ('320x240', '3gp', "normal", ''),
-        '37': ('1920x1080', 'mp4', "normal", ''),
-        '38': ('4096x3072', 'mp4', "normal", '4:3 hi-res'),
-        '43': ('640x360', 'webm', "normal", ''),
-        '44': ('854x480', 'webm', "normal", ''),
-        '45': ('1280x720', 'webm', "normal", ''),
-        '46': ('1920x1080', 'webm', "normal", ''),
-        '82': ('640x360-3D', 'mp4', "normal", ''),
-        '83': ('640x480-3D', 'mp4', 'normal', ''),
-        '84': ('1280x720-3D', 'mp4', "normal", ''),
-        '100': ('640x360-3D', 'webm', "normal", ''),
-        '102': ('1280x720-3D', 'webm', "normal", ''),
-        '133': ('426x240', 'm4v', 'video', ''),
-        '134': ('640x360', 'm4v', 'video', ''),
-        '135': ('854x480', 'm4v', 'video', ''),
-        '136': ('1280x720', 'm4v', 'video', ''),
-        '137': ('1920x1080', 'm4v', 'video', ''),
-        '138': ('4096x3072', 'm4v', 'video', ''),
-        '139': ('48k', 'm4a', 'audio', ''),
-        '140': ('128k', 'm4a', 'audio', ''),
-        '141': ('256k', 'm4a', 'audio', ''),
-        '160': ('256x144', 'm4v', 'video', ''),
-        '171': ('128k', 'ogg', 'audio', ''),
-        '172': ('192k', 'ogg', 'audio', ''),
-        '242': ('360x240', 'webm', 'normal', ''),
-        '243': ('480x360', 'webm', 'normal', ''),
-        '244': ('640x480', 'webm', 'normal', ''),
-        '245': ('640x480', 'webm', 'normal', ''),
-        '246': ('640x480', 'webm', 'normal', ''),
-        '247': ('720x480', 'webm', 'normal', ''),
-        '248': ('1920x1080', 'webm', 'normal', ''),
-        '256': ('192k', 'm4a', 'audio', '6-channel'),
-        '258': ('320k', 'm4a', 'audio', '6-channel'),
+        '5': ('320x240', 'flv', "normal"),
+        '17': ('176x144', '3gp', "normal"),
+        '18': ('640x360', 'mp4', "normal"),
+        '22': ('1280x720', 'mp4', "normal"),
+        '34': ('640x360', 'flv', "normal"),
+        '35': ('854x480', 'flv', "normal"),
+        '36': ('320x240', '3gp', "normal"),
+        '37': ('1920x1080', 'mp4', "normal"),
+        '38': ('4096x3072', 'superHD', "normal"),
+        '43': ('640x360', 'webm', "normal"),
+        '44': ('854x480', 'webm', "normal"),
+        '45': ('1280x720', 'webm', "normal"),
+        '46': ('1920x1080', 'webm', "normal"),
+        '82': ('640x360-3D', 'mp4', "normal"),
+        '84': ('1280x720-3D', 'mp4', "normal"),
+        '100': ('640x360-3D', 'webm', "normal"),
+        '102': ('1280x720-3D', 'webm', "normal"),
+        '133': ('426x240', 'm4v', 'video'),
+        '134': ('640x360', 'm4v', 'video'),
+        '135': ('854x480', 'm4v', 'video'),
+        '136': ('1280x720', 'm4v', 'video'),
+        '137': ('1920x1080', 'm4v', 'video'),
+        '138': ('4096x3072', 'm4v', 'video'),
+        '139': ('48k', 'm4a', 'audio'),
+        '140': ('128k', 'm4a', 'audio'),
+        '141': ('256k', 'm4a', 'audio'),
+        '160': ('256x144', 'm4v', 'video'),
+        '171': ('128k', 'ogg', 'audio'),
+        '172': ('192k', 'ogg', 'audio'),
+        '242': ('360x240', 'webm', 'normal'),
+        '243': ('480x360', 'webm', 'normal'),
+        '244': ('640x480', 'webm', 'normal'),
+        '245': ('640x480', 'webm', 'normal'),
+        '246': ('640x480', 'webm', 'normal'),
+        '247': ('720x480', 'webm', 'normal'),
+        '248': ('unknown', 'unknown', 'unknown'),
         '264': ('1920x1080', 'm4v', 'video')
     }
 
@@ -294,14 +291,13 @@ class Stream(object):
         self.fsize = None
         self.bitrate = self.rawbitrate = None
         self.mediatype = g.itags[self.itag][2]
-        self.notes = g.itags[self.itag][3]
 
         if self.mediatype == "audio":
-            self.dimensions = (0, 0)
             self.bitrate = self.resolution
-            self.quality = self.bitrate
-            self.resolution = "0x0"
             self.rawbitrate = int(sm["bitrate"][0])
+            self.dimensions = (0, 0)
+            self.resolution = "0x0"
+            self.quality = self.bitrate
 
     def __repr__(self):
         out = "%s:%s@%s" % (self.mediatype, self.extension, self.quality)
@@ -627,15 +623,15 @@ class Pafy(object):
 
 def getPlaylist(playlist_url, callback=None):
     """ Get an array of Pafy objects from a YouTube Playlist. """
-
+    
     ok = (r"\w-",) * 3
     regx = re.compile(r'(?:^|[^%s]+)([%s]{18})(?:[^%s]+|$)' % ok)
     m = regx.search(playlist_url)
-
+    
     if not m:
         err = "Need 18 character video id or the URL of the video. Got %s"
         raise RuntimeError(err % playlist_url)
-
+    
     playlistid = m.groups(0)
     info_url = "?".join([g.playlistUrl, g.playlistUrlqs % playlistid])
     try:
