@@ -20,12 +20,13 @@ __version__ = "0.3.23"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
-from pafy import Pafy
+from pafy import Pafy, getPlaylist
 import argparse
 import logging
 import sys
 import os
-
+import re
+import subprocess
 
 if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
     logging.basicConfig(level=logging.DEBUG)
@@ -62,6 +63,8 @@ def printstreams(streams):
         print(x)
 
 
+    
+
 def main():
     description = "YouTube Download Tool"
     parser = argparse.ArgumentParser(description=description)
@@ -84,47 +87,120 @@ def main():
         '-a', required=False, help='Download the best quality audio (ignores '
         '-n)', action="store_true"
     )
+    parser.add_argument(
+        '-p', required=False, help='Download a whole YouTube Playlist',
+        action="store_true"
+    )
+    parser.add_argument(
+        '-fullp', required=False, help='Download the best quality '
+         'video + Audio separately  '
+         'and muxes them into one mp4 format(requires ffmpeg installed)', action="store_true"
+    )
 
     args = parser.parse_args()
-    vid = Pafy(args.url)
-    streams = []
-    if args.t:
-        if "video" in args.t:
-            streams += vid.videostreams
-        if "audio" in args.t:
-            streams += vid.audiostreams[::-1]
-        if "normal" in args.t:
-            streams += vid.streams
-        if "all" in args.t:
-            streams = vid.allstreams
+    if args.p:
+        vids = getPlaylist(args.url)
     else:
-        streams = vid.streams + vid.audiostreams[::-1]
-    # if requested print vid info and list streams
-    if args.i:
-        print(vid)
-    if args.s:
-        printstreams(streams)
-    if args.b or args.a:
-        if args.a and args.b:
-            print("-a and -b cannot be used together! Use only one.")
+        vids = [Pafy(args.url)]
+    for vid in vids:
+        streams = []
+        if args.t:
+            if "video" in args.t:
+                streams += vid.videostreams
+            if "audio" in args.t:
+                streams += vid.audiostreams[::-1]
+            if "normal" in args.t:
+                streams += vid.streams
+            if "all" in args.t:
+                streams = vid.allstreams
         else:
-            download(vid, audio=args.a)
-            sys.exit()
-    elif args.n:
-        streamnumber = int(args.n) - 1
-        try:
-            download(vid, stream=streams[streamnumber])
-        except IndexError:
-            print("Sorry, %s is not a valid option, use 1-%s" % (
-                int(args.n), len(streams)))
+            streams = vid.streams + vid.audiostreams[::-1]
+        # if requested print vid info and list streams
+        if args.i:
+            print(vid)
+        if args.s:
+            printstreams(streams)
+        if args.b or args.a:
+            if args.a and args.b:
+                print("-a and -b cannot be used together! Use only one.")
+            else:
+                download(vid, audio=args.a)
+                if not args.p:
+                    sys.exit()
+        elif args.n:
+            streamnumber = int(args.n) - 1
+            try:
+                download(vid, stream=streams[streamnumber])
+            except IndexError:
+                print("Sorry, %s is not a valid option, use 1-%s" % (
+                    int(args.n), len(streams)))
+    
+        if not args.i and not args.s and not args.b and not args.n and not args.t\
+           and not args.a:
+            streams = vid.streams + vid.audiostreams[::-1]
+            printstreams(streams)
+    
+        elif args.t and not args.a and not args.b and not args.s:
+            printstreams(streams)
+        
+        if args.fullp:
+            print (" ")
+            print ("List of Video Streams available:")
+            printstreams(vid.videostreams)
+            print (" ")
+            print ("List of Audio Streams Available:")
+            printstreams(vid.audiostreams)
+            print " "
+            print " "
+            if not args.p:
+               try:
+                 videoindex1 = input("Enter the Video Stream No for Download:") 
+                 videoindex1 = int(videoindex1) - 1
+               except (ValueError,SyntaxError):
+                 print ("Invalid stream Number using stream 1 for Video")
+                 videoindex1 = 0
+               try:       
+                  audioindex1 = input("Enter the Audio Stream No for Download:") 
+                  audioindex1 = int(audioindex1) - 1
+               except (ValueError,SyntaxError):
+                  print ("Invalid stream Number using stream 1 for audio")
+                  audioindex1 = 0 
+            else:
+               videoindex1 = 0
+               audioindex1 = 0 
 
-    if not args.i and not args.s and not args.b and not args.n and not args.t\
-       and not args.a:
-        streams = vid.streams + vid.audiostreams[::-1]
-        printstreams(streams)
+            try:
+               videostreamdownload=vid.videostreams[videoindex1]
+            except IndexError:
+              print ("invalid Video stream index mentioned - using default 0!!!")   
+              videostreamdownload=vid.videostreams[0]
+            try:
+               audiostreamdownload=vid.audiostreams[audioindex1]
+            except IndexError:
+               print ("invalid Audio stream index mentioned - using default 0!!!")   
+               audiostreamdownload=vid.audiostreams[0]
+            myvideofilename = "video1." + videostreamdownload.extension
+            print ("Downloading video stream...")
+            videostreamdownload.download(filepath=myvideofilename)
+            print ("Downloading audio stream...")
+            myaudiofilename = "audio1." + audiostreamdownload.extension
+            audiostreamdownload.download(filepath=myaudiofilename)
+            ffmux = "ffmpeg -i " + myvideofilename + " -i " + myaudiofilename 
+            ffmux += " -vcodec copy -acodec copy -threads 2 "  
+            ffmux += videostreamdownload.title.replace(" ","_") + ".mp4"
+            print ("issuing os command - ")
+            print (ffmux)
+            p = subprocess.Popen(ffmux, shell=True, stderr=subprocess.PIPE)
+            while True:
+              out = p.stderr.read(1)
+              if out == '' and p.poll() != None:
+                 break
+              if out != '':
+                 sys.stdout.write(out)
+                 sys.stdout.flush() 
+            os.remove(myvideofilename)
+            os.remove(myaudiofilename)
 
-    elif args.t and not args.a and not args.b and not args.s:
-        printstreams(streams)
 
 
 main()
