@@ -81,6 +81,10 @@ attributes are available
 
     The duration of the streams in seconds (*int*)
 
+.. attribute:: Pafy.published
+
+    The upload date of the video (e.g., 2012-10-02 17:17:24) (*str*)
+
 .. attribute:: Pafy.rating
 
     The rating of the video (0-5), (*float*)
