@@ -464,6 +464,17 @@ class Pafy(object):
         return self.gdata
 
     @property
+    def published(self):
+        if not self._published:
+            t0 = "{http://www.w3.org/2005/Atom}"
+            gdata = self.get_video_gdata()
+            tree = etree.fromstring(gdata)
+            d = (tree.findall("%s%s" % (t0, "published")))
+            self._published = d[0].text.rstrip(".000Z").replace("T", " ")
+
+        return self._published
+
+    @property
     def description(self):
         """ Extract description, fetch gdata if necessary. Return string."""
 
@@ -532,6 +543,7 @@ class Pafy(object):
         self.formats = f('fmt_list').split(",")
         self.formats = [x.split("/") for x in self.formats]
         self._description = None
+        self._published = None
         self._category = None
         self.keywords = self.bigthumb = self.bigthumbhd = None
         self.expires = int(time.time()) + (60 * 60 * 4)
