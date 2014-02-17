@@ -1,7 +1,9 @@
-[dev]
+17 February 2014
 Version 0.3.35
 
 [Feature] - Added notes attribute to Stream class for further stream info
+[Feature] - Added function to fetch playlists (leokewitz)
+[Bugfix] - Add missing itag (83)
 
 
 11 February 2014
