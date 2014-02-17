@@ -625,9 +625,12 @@ class Pafy(object):
         else:
             return r
 
-def getPlaylist(playlist_url, callback=None):
-    """ Get an array of Pafy objects from a YouTube Playlist. """
 
+def get_playlist(playlist_url, callback=None):
+    """ Return a list of Pafy objects from a YouTube Playlist. """
+
+    nullf = lambda x: None
+    callback = callback or nullf
     ok = (r"\w-",) * 3
     regx = re.compile(r'(?:^|[^%s]+)([%s]{18})(?:[^%s]+|$)' % ok)
     m = regx.search(playlist_url)
@@ -638,16 +641,25 @@ def getPlaylist(playlist_url, callback=None):
 
     playlistid = m.groups(0)
     info_url = "?".join([g.playlistUrl, g.playlistUrlqs % playlistid])
+
     try:
         allinfo = json.loads(decode_if_py3(g.opener.open(info_url).read()))
+
     except:
-        raise RuntimeError("Unable to get response from YouTube.")
+        raise RuntimeError("Error fetching playlist %s" % m.groups(0))
+
     videos = []
+
     for v in allinfo['video']:
+
         try:
             video = Pafy(v['encrypted_id'])
+            callback("Added video: %s" % v.title)
             videos.append(video)
+
         except RuntimeError as e:
-            print("%s: %s"%(v['title'], e.message))
+
+            callback("%s: %s" % (v['title'], e.message))
             continue
+
     return videos
