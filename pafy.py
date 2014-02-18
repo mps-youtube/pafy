@@ -188,7 +188,7 @@ def _solve(f, js):
     parts = f['body'].split(";")
 
     for part in parts:
-        logging.debug("Working on part: " + part)
+        #logging.debug("Working on part: " + part)
 
         name = ""
 
