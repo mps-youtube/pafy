@@ -109,7 +109,7 @@ class g(object):
         '248': ('1920x1080', 'webm', 'normal', ''),
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
-        '264': ('1920x1080', 'm4v', 'video')
+        '264': ('1920x1080', 'm4v', 'video', '')
     }
 
 
@@ -188,7 +188,7 @@ def _solve(f, js):
     parts = f['body'].split(";")
 
     for part in parts:
-        #logging.debug("Working on part: " + part)
+        logging.debug("Working on part: " + part)
 
         name = ""
 
