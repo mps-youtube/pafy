@@ -1,6 +1,8 @@
-Version 0.3.36 (develop branch, not yet released)
+20 February 2014
+Version 0.3.36
 
 [Feature] - Added published date field
+[Bugfix] - Added missing notes field to itag 264 
 
 
 17 February 2014
