@@ -53,6 +53,7 @@ else:
 if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
 
+dbg = logging.debug
 
 class g(object):
 
@@ -133,7 +134,7 @@ def _extract_function_from_js(name, js):
     fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
-    logging.debug("extracted function %s(%s){%s};", name, args, body)
+    dbg("extracted function %s(%s){%s};", name, args, body)
     func = {'name': name, 'parameters': args.split(","), 'body': body}
     g.jsfuncs[name] = func
     g.jsfunctimes[name] = time.time()
@@ -194,7 +195,7 @@ def _solve(f, js):
     parts = f['body'].split(";")
 
     for part in parts:
-        logging.debug("Working on part: " + part)
+        dbg("Working on part: " + part)
 
         name = ""
 
@@ -277,7 +278,7 @@ class Stream(object):
 
         if sm.get("s"):
             sm['sig'] = [_decodesig(sm['s'][0], js)]
-            #logging.debug("Calculated decrypted sig: " + sm['sig'][0])
+            #dbg("Calculated decrypted sig: " + sm['sig'][0])
 
         if not "ratebypass=" in self.url:
             self.url = self.url + "&ratebypass=yes"
