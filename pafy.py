@@ -58,12 +58,18 @@ class g(object):
 
     """ Class for holding vars / lambdas needed throughout the module. """
 
-    infoUrl = 'https://www.youtube.com/get_video_info'
-    infoUrlqs = 'video_id=%s&asv=3&el=detailpage&hl=en_US'
-    playlistUrl = 'http://www.youtube.com/list_ajax'
-    playlistUrlqs = 'style=json&action_get_list=1&list=%s'
+    urls = {
+        'gdata': "https://gdata.youtube.com/feeds/api/videos/%s?v=2",
+        'watchv': "https://www.youtube.com/watch?v=%s",
+        'vidinfo': ('https://www.youtube.com/get_video_info?'
+                    'video_id=%s&asv=3&el=detailpage&hl=en_US'),
+        'playlist': ('http://www.youtube.com/list_ajax?',
+                    'style=json&action_get_list=1&list=%s')
+    }
     ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
           "Trident/5.0)")
+    UEFSM = 'url_encoded_fmt_stream_map'
+    AF = 'adaptive_fmts'
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
     jsfuncs = {}
@@ -260,8 +266,6 @@ def new(url, callback=None):
     return Pafy(url, callback=callback)
 
 
-new.safeint = lambda x: int(x) if x.isdigit() else x
-
 
 class Stream(object):
 
@@ -281,11 +285,12 @@ class Stream(object):
         if not "signature=" in self.url:
             self.url += '&signature=' + sm['sig'][0]
 
+        safeint = lambda x: int(x) if x.isdigit() else x
         self.itag = sm['itag'][0]
         self.threed = 'stereo3d' in sm and sm['stereo3d'][0] == '1'
         self.resolution = g.itags[self.itag][0]
         self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self.dimensions = tuple(map(new.safeint, self.dimensions))
+        self.dimensions = tuple(map(safeint, self.dimensions))
         self.vidformat = sm['type'][0].split(';')[0]
         self.quality = self.resolution
         self.extension = g.itags[self.itag][1]
@@ -402,9 +407,9 @@ class Pafy(object):
         """
 
         if not self.js or not self.xargs:
-            watchurl = "https://www.youtube.com/watch?v=" + self.videoid
+            watch_url = g.urls['watchv'] % self.videoid
             new.callback("Fetching watch?v page")
-            watchinfo = g.opener.open(watchurl).read().decode("UTF-8")
+            watchinfo = g.opener.open(watch_url).read().decode("UTF-8")
             new.callback("watch?v page fetched")
             m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
 
@@ -458,7 +463,7 @@ class Pafy(object):
         """
 
         if not self.gdata:
-            url = "https://gdata.youtube.com/feeds/api/videos/%s?v=2"
+            url = g.urls["gdata"]
             url = url % self.videoid
             self.gdata = g.opener.open(url).read()
         return self.gdata
@@ -500,10 +505,9 @@ class Pafy(object):
 
         return self._category
 
+    def __init__(self, video_url, callback=None):
     # pylint: disable=R0914
     # Too many local variables - who cares?
-
-    def __init__(self, video_url, callback=None):
 
         ok = (r"\w-",) * 3
         regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
@@ -513,9 +517,9 @@ class Pafy(object):
             err = "Need 11 character video id or the URL of the video. Got %s"
             raise RuntimeError(err % video_url)
 
-        vidid = m.group(1)
-        info_url = "?".join([g.infoUrl, g.infoUrlqs % vidid])
-        allinfo = parse_qs(decode_if_py3(g.opener.open(info_url).read()))
+        video_id = m.group(1)
+        url = g.urls['vidinfo'] % video_id
+        allinfo = parse_qs(decode_if_py3(g.opener.open(url).read()))
 
         if allinfo['status'][0] == "fail":
             reason = allinfo['reason'][0] or "Bad video argument"
@@ -558,7 +562,7 @@ class Pafy(object):
             self.bigthumbhd = f('iurlmaxres')
 
         try:
-            smap, js = self.getstreammap(allinfo, 'url_encoded_fmt_stream_map')
+            smap, js = self.getstreammap(allinfo, g.UEFSM)
 
         except KeyError:
             raise IOError("Can't get video stream info")
@@ -566,8 +570,8 @@ class Pafy(object):
         self.streams = [Stream(sm, self.title, js) for sm in smap]
         self.videostreams = self.audiostreams = []
 
-        if "adaptive_fmts" in allinfo:
-            smap_adpt, js = self.getstreammap(allinfo, 'adaptive_fmts')
+        if g.AF in allinfo:
+            smap_adpt, js = self.getstreammap(allinfo, g.AF)
             self.streams_ad = [Stream(sm, self.title, js) for sm in smap_adpt]
             self.audiostreams = [x for x in self.streams_ad if x.bitrate]
             self.videostreams = [x for x in self.streams_ad if not x.bitrate]
@@ -652,10 +656,10 @@ def get_playlist(playlist_url, callback=None):
         raise RuntimeError(err % playlist_url)
 
     playlistid = m.groups(0)
-    info_url = "?".join([g.playlistUrl, g.playlistUrlqs % playlistid])
+    url = g.urls["playlist"] % playlistid
 
     try:
-        allinfo = json.loads(decode_if_py3(g.opener.open(info_url).read()))
+        allinfo = json.loads(decode_if_py3(g.opener.open(url).read()))
 
     except:
         raise RuntimeError("Error fetching playlist %s" % m.groups(0))
