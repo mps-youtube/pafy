@@ -35,7 +35,6 @@ import json
 import logging
 from xml.etree import ElementTree as etree
 
-
 decode_if_py3 = lambda x: x.decode("utf8")
 
 if sys.version_info[:2] >= (3, 0):
@@ -49,6 +48,7 @@ else:
     from urllib2 import build_opener, HTTPError, URLError
     from urllib import unquote_plus
     from urlparse import parse_qs
+
 
 if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
@@ -65,10 +65,10 @@ class g(object):
         'vidinfo': ('https://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?',
-                    'style=json&action_get_list=1&list=%s')
+                     'style=json&action_get_list=1&list=%s')
     }
     ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-          "Trident/5.0)")
+          " Trident/5.0)")
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
     opener = build_opener()
@@ -265,7 +265,6 @@ def new(url, callback=None):
     """ Return a new pafy instance given a url or video id. """
 
     return Pafy(url, callback=callback)
-
 
 
 class Stream(object):
