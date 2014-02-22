@@ -261,6 +261,21 @@ def _decodesig(sig, js):
     return solved
 
 
+def extract_video_id(url):
+    """ Extract the video id from a url, return video id and info url. """
+
+    ok = (r"\w-",) * 3
+    regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
+    m = regx.search(url)
+
+    if not m:
+        err = "Need 11 character video id or the URL of the video. Got %s"
+        raise RuntimeError(err % video_url)
+
+    vidid = m.group(1)
+    return vidid
+
+
 def new(url, callback=None):
     """ Return a new pafy instance given a url or video id. """
 
@@ -270,7 +285,6 @@ def new(url, callback=None):
 class Stream(object):
 
     """ YouTube video stream class. """
-
     def __init__(self, sm, title="ytvid", js=None):
 
         self.url = sm['url'][0]
@@ -509,16 +523,10 @@ class Pafy(object):
     # pylint: disable=R0914
     # Too many local variables - who cares?
 
-        ok = (r"\w-",) * 3
-        regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
-        m = regx.search(video_url)
+        self.videoid = extract_video_id(video_url)
+        url = g.urls['vidinfo'] % self.videoid
 
-        if not m:
-            err = "Need 11 character video id or the URL of the video. Got %s"
-            raise RuntimeError(err % video_url)
 
-        video_id = m.group(1)
-        url = g.urls['vidinfo'] % video_id
         allinfo = parse_qs(decode_if_py3(g.opener.open(url).read()))
 
         if allinfo['status'][0] == "fail":
