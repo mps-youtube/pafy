@@ -50,7 +50,7 @@ else:
     from urllib import unquote_plus
     from urlparse import parse_qs
 
-if os.path.exists(os.path.join(os.path.expanduser("~"), ".pafydebug")):
+if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
 
 
