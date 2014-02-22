@@ -29,20 +29,25 @@ Usage Examples
 --------------
 
 Here is how to use the module in your own python code.  For command line tool
-(ytdl) instructions, see further below::
+(ytdl) instructions, see further below
+
+.. code-block:: pycon
 
     >>> import pafy
 
-create a video instance from a YouTube url::
+create a video instance from a YouTube url:
+
+.. code-block:: pycon
 
     >>> url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
     >>> video = pafy.new(url)
 
-get certain attributes::
+get certain attributes:
+
+.. code-block:: pycon
     
     >>> video.title
     u'Rick Astley Sings Live - Never Gonna Give You Up - This Morning'
-
 
     >>> video.rating
     4.93608852755
@@ -50,7 +55,9 @@ get certain attributes::
     >>> video.length
     355
 
-display video metadata::
+display video metadata:
+
+.. code-block:: pycon
 
     >>> print video
 
@@ -63,7 +70,9 @@ display video metadata::
     Thumbnail: https://i1.ytimg.com/vi/cyMHZVT91Dw/default.jpg
     Keywords: Rick, Astley, Sings, Live, on, This, Morning, Never, Gonna, You...  
 
-list available streams for a video::
+list available streams for a video:
+
+.. code-block:: pycon
 
     >>> streams = video.streams
     >>> for s in streams:
@@ -76,7 +85,9 @@ list available streams for a video::
     normal:3gp@176x144
 
 
-show all formats, file-sizes and their download url::
+show all formats, file-sizes and their download url:
+
+.. code-block:: pycon
 
     >>> for s in streams:
     >>>     print s.resolution, s.extension, s.get_filesize(), s.url
@@ -88,7 +99,9 @@ show all formats, file-sizes and their download url::
     ('176x144', '3gp', 3659867, 'http://r20---sn-aiglln7e.googlevideo.com/v..    
 
 
-get best resolution regardless of file format::
+get best resolution regardless of file format:
+
+.. code-block:: pycon
 
     >>> best = video.getbest()
     >>> best.resolution, best.extension
@@ -97,7 +110,9 @@ get best resolution regardless of file format::
 
 
 get best resolution for a particular file format:
-(mp4, webm, flv or 3gp)::
+(mp4, webm, flv or 3gp)
+
+.. code-block:: pycon
 
     >>> best = video.getbest(preftype="mp4")
     >>> best.resolution, best.extension
@@ -105,14 +120,18 @@ get best resolution for a particular file format:
     ('360x640', 'mp4')
 
 
-get url, for download or streaming in mplayer / vlc etc::
+get url, for download or streaming in mplayer / vlc etc:
+
+.. code-block:: pycon
     
     >>> best.url
 
     'http://r12---sn-aig7kner.c.youtube.com/videoplayback?expire=1369...
 
 
-Download video and show progress::
+Download video and show progress:
+
+.. code-block:: pycon
 
     >>> best.download(quiet=False)
     -Downloading 'Rick Astley Sings Live - Never Gonna Give You Up - This Morning.webm' [56,858,674 Bytes]
@@ -121,13 +140,17 @@ Download video and show progress::
     Done
 
 
-Download video, use specific filepath::
+Download video, use specific filepath:
+
+.. code-block:: pycon
 
     >>> myfilename = "/tmp/" + best.title + "." + best.extension
     >>> best.download(filepath=myfilename)
 
 
-Get audio-only streams (m4a and/or ogg vorbis)::
+Get audio-only streams (m4a and/or ogg vorbis):
+
+.. code-block:: pycon
 
     >>> audiostreams = video.audiostreams
     >>> for a in audiostreams:
@@ -137,23 +160,30 @@ Get audio-only streams (m4a and/or ogg vorbis)::
     ('128k', 'm4a', 5630839)
 
 
-Download the 2nd audio stream from the above list::
+Download the 2nd audio stream from the above list:
+
+.. code-block:: pycon
 
     >>> audiostreams[1].download()
 
-Get the best quality audio stream::
+Get the best quality audio stream:
+
+.. code-block:: pycon
 
     >>> bestaudio = video.getbestaudio()
     >>> bestaudio.bitrate
 
     '256k'
 
+Download the best quality audio file:
 
-Download the best quality audio file::
+.. code-block:: pycon
 
     >>> bestaudio.download()
 
-show ALL formats for a video (video+audio, video-only and audio-only)::
+show ALL formats for a video (video+audio, video-only and audio-only):
+
+.. code-block:: pycon
 
     >>> allstreams = video.allstreams
     >>> for s in allstreams:
@@ -175,18 +205,24 @@ show ALL formats for a video (video+audio, video-only and audio-only)::
 Installation
 ------------
 
-Pafy can be installed using `pip <http://www.pip-installer.org>`_::
+Pafy can be installed using `pip <http://www.pip-installer.org>`_:
 
-    sudo pip install pafy
+.. code-block:: bash
 
-or use a `virtualenv <http://virtualenv.org>`_ if you don't want to install it system-wide::
+    $ sudo pip install pafy
 
-    virtualenv venv
-    source venv/bin/activate
-    pip install pafy
+or use a `virtualenv <http://virtualenv.org>`_ if you don't want to install it system-wide:
+
+.. code-block:: bash
+
+    $ virtualenv venv
+    $ source venv/bin/activate
+    $ pip install pafy
 
 Alternatively you can just grab the pafy.py file and import it in your python
-code::
+code:
+
+.. code-block:: bash
 
     wget https://raw.github.com/np1/pafy/master/pafy.py
 
@@ -195,7 +231,7 @@ Command Line Tool (ytdl) Usage
 ------------------------------
 
 
-::
+.. code-block:: bash
 
     usage: ytdl [-h] [-i] [-s]
                 [-t {audio,video,normal,all} [{audio,video,normal,all} ...]]
@@ -222,24 +258,31 @@ Command Line Tool (ytdl) Usage
 ytdl Examples
 -------------
 
-Download best available resolution (-b)::
+Download best available resolution (-b):
 
-    ytdl -b "http://www.youtube.com/watch?v=cyMHZVT91Dw"
+.. code-block:: bash
+
+    $ ytdl -b "http://www.youtube.com/watch?v=cyMHZVT91Dw"
+
+Download best available audio stream (-a)
+(note; the full url is not required, just the video id will suffice):
+
+.. code-block:: bash
+
+    $ ytdl -a cyMHZVT91Dw
 
 
-Download best available audio stream (-a):
-(note; the full url is not required, just the video id will suffice)::
+get video info (-i):
 
-    ytdl -a cyMHZVT91Dw
+.. code-block:: bash
 
+    $ ytdl -i cyMHZVT91Dw
 
-get video info (-i)::
+list available dowload streams:
 
-    ytdl -i cyMHZVT91Dw
+.. code-block:: bash
 
-list available dowload streams::
-
-    ytdl cyMHZVT91Dw
+    $ ytdl cyMHZVT91Dw
  
     Stream Type    Format Quality         Size            
     ------ ----    ------ -------         ----            
@@ -253,12 +296,14 @@ list available dowload streams::
     8      audio   m4a    [256k]          10 MB     
 
  
-Download mp4 640x360 (ie. stream number 2)::
+Download mp4 640x360 (ie. stream number 2):
 
-    ytdl -n2 cyMHZVT91Dw
+.. code-block:: bash
 
-Download m4a audio stream at 256k bitrate::
+    $ ytdl -n2 cyMHZVT91Dw
 
-    ytdl -n8 cyMHZVT91Dw
+Download m4a audio stream at 256k bitrate:
 
+.. code-block:: bash
 
+    $ ytdl -n8 cyMHZVT91Dw
