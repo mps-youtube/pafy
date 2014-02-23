@@ -606,8 +606,7 @@ class Pafy(object):
         if self.ciphertag:
             dbg("Encrypted signature detected.")
 
-        # fetch sm
-
+        # extract stream maps
         self._sm = _extract_smap(g.UEFSM, allinfo, not self.js_url)
         self._asm = _extract_smap(g.AF, allinfo, not self.js_url)
 
@@ -858,21 +857,17 @@ class Pafy(object):
         """
 
         if not self.streams:
-            return False
+            return None
 
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
-
             """ sort function for max() """
 
             key3d = "3D" not in x.resolution
             keyres = int(x.resolution.split("x")[0])
             keyftype = preftype == x.extension
-
-            if ftypestrict:
-                return (key3d, keyftype, keyres)
-
-            else:
-                return (key3d, keyres, keyftype)
+            strict = (key3d, keyftype, keyres)
+            nonstrict = (key3d, keyres, keyftype)
+            return strict if ftypestrict else nonstrict
 
         r = max(self.streams, key=_sortkey)
 
@@ -886,19 +881,15 @@ class Pafy(object):
         """ Return the highest bitrate audio Stream object."""
 
         if not self.audiostreams:
-            return False
+            return None
 
         def _sortkey(x, keybitrate=0, keyftype=0):
-            """ Sort function for sort by bitrates. """
+            """ Sort function for max(). """
 
             keybitrate = int(x.rawbitrate)
             keyftype = preftype == x.extension
-
-            if ftypestrict:
-                return(keyftype, keybitrate)
-
-            else:
-                return(keybitrate, keyftype)
+            strict, nonstrict = (keyftype, keybitrate), (keybitrate, keyftype)
+            return strict if ftypestrice else nonstrict
 
         r = max(self.audiostreams, key=_sortkey)
 
