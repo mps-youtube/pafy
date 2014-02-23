@@ -1,6 +1,9 @@
 Date TBA
 Version 0.3.37
 
+[Feature - pafy objects can be `lazy` only fetching data when called for]
+[Feature - added signature, gdata, basic and size arguments to new()]
+[Bugfix - removed unneeded internal data items, smaller pafy objects]
 
 
 20 February 2014
