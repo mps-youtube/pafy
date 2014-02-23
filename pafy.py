@@ -57,7 +57,7 @@ dbg = logging.debug
 
 
 def make_url(raw, sig, quick=True):
-    """ Construct url. """
+    """ Return usable url. Exclude ratebypass by setting quick=False. """
 
     if quick and not "ratebypass=" in raw:
         raw += "&ratebypass=yes"
@@ -77,7 +77,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
 
 class g(object):
 
-    """ Class for holding vars / lambdas needed throughout the module. """
+    """ Class for holding constants needed throughout the module. """
 
     urls = {
         'gdata': "https://gdata.youtube.com/feeds/api/videos/%s?v=2",
@@ -91,6 +91,7 @@ class g(object):
           " Trident/5.0)")
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
+    jsplayer = r';ytplayer.config = ({.*?});'
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
     itags = {
@@ -138,12 +139,14 @@ class g(object):
 
 
 def _extract_smap(map_name, dic, zero_idx=True):
+    """ Extract stream map, returns list of dicts. """
+
     if map_name in dic:
         smap = dic.get(map_name)
         smap = smap[0] if zero_idx else smap
         smap = smap.split(",")
         smap = [parse_qs(x) for x in smap]
-        smap = [{k:v[0] for k, v in x.items()} for x in smap]
+        smap = [{k: v[0] for k, v in x.items()} for x in smap]
         return smap
 
     return []
@@ -160,6 +163,7 @@ def _extract_function_from_js(name, js):
     #if g.jsfuncs.get(name) and g.jsfunctimes[name] > time.time() - g.funclife:
         #return g.jsfuncs.get(name)
 
+    dbg("Extracting function '%s' from javascript", name)
     fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
@@ -168,11 +172,14 @@ def _extract_function_from_js(name, js):
     func = {'name': name, 'parameters': args.split(","), 'body': body}
     return func
 
-def _get_mainfunc_from_js(js):
-    """ Get signature decryption function from javascript. """
 
+def _get_mainfunc_from_js(js):
+    """ Return main signature decryption function from javascript as dict. """
+
+    dbg("Scanning js for main function.")
     m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
+    dbg("Found main function: %s", funcname)
     function = _extract_function_from_js(funcname, js)
     return function
 
@@ -180,6 +187,7 @@ def _get_mainfunc_from_js(js):
 def _get_other_funcs(primary_func, js):
     """ Return all secondary functions used in primary_func. """
 
+    dbg("scanning javascript for secondary functions.")
     body = primary_func['body']
     body = body.split(";")
     call = re.compile(r'(?:[$\w+])=([$\w]+)\(((?:\w+,?)+)\)$')
@@ -192,6 +200,7 @@ def _get_other_funcs(primary_func, js):
         if call.match(part):
             match = call.match(part)
             name = match.group(1)
+            dbg("found secondary function '%s'", name)
 
             if not name in functions:
                 functions[name] = _extract_function_from_js(name, js)
@@ -211,7 +220,7 @@ def _getval(val, argsdict):
         return argsdict[val]
 
     else:
-        raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
+        raise IOError("Error val %s from dict %s" % (val, argsdict))
 
 
 def _get_func_from_call(caller_function, name, arguments, js_url):
@@ -254,7 +263,7 @@ def _solve(f, js_url):
     parts = f['body'].split(";")
 
     for part in parts:
-        dbg("Working on part: " + part)
+        #dbg("Working on part: " + part)
 
         name = ""
 
@@ -300,9 +309,9 @@ def _solve(f, js_url):
             f['args'][m.group(1)] = b[c:]
 
         else:
-            raise RuntimeError("no match for %s" % part)
+            raise IOError("no match for %s" % part)
 
-    raise RuntimeError("Processed js funtion parts without finding return")
+    raise IOError("Processed js funtion parts without finding return")
 
 
 def _decodesig(sig, js_url):
@@ -314,11 +323,12 @@ def _decodesig(sig, js_url):
 
     function = Pafy.funcmap[js_url]['mainfunction']
     if not len(function['parameters']) == 1:
-        raise RuntimeError("Main sig js function has more than one arg: %s" %
+        raise IOError("Main sig js function has more than one arg: %s" %
                            function['parameters'])
     function['args'] = {function['parameters'][0]: sig}
     new.callback("Decrypting signature")
     solved = _solve(function, js_url)
+    dbg("Decrypted sig = %s...", solved[:30])
     new.callback("Decrypted signature")
     return solved
 
@@ -332,7 +342,7 @@ def extract_video_id(url):
 
     if not m:
         err = "Need 11 character video id or the URL of the video. Got %s"
-        raise RuntimeError(err % url)
+        raise ValueError(err % url)
 
     vidid = m.group(1)
     return vidid
@@ -342,22 +352,24 @@ def get_video_info(video_id):
     """ Return info for video_id. """
 
     url = g.urls['vidinfo'] % video_id
-
+    dbg("Fetching video info")
     info = decode_if_py3(g.opener.open(url).read())
     info = parse_qs(info)
+    dbg("Fetched video info")
 
     if info['status'][0] == "fail":
         reason = info['reason'][0] or "Bad video argument"
-        raise RuntimeError("Youtube says: %s" % reason)
+        raise IOError("Youtube says: %s" % reason)
 
     return info
 
 
 def get_video_gdata(video_id):
-    """ Return video gdata. """
+    """ Return xml string containing video metadata. """
 
-    #dbg("Fetching gdata info")
+    dbg("Fetching gdata info")
     url = g.urls['gdata'] % video_id
+    dbg("Fetched video gdata")
     return g.opener.open(url).read()
 
 
@@ -370,16 +382,17 @@ def get_js_sm(video_id):
 
     watch_url = g.urls['watchv'] % video_id
     new.callback("Fetching watchv page")
+    dbg("Fetching watchv page")
     watchinfo = g.opener.open(watch_url).read().decode("utf8")
+    dbg("Fetched watchv page")
     new.callback("Fetched watchv page")
-    m = re.search(r';ytplayer.config = ({.*?});', watchinfo)
+    m = re.search(g.jsplayer, watchinfo)
     myjson = json.loads(m.group(1))
-    info = myjson['args']
+    stream_info = myjson['args']
+    smap = _extract_smap(g.UEFSM, stream_info, False)
+    smap += _extract_smap(g.AF, stream_info, False)
     js_url = myjson['assets']['js']
-
-    if js_url.startswith("//"):
-        js_url = "https:" + js_url
-
+    js_url = "https:" + js_url if js_url.startswith("//") else js_url
     funcs = {}
 
     if not js_url in Pafy.funcmap:
@@ -390,16 +403,18 @@ def get_js_sm(video_id):
         funcs = _get_other_funcs(mainfunc, javascript)
         funcs['mainfunction'] = mainfunc
 
-    return info, js_url, funcs
+    return smap, js_url, funcs
 
 
-def _get_matching_stream(encrypted, itag):
-    """ Return stream matching itag. """
+def _get_matching_stream(smap, itag):
+    """ Return the url and signature for a stream matching itag in smap. """
 
-    for x in encrypted:
+    for x in smap:
+
         if x['itag'] == itag:
-            url, sig = x['url'], x['s']
-            return url, sig
+            return x['url'], x['s']
+
+    raise IOError("Sorry this video is not currently supported by pafy")
 
 
 class Stream(object):
@@ -417,8 +432,8 @@ class Stream(object):
         self.vidformat = sm['type'].split(';')[0]
         self.quality = self.resolution
         self.extension = g.itags[self.itag][1]
-        self.title = parent._title
-        self.encrypted = parent._ciphertag
+        self.title = parent.title
+        self.encrypted = parent.ciphertag
         self._parent = parent
         self.filename = self.title + "." + self.extension
         self.fsize = None
@@ -448,32 +463,31 @@ class Stream(object):
 
         else:
 
-            if self._parent._js_url:
-                dbg("using cached js")
-                enc_streams = self._parent._enc_streams
-                url, s = _get_matching_stream(enc_streams, self.itag)
-                sig = _decodesig(s, self._parent._js_url)
-                self._url = make_url(url, sig)
+            # encrypted url signatures
+
+            if self._parent.js_url:
+                dbg("using cached js %s" % self._parent.js_url[-15:])
+                enc_streams = self._parent.enc_streams
 
             else:
-                info, js_url, funcs = get_js_sm(self._parent._videoid)
-                self._parent._js_url = js_url
+                enc_streams, js_url, funcs = get_js_sm(self._parent.videoid)
+                self._parent.js_url = js_url
 
+                # Create Pafy funcmap dict for this js_url
                 if not Pafy.funcmap.get(js_url):
                     Pafy.funcmap[js_url] = funcs
 
+                # Add javascript functions to Pafy funcmap dict
                 Pafy.funcmap[js_url].update(funcs)
 
-                new_sm = _extract_smap(g.UEFSM, info, False)
-                new_sm += _extract_smap(g.AF, info, False)
-                self._parent._enc_streams = new_sm
+                # Keep "real" urls and sigs in parent Pafy object
+                self._parent.enc_streams = enc_streams
 
-                url, s = _get_matching_stream(new_sm, self.itag)
-                sig = _decodesig(s, js_url)
-                self._url = make_url(url, sig)
+            url, s = _get_matching_stream(enc_streams, self.itag)
+            sig = _decodesig(s, self._parent.js_url)
+            self._url = make_url(url, sig)
 
         return self._url
-
 
     def __repr__(self):
         out = "%s:%s@%s" % (self.mediatype, self.extension, self.quality)
@@ -485,8 +499,10 @@ class Stream(object):
         if not self.fsize:
 
             try:
+                dbg("Getting stream size")
                 cl = "content-length"
                 self.fsize = int(g.opener.open(self.url).headers[cl])
+                dbg("Got stream size")
 
             except (HTTPError, URLError):
                 self.fsize = 0
@@ -543,13 +559,8 @@ class Pafy(object):
 
     funcmap = {}
 
-    # This is probably not the recommended way to use len()
-    # R0924: implemented __len__ but not __getitem__
-    # pylint: disable=R0924
-    def __len__(self):
-        return self.length
-
     def __repr__(self):
+        """ Print video metadata. Return str. """
 
         keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
         keys = keys.split(" ")
@@ -567,10 +578,8 @@ class Pafy(object):
 
         return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
-        """ get stream map. Return stream map and javascript."""
-
     def _fetch_basic(self):
-        """ Fetches info url page and sets member vars. """
+        """ Fetch info url page and set member vars. """
 
         if self._have_basic:
             return
@@ -592,12 +601,15 @@ class Pafy(object):
         self._keywords = z('keywords').split(',')
         self._bigthumb = z('iurlsd')
         self._bigthumbhd = z('iurlsdmaxres')
-        self._ciphertag = f("use_cipher_signature") == "True"
+        self.ciphertag = f("use_cipher_signature") == "True"
+
+        if self.ciphertag:
+            dbg("Encrypted signature detected.")
 
         # fetch sm
 
-        self._sm = _extract_smap(g.UEFSM, allinfo, not self._js_url)
-        self._asm = _extract_smap(g.AF, allinfo, not self._js_url)
+        self._sm = _extract_smap(g.UEFSM, allinfo, not self.js_url)
+        self._asm = _extract_smap(g.AF, allinfo, not self.js_url)
 
         self._have_basic = 1
         self._process_streams()
@@ -624,10 +636,10 @@ class Pafy(object):
 
         self._have_gdata = 1
 
-
     def __init__(self, video_url, basic=True, gdata=False,
                  signature=True, size=False, callback=None):
 
+        dbg("funcmap size is %s", len(Pafy.funcmap))
         args = dict(basic=basic, gdata=gdata, signature=signature,
                     size=size, callback=callback, video_url=video_url)
 
@@ -639,34 +651,35 @@ class Pafy(object):
         self._init_args = args
         new.callback = callback or nullf
         self._have_basic = False
-
         self._have_gdata = False
+
         self._description = None
         self._category = None
         self._published = None
 
         self._sm = []
         self._asm = []
-        self._js_url= None  # if _js_url is set then has new stream map
+        self.js_url = None  # if js_url is set then has new stream map
         self._streams = []
-        self._videostreams = []
-        self._audiostreams = []
         self._oggstreams = []
         self._m4astreams = []
+        self._allstreams = []
+        self._videostreams = []
+        self._audiostreams = []
 
         self._title = None
-        self._author = None
-        self._videoid = None
+        self._thumb = None
         self._rating = None
         self._length = None
-        self._viewcount = None
-        self._thumb = None
-        self._duration = None
+        self._author = None
         self._formats = None
+        self._videoid = None
+        self.ciphertag = None
+        self._duration = None
         self._keywords = None
         self._bigthumb = None
+        self._viewcount = None
         self._bigthumbhd = None
-        self._ciphertag = None
 
         if self._init_args['basic']:
             self._fetch_basic()
@@ -674,9 +687,18 @@ class Pafy(object):
         if self._init_args['gdata']:
             self._fetch_gdata()
 
+        if self._init_args['signature'] and self.ciphertag:
+            # fetch of url to force fetch of new stream map and js funcs.
+            self.streams[0].url
+
+        if self._init_args['size']:
+
+            for s in self.allstreams:
+                # pylint: disable=W0104
+                s.get_filesize()
 
     def _process_streams(self):
-        """ Extract stream urls. """
+        """ Create Stream object lists from internal stream maps. """
 
         if not self._have_basic:
             self._fetch_basic()
@@ -687,133 +709,123 @@ class Pafy(object):
         videostreams = [x for x in adpt_streams if not x.bitrate]
         m4astreams = [x for x in self.audiostreams if x.extension == "m4a"]
         oggstreams = [x for x in self.audiostreams if x.extension == "ogg"]
-        allstreams = streams + videostreams + audiostreams
         self._streams = streams
         self._audiostreams = audiostreams
         self._videostreams = videostreams
         self._m4astreams, self._oggstreams = m4astreams, oggstreams
         self._allstreams = streams + videostreams + audiostreams
 
-
     @property
     def streams(self):
-        """ The streams for a video. """
+        """ The streams for a video. Returns list."""
 
         self._fetch_basic()
         return self._streams
 
     @property
     def allstreams(self):
-        """ All stream types for a video. """
+        """ All stream types for a video. Returns list. """
 
         self._fetch_basic()
         return self._allstreams
 
     @property
     def audiostreams(self):
-        """ The audio streams for a video. """
+        """ Return a list of audio Stream objects. """
 
         self._fetch_basic()
         return self._audiostreams
 
     @property
     def videostreams(self):
-        """ The video streams for a video. """
+        """ The video streams for a video. Returns list. """
 
         self._fetch_basic()
         return self._videostreams
 
     @property
     def oggstreams(self):
-        """ ogg format audio streams for a video. """
+        """ Return a list of ogg encoded Stream objects. """
 
         self._fetch_basic()
         return self._oggstreams
 
     @property
     def m4astreams(self):
-        """ m4a audio streams. """
+        """ Return a list of m4a encoded Stream objects. """
 
         self._fetch_basic()
         return self._m4astreams
 
     @property
     def title(self):
-        """ Video title. """
+        """ Return YouTube video title as a string. """
 
         self._fetch_basic()
         return self._title
 
     @property
     def author(self):
-        """ The uploader of the video. """
+        """ The uploader of the video. Returns str. """
 
         self._fetch_basic()
         return self._author
 
     @property
     def rating(self):
-        """ Rating for a video. """
+        """ Rating for a video. Returns float. """
 
         self._fetch_basic()
         return self._rating
 
     @property
     def length(self):
-        """ Length of a video in seconds. """
+        """ Length of a video in seconds. Returns int. """
 
         self._fetch_basic()
         return self._length
 
     @property
     def viewcount(self):
-        """ Number of views for a video. """
+        """ Number of views for a video. Returns int. """
 
         self._fetch_basic()
         return self._viewcount
 
     @property
     def bigthumb(self):
-        """ Large thumbnail image url. """
+        """ Large thumbnail image url. Returns str. """
 
         self._fetch_basic()
         return self._bigthumb
 
     @property
     def bigthumbhd(self):
-        """ Extra large thumbnail image url. """
+        """ Extra large thumbnail image url. Returns str. """
 
         self._fetch_basic()
         return self._bigthumbhd
 
     @property
     def thumb(self):
-        """ Thumbnail image url. """
+        """ Thumbnail image url. Returns str. """
 
         self._fetch_basic()
         return self._thumb
 
     @property
     def duration(self):
-        """ Duration of a video (HH:MM:SS). """
+        """ Duration of a video (HH:MM:SS). Returns str. """
 
         self._fetch_basic()
         return self._duration
 
     @property
-    def formats(self):
-        """ Available formats for a video. """
-
-        self._fetch_basic()
-        return self._formats
-
-    @property
     def keywords(self):
-        """ Returns list of keywords. """
+        """ Return keywords as list of str. """
 
         self._fetch_basic()
         return self._keywords
-
 
     @property
     def category(self):
@@ -835,7 +847,6 @@ class Pafy(object):
 
         self._fetch_gdata()
         return self._published.rstrip(".000Z").replace("T", " ")
-
 
     def getbest(self, preftype="any", ftypestrict=True):
         """
@@ -909,7 +920,7 @@ def get_playlist(playlist_url, callback=None):
 
     if not m:
         err = "Need 18 character video id or the URL of the video. Got %s"
-        raise RuntimeError(err % playlist_url)
+        raise ValueError(err % playlist_url)
 
     playlistid = m.groups(0)
     url = g.urls["playlist"] % playlistid
@@ -918,7 +929,7 @@ def get_playlist(playlist_url, callback=None):
         allinfo = json.loads(decode_if_py3(g.opener.open(url).read()))
 
     except:
-        raise RuntimeError("Error fetching playlist %s" % m.groups(0))
+        raise IOError("Error fetching playlist %s" % m.groups(0))
 
     videos = []
 
