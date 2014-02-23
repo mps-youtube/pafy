@@ -146,7 +146,7 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = [{k:v[0] for k, v in x.items()} for x in smap]
         return smap
 
-    return None
+    return []
 
 
 def _extract_function_from_js(name, js):
@@ -169,13 +169,16 @@ def _extract_function_from_js(name, js):
     return func
 
 def _get_mainfunc_from_js(js):
+    """ Get signature decryption function from javascript. """
+
     m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
     function = _extract_function_from_js(funcname, js)
     return function
 
+
 def _get_other_funcs(primary_func, js):
-    """ Extract all secondary functions used in primary_func. """
+    """ Return all secondary functions used in primary_func. """
 
     body = primary_func['body']
     body = body.split(";")
@@ -195,6 +198,7 @@ def _get_other_funcs(primary_func, js):
 
     return functions
 
+
 def _getval(val, argsdict):
     """ resolve variable values, preserve int literals. Return dict."""
 
@@ -208,6 +212,7 @@ def _getval(val, argsdict):
 
     else:
         raise RuntimeError("Error val %s from dict %s" % (val, argsdict))
+
 
 def _get_func_from_call(caller_function, name, arguments, js_url):
     """
@@ -229,6 +234,7 @@ def _get_func_from_call(caller_function, name, arguments, js_url):
         newfunction['args'][param] = value
 
     return newfunction
+
 
 def _solve(f, js_url):
     """Solve basic javascript function. Return dict function representation."""
@@ -298,6 +304,7 @@ def _solve(f, js_url):
 
     raise RuntimeError("Processed js funtion parts without finding return")
 
+
 def _decodesig(sig, js_url):
     """Get sig func name from a function call. Return function dict, js."""
 
@@ -325,14 +332,14 @@ def extract_video_id(url):
 
     if not m:
         err = "Need 11 character video id or the URL of the video. Got %s"
-        raise RuntimeError(err % video_url)
+        raise RuntimeError(err % url)
 
     vidid = m.group(1)
     return vidid
 
 
 def get_video_info(video_id):
-    """ Get info for video_id. """
+    """ Return info for video_id. """
 
     url = g.urls['vidinfo'] % video_id
 
@@ -345,12 +352,14 @@ def get_video_info(video_id):
 
     return info
 
+
 def get_video_gdata(video_id):
-    """ Get video gdata. """
+    """ Return video gdata. """
 
     #dbg("Fetching gdata info")
     url = g.urls['gdata'] % video_id
     return g.opener.open(url).read()
+
 
 def get_js_sm(video_id):
     """ Get location of html5player javascript file and fetch.
@@ -383,16 +392,20 @@ def get_js_sm(video_id):
 
     return info, js_url, funcs
 
+
 def _get_matching_stream(encrypted, itag):
+    """ Return stream matching itag. """
 
     for x in encrypted:
         if x['itag'] == itag:
             url, sig = x['url'], x['s']
             return url, sig
 
+
 class Stream(object):
 
     """ YouTube video stream class. """
+
     def __init__(self, sm, parent):
 
         safeint = lambda x: int(x) if x.isdigit() else x
@@ -462,7 +475,6 @@ class Stream(object):
         return self._url
 
 
-
     def __repr__(self):
         out = "%s:%s@%s" % (self.mediatype, self.extension, self.quality)
         return out
@@ -528,6 +540,7 @@ class Stream(object):
 class Pafy(object):
 
     """ Class to represent a YouTube video. """
+
     funcmap = {}
 
     # This is probably not the recommended way to use len()
@@ -555,16 +568,6 @@ class Pafy(object):
         return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
         """ get stream map. Return stream map and javascript."""
-
-        js = self.js
-        streamMap = allinfo[key][0].split(',')
-        smap = [parse_qs(sm) for sm in streamMap]
-        if smap[0].get("s"):
-            new.callback("Encrypted signature detected")
-            js, args = self.get_js()
-            streamMap = args[key].split(",")
-            smap = [parse_qs(sm) for sm in streamMap]
-        return(smap, js)
 
     def _fetch_basic(self):
         """ Fetches info url page and sets member vars. """
@@ -651,6 +654,20 @@ class Pafy(object):
         self._oggstreams = []
         self._m4astreams = []
 
+        self._title = None
+        self._author = None
+        self._videoid = None
+        self._rating = None
+        self._length = None
+        self._viewcount = None
+        self._thumb = None
+        self._duration = None
+        self._formats = None
+        self._keywords = None
+        self._bigthumb = None
+        self._bigthumbhd = None
+        self._ciphertag = None
+
         if self._init_args['basic']:
             self._fetch_basic()
 
@@ -672,108 +689,150 @@ class Pafy(object):
         oggstreams = [x for x in self.audiostreams if x.extension == "ogg"]
         allstreams = streams + videostreams + audiostreams
         self._streams = streams
+        self._audiostreams = audiostreams
+        self._videostreams = videostreams
         self._m4astreams, self._oggstreams = m4astreams, oggstreams
         self._allstreams = streams + videostreams + audiostreams
 
 
     @property
     def streams(self):
+        """ The streams for a video. """
+
         self._fetch_basic()
         return self._streams
 
     @property
     def allstreams(self):
+        """ All stream types for a video. """
+
         self._fetch_basic()
         return self._allstreams
 
     @property
     def audiostreams(self):
+        """ The audio streams for a video. """
+
         self._fetch_basic()
         return self._audiostreams
 
     @property
     def videostreams(self):
+        """ The video streams for a video. """
+
         self._fetch_basic()
         return self._videostreams
 
     @property
     def oggstreams(self):
+        """ ogg format audio streams for a video. """
+
         self._fetch_basic()
         return self._oggstreams
 
     @property
     def m4astreams(self):
+        """ m4a audio streams. """
+
         self._fetch_basic()
         return self._m4astreams
 
     @property
     def title(self):
+        """ Video title. """
+
         self._fetch_basic()
         return self._title
 
     @property
     def author(self):
+        """ The uploader of the video. """
+
         self._fetch_basic()
         return self._author
 
     @property
     def rating(self):
+        """ Rating for a video. """
+
         self._fetch_basic()
         return self._rating
 
     @property
     def length(self):
+        """ Length of a video in seconds. """
+
         self._fetch_basic()
         return self._length
 
     @property
     def viewcount(self):
+        """ Number of views for a video. """
+
         self._fetch_basic()
         return self._viewcount
 
     @property
     def bigthumb(self):
+        """ Large thumbnail image url. """
+
         self._fetch_basic()
         return self._bigthumb
 
     @property
     def bigthumbhd(self):
+        """ Extra large thumbnail image url. """
+
         self._fetch_basic()
         return self._bigthumbhd
 
     @property
     def thumb(self):
+        """ Thumbnail image url. """
+
         self._fetch_basic()
         return self._thumb
 
     @property
     def duration(self):
+        """ Duration of a video (HH:MM:SS). """
+
         self._fetch_basic()
         return self._duration
 
     @property
     def formats(self):
+        """ Available formats for a video. """
+
         self._fetch_basic()
         return self._formats
 
     @property
     def keywords(self):
+        """ Returns list of keywords. """
+
         self._fetch_basic()
         return self._keywords
 
 
     @property
     def category(self):
+        """ YouTube category of the video. Returns string. """
+
         self._fetch_gdata()
         return self._category
 
     @property
     def description(self):
+        """ Description of the video. Returns string. """
+
         self._fetch_gdata()
         return self._description
 
     @property
     def published(self):
+        """ The upload date and time of the video. Returns string. """
+
         self._fetch_gdata()
         return self._published.rstrip(".000Z").replace("T", " ")
 
