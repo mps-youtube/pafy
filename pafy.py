@@ -56,8 +56,8 @@ if os.environ.get("pafydebug") == "1":
 dbg = logging.debug
 
 
-def make_url(raw, sig, quick=True):
-    """ Return usable url. Exclude ratebypass by setting quick=False. """
+def _make_url(raw, sig, quick=True):
+    """ Return usable url.  Set quick to False to disable ratebypass. """
 
     if quick and not "ratebypass=" in raw:
         raw += "&ratebypass=yes"
@@ -70,7 +70,23 @@ def make_url(raw, sig, quick=True):
 
 def new(url, basic=True, gdata=False, signature=True, size=False,
         callback=None):
-    """ Return a new pafy instance given a url or video id. """
+    """ Return a new pafy instance given a url or video id.
+
+    Optional arguments:
+        basic - fetch basic metadata and streams
+        gdata - fetch gdata info (upload date, description, category)
+        signature - fetch data required to decrypt urls, if encrypted
+        size - fetch the size of each stream (decrypting urls if needed)
+        callback - a callback function to receive status strings
+
+    If any of the first four above arguments are False, the data items will be
+    fetched when first called for.  Initialising a Pafy object with:
+
+        pafy.new(basic=False, signature=False)
+
+    will be quick because no http requests are made on initialisation.
+
+    """
 
     return Pafy(url, basic, gdata, signature, size, callback)
 
@@ -159,10 +175,6 @@ def _extract_function_from_js(name, js):
 
     """
 
-    # use cached js function
-    #if g.jsfuncs.get(name) and g.jsfunctimes[name] > time.time() - g.funclife:
-        #return g.jsfuncs.get(name)
-
     dbg("Extracting function '%s' from javascript", name)
     fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
     m = re.search(fpattern % re.escape(name), js)
@@ -203,6 +215,7 @@ def _get_other_funcs(primary_func, js):
             dbg("found secondary function '%s'", name)
 
             if not name in functions:
+                #  extract from javascript if not previously done
                 functions[name] = _extract_function_from_js(name, js)
 
     return functions
@@ -223,22 +236,21 @@ def _getval(val, argsdict):
         raise IOError("Error val %s from dict %s" % (val, argsdict))
 
 
-def _get_func_from_call(caller_function, name, arguments, js_url):
+def _get_func_from_call(caller, name, arguments, js_url):
     """
-    Search js string for function call to `name`.
+    Return called function complete with called args given a caller function .
 
-    Returns dict representation of the funtion
-    Places argument values specified in `arguments` list parameter into
-    the returned function representations `args` dict
+    This function requires that Pafy.funcmap contains the function `name`.
+    It retrieves the function and fills in the parameter values as called in
+    the caller, returning them in the returned newfunction `args` dict
 
     """
 
-    #newfunction = _extract_function_from_js(name, js)
     newfunction = Pafy.funcmap[js_url][name]
     newfunction['args'] = {}
 
     for n, arg in enumerate(arguments):
-        value = _getval(arg, caller_function['args'])
+        value = _getval(arg, caller['args'])
         param = newfunction['parameters'][n]
         newfunction['args'][param] = value
 
@@ -246,7 +258,7 @@ def _get_func_from_call(caller_function, name, arguments, js_url):
 
 
 def _solve(f, js_url):
-    """Solve basic javascript function. Return dict function representation."""
+    """Solve basic javascript function. Return solution value (int). """
 
     # pylint: disable=R0914
     patterns = {
@@ -315,26 +327,26 @@ def _solve(f, js_url):
 
 
 def _decodesig(sig, js_url):
-    """Get sig func name from a function call. Return function dict, js."""
+    """  Return decrypted sig given an encrypted sig and js_url key. """
 
-    #m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
-    #funcname = m.group(1)
-    #function = _extract_function_from_js(funcname, js)
+    # lookup main function in Pafy.funcmap dict
+    mainfunction = Pafy.funcmap[js_url]['mainfunction']
+    param = mainfunction['parameters']
 
-    function = Pafy.funcmap[js_url]['mainfunction']
-    if not len(function['parameters']) == 1:
-        raise IOError("Main sig js function has more than one arg: %s" %
-                           function['parameters'])
-    function['args'] = {function['parameters'][0]: sig}
+    if not len(param) == 1:
+        raise IOError("Main sig js function has more than one arg: %s" % param)
+
+    # fill in function argument with signature
+    mainfunction['args'] = {param[0]: sig}
     new.callback("Decrypting signature")
-    solved = _solve(function, js_url)
+    solved = _solve(mainfunction, js_url)
     dbg("Decrypted sig = %s...", solved[:30])
     new.callback("Decrypted signature")
     return solved
 
 
 def extract_video_id(url):
-    """ Extract the video id from a url, return video id and info url. """
+    """ Extract the video id from a url, return video id as str. """
 
     ok = (r"\w-",) * 3
     regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
@@ -349,7 +361,7 @@ def extract_video_id(url):
 
 
 def get_video_info(video_id):
-    """ Return info for video_id. """
+    """ Return info for video_id.  Returns dict. """
 
     url = g.urls['vidinfo'] % video_id
     dbg("Fetching video info")
@@ -365,7 +377,7 @@ def get_video_info(video_id):
 
 
 def get_video_gdata(video_id):
-    """ Return xml string containing video metadata. """
+    """ Return xml string containing video metadata from gdata api. """
 
     dbg("Fetching gdata info")
     url = g.urls['gdata'] % video_id
@@ -374,9 +386,13 @@ def get_video_gdata(video_id):
 
 
 def get_js_sm(video_id):
-    """ Get location of html5player javascript file and fetch.
+    """ Fetch watchinfo page and extract stream map and js funcs if not known.
 
-    Return javascript as string and args.
+    This function is needed by videos with encrypted signatures.
+    If the js url referred to in the watchv page is not a key in Pafy.funcmap,
+    the javascript is fetched and functions extracted.
+
+    Returns streammap, js url and funcs (if needed)
 
     """
 
@@ -424,6 +440,8 @@ class Stream(object):
     def __init__(self, sm, parent):
 
         safeint = lambda x: int(x) if x.isdigit() else x
+
+        # TODO: most of these should be converted to properties and prefixed _.
         self.itag = sm['itag']
         self.threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self.resolution = g.itags[self.itag][0]
@@ -459,7 +477,7 @@ class Stream(object):
             pass
 
         elif not self.encrypted:
-            self._url = make_url(self._rawurl, self.sig)
+            self._url = _make_url(self._rawurl, self.sig)
 
         else:
 
@@ -480,12 +498,12 @@ class Stream(object):
                 # Add javascript functions to Pafy funcmap dict
                 Pafy.funcmap[js_url].update(funcs)
 
-                # Keep "real" urls and sigs in parent Pafy object
+                # Stash "real" urls and encrypted sigs in parent Pafy object
                 self._parent.enc_streams = enc_streams
 
             url, s = _get_matching_stream(enc_streams, self.itag)
             sig = _decodesig(s, self._parent.js_url)
-            self._url = make_url(url, sig)
+            self._url = _make_url(url, sig)
 
         return self._url
 
@@ -673,7 +691,7 @@ class Pafy(object):
         self._author = None
         self._formats = None
         self._videoid = None
-        self.ciphertag = None
+        self.ciphertag = None  # used by Stream class in url property def
         self._duration = None
         self._keywords = None
         self._bigthumb = None
@@ -688,6 +706,7 @@ class Pafy(object):
 
         if self._init_args['signature'] and self.ciphertag:
             # fetch of url to force fetch of new stream map and js funcs.
+            # pylint: disable=W0104
             self.streams[0].url
 
         if self._init_args['size']:
@@ -889,7 +908,7 @@ class Pafy(object):
             keybitrate = int(x.rawbitrate)
             keyftype = preftype == x.extension
             strict, nonstrict = (keyftype, keybitrate), (keybitrate, keyftype)
-            return strict if ftypestrice else nonstrict
+            return strict if ftypestrict else nonstrict
 
         r = max(self.audiostreams, key=_sortkey)
 
@@ -931,7 +950,7 @@ def get_playlist(playlist_url, callback=None):
             callback("Added video: %s" % v.title)
             videos.append(video)
 
-        except RuntimeError as e:
+        except IOError as e:
 
             callback("%s: %s" % (v['title'], e.message))
             continue
