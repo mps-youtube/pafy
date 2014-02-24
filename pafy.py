@@ -33,7 +33,7 @@ import sys
 import time
 import json
 import logging
-from xml.etree import ElementTree as etree
+from xml.etree import ElementTree
 
 decode_if_py3 = lambda x: x.decode("utf8")
 
@@ -57,7 +57,7 @@ dbg = logging.debug
 
 
 def _make_url(raw, sig, quick=True):
-    """ Return usable url.  Set quick to False to disable ratebypass. """
+    """ Return usable url. Set quick=False to disable ratebypass override. """
 
     if quick and not "ratebypass=" in raw:
         raw += "&ratebypass=yes"
@@ -79,12 +79,24 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
         size - fetch the size of each stream (decrypting urls if needed)
         callback - a callback function to receive status strings
 
-    If any of the first four above arguments are False, the data items will be
-    fetched when first called for.  Initialising a Pafy object with:
+    If any of the first four above arguments are False, those data items will
+    be fetched only when first called for.
+
+    The defaults are recommended for most cases. If you wish to create
+    many video objects at once, you may want to set all to False, eg:
 
         pafy.new(basic=False, signature=False)
 
-    will be quick because no http requests are made on initialisation.
+    This will be quick because no http requests are made on initialisation.
+
+    Setting signature or size to True will override the basic argument
+    and force basic data to be fetched too (basic data is required to
+    obtain Stream objects and determine whether signatures are encrypted.
+
+    Similarly, setting size to true will force the signature data to be
+    fetched if the videos have encrypted signatures, so will override the
+    value set in the signature argument.
+
 
     """
 
@@ -108,6 +120,7 @@ class g(object):
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
     jsplayer = r';ytplayer.config = ({.*?});'
+    lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
     itags = {
@@ -218,6 +231,9 @@ def _get_other_funcs(primary_func, js):
                 #  extract from javascript if not previously done
                 functions[name] = _extract_function_from_js(name, js)
 
+            else:
+                dbg("function '%s' is already in map.", name)
+
     return functions
 
 
@@ -290,9 +306,7 @@ def _solve(f, js_url):
         elif name == "func_call":
             lhs, funcname, args = m.group(1, 2, 3)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            #dbg("Function call to %s", funcname)
             f['args'][lhs] = _solve(newfunc, js_url)  # recursive call
-            #dbg("solved! %s", f['args'][lhs])
 
         # new var is an index of another var; eg: var a = b[c]
         elif name == "x1":
@@ -392,7 +406,7 @@ def get_js_sm(video_id):
     If the js url referred to in the watchv page is not a key in Pafy.funcmap,
     the javascript is fetched and functions extracted.
 
-    Returns streammap, js url and funcs (if needed)
+    Returns streammap (list of dicts), js url (str)  and funcs (dict)
 
     """
 
@@ -409,9 +423,9 @@ def get_js_sm(video_id):
     smap += _extract_smap(g.AF, stream_info, False)
     js_url = myjson['assets']['js']
     js_url = "https:" + js_url if js_url.startswith("//") else js_url
-    funcs = {}
+    funcs = Pafy.funcmap.get(js_url)
 
-    if not js_url in Pafy.funcmap:
+    if not funcs:
         new.callback("Fetching javascript")
         javascript = g.opener.open(js_url).read().decode("UTF-8")
         new.callback("Fetched javascript")
@@ -441,32 +455,116 @@ class Stream(object):
 
         safeint = lambda x: int(x) if x.isdigit() else x
 
-        self.itag = sm['itag']
-        self.threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
-        self.resolution = g.itags[self.itag][0]
-        self.dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self.dimensions = tuple(map(safeint, self.dimensions))
-        self.vidformat = sm['type'].split(';')[0]
-        self.quality = self.resolution
-        self.extension = g.itags[self.itag][1]
-        self.title = parent.title
+        self._itag = sm['itag']
+        self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
+        self._resolution = g.itags[self.itag][0]
+        self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
+        self._dimensions = tuple(map(safeint, self.dimensions))
+        self._vidformat = sm['type'].split(';')[0]  # undocumented
+        self._quality = self.resolution
+        self._extension = g.itags[self.itag][1]
+        self._title = parent.title
         self.encrypted = parent.ciphertag
         self._parent = parent
-        self.filename = self.title + "." + self.extension
-        self.fsize = None
-        self.bitrate = self.rawbitrate = None
-        self.mediatype = g.itags[self.itag][2]
-        self.notes = g.itags[self.itag][3]
+        self._filename = self.title + "." + self.extension
+        self._fsize = None
+        self._bitrate = self._rawbitrate = None
+        self._mediatype = g.itags[self.itag][2]
+        self._notes = g.itags[self.itag][3]
         self._url = None
         self._rawurl = sm['url']
-        self.sig = sm['s'] if self.encrypted else sm.get("sig")
+        self._sig = sm['s'] if self.encrypted else sm.get("sig")
 
         if self.mediatype == "audio":
-            self.dimensions = (0, 0)
-            self.bitrate = self.resolution
-            self.quality = self.bitrate
-            self.resolution = "0x0"
-            self.rawbitrate = int(sm["bitrate"][0])
+            self._dimensions = (0, 0)
+            self._bitrate = self.resolution
+            self._quality = self.bitrate
+            self._resolution = "0x0"
+            self._rawbitrate = int(sm["bitrate"][0])
+
+    @property
+    def rawbitrate(self):
+        """ Return raw bitrate value. """
+
+        return self._rawbitrate
+
+    @property
+    def threed(self):
+        """ Return bool, True if stream is 3D. """
+
+        return self._threed
+
+    @property
+    def itag(self):
+        """ Return itag value of stream. """
+
+        return self._itag
+
+    @property
+    def resolution(self):
+        """ Return resolution of stream as str. 0x0 if audio. """
+
+        return self._resolution
+
+    @property
+    def dimensions(self):
+        """ Return dimensions of stream as tuple.  (0, 0) if audio. """
+
+        return self._dimensions
+
+    @property
+    def quality(self):
+        """ Return quality of stream (bitrate or resolution).
+
+        eg, 128k or 640x480 (str)
+
+        """
+
+        return self._quality
+
+    @property
+    def title(self):
+        """ Return YouTube video title as a string. """
+
+        return self._title
+
+    @property
+    def extension(self):
+        """ Return appropriate file extension for stream (str).
+
+        Possible values are: 3gp, m4a, m4v, mp4, webm, ogg
+
+        """
+
+        return self._extension
+
+    @property
+    def bitrate(self):
+        """ Return bitrate of an audio stream. """
+
+        return self._bitrate
+
+    @property
+    def mediatype(self):
+        """ Return mediatype string (normal, audio or video).
+
+        (normal means a stream containing both video and audio.)
+
+        """
+
+        return self._mediatype
+
+    @property
+    def notes(self):
+        """ Return additional notes regarding the stream format. """
+
+        return self._notes
+
+    @property
+    def filename(self):
+        """ Return filename of stream; derived from title and extension. """
+
+        return self._filename
 
     @property
     def url(self):
@@ -476,10 +574,9 @@ class Stream(object):
             pass
 
         elif not self.encrypted:
-            self._url = _make_url(self._rawurl, self.sig)
+            self._url = _make_url(self._rawurl, self._sig)
 
         else:
-
             # encrypted url signatures
 
             if self._parent.js_url:
@@ -488,16 +585,19 @@ class Stream(object):
 
             else:
                 enc_streams, js_url, funcs = get_js_sm(self._parent.videoid)
+                self._parent.expiry = time.time() + g.lifespan
                 self._parent.js_url = js_url
 
                 # Create Pafy funcmap dict for this js_url
                 if not Pafy.funcmap.get(js_url):
                     Pafy.funcmap[js_url] = funcs
 
-                # Add javascript functions to Pafy funcmap dict
-                Pafy.funcmap[js_url].update(funcs)
+                #else:
+                    # Add javascript functions to Pafy funcmap dict
+                    # in case same js_url has different functions
+                    #Pafy.funcmap[js_url].update(funcs)
 
-                # Stash "real" urls and encrypted sigs in parent Pafy object
+                # Stash usable urls and encrypted sigs in parent Pafy object
                 self._parent.enc_streams = enc_streams
 
             url, s = _get_matching_stream(enc_streams, self.itag)
@@ -513,23 +613,24 @@ class Stream(object):
     def get_filesize(self):
         """ Return filesize of the stream in bytes.  Set member variable. """
 
-        if not self.fsize:
+        if not self._fsize:
 
             try:
                 dbg("Getting stream size")
                 cl = "content-length"
-                self.fsize = int(g.opener.open(self.url).headers[cl])
+                self._fsize = int(g.opener.open(self.url).headers[cl])
                 dbg("Got stream size")
 
             except (HTTPError, URLError):
-                self.fsize = 0
+                self._fsize = 0
 
-        return self.fsize
+        return self._fsize
 
-    # pylint: disable=R0914
-    # Too many local variables - who cares?
     def download(self, filepath="", quiet=False, callback=None):
         """ Download.  Use quiet=True to supress output. Return filename. """
+
+        # pylint: disable=R0914
+        # Too many local variables - who cares?
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
@@ -575,82 +676,6 @@ class Pafy(object):
     """ Class to represent a YouTube video. """
 
     funcmap = {}
-
-    def __repr__(self):
-        """ Print video metadata. Return str. """
-
-        keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
-        keys = keys.split(" ")
-        keywords = ", ".join(self.keywords)
-        length = time.strftime('%H:%M:%S', time.gmtime(self.length))
-
-        info = dict(Title=self.title,
-                    Author=self.author,
-                    Views=self.viewcount,
-                    Rating=self.rating,
-                    Duration=length,
-                    ID=self.videoid,
-                    Thumbnail=self.thumb,
-                    Keywords=keywords)
-
-        return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
-
-    def _fetch_basic(self):
-        """ Fetch info url page and set member vars. """
-
-        if self._have_basic:
-            return
-
-        new.callback("Fetching video info..")
-        allinfo = get_video_info(self.videoid)
-        new.callback("Fetched video info")
-        f = lambda x: allinfo.get(x, ["unknown"])[0]
-        z = lambda x: allinfo.get(x, [""])[0]
-        self._title = f('title').replace("/", "-")
-        self._author = f('author')
-        self._videoid = f('video_id')
-        self._rating = float(f('avg_rating'))
-        self._length = int(f('length_seconds'))
-        self._viewcount = int(f('view_count'))
-        self._thumb = unquote_plus(f('thumbnail_url'))
-        self._duration = time.strftime('%H:%M:%S', time.gmtime(self._length))
-        self._formats = [x.split("/") for x in f('fmt_list').split(",")]
-        self._keywords = z('keywords').split(',')
-        self._bigthumb = z('iurlsd')
-        self._bigthumbhd = z('iurlsdmaxres')
-        self.ciphertag = f("use_cipher_signature") == "True"
-
-        if self.ciphertag:
-            dbg("Encrypted signature detected.")
-
-        # extract stream maps
-        self._sm = _extract_smap(g.UEFSM, allinfo, not self.js_url)
-        self._asm = _extract_smap(g.AF, allinfo, not self.js_url)
-
-        self._have_basic = 1
-        self._process_streams()
-
-    def _fetch_gdata(self):
-        """ Extract gdata values, fetch gdata if necessary. """
-
-        if self._have_gdata:
-            return
-
-        new.callback("Fetching video data")
-        gdata = get_video_gdata(self.videoid)
-        new.callback("Fetched video gdata")
-        t0 = "{http://search.yahoo.com/mrss/}"
-        t1 = "{http://www.w3.org/2005/Atom}"
-        tree = etree.fromstring(gdata)
-        groups = tree.find(t0 + "group")
-        published = tree.find(t1 + "published").text
-        description = groups.find(t0 + "description").text
-        category = groups.find(t0 + "category").text
-        setattr(self, "_published", published)
-        setattr(self, "_description", description)
-        setattr(self, "_category", category)
-
-        self._have_gdata = 1
 
     def __init__(self, video_url, basic=True, gdata=False,
                  signature=True, size=False, callback=None):
@@ -703,16 +728,77 @@ class Pafy(object):
         if self._init_args['gdata']:
             self._fetch_gdata()
 
-        if self._init_args['signature'] and self.ciphertag:
+        if self._init_args['signature']:
             # pylint: disable=W0104
-            # fetch of url to force fetch of new stream map and js funcs.
-            self.streams[0].url
+            s = self.streams
+
+            if self.ciphertag:
+                s[0].url  # forces signature decryption
 
         if self._init_args['size']:
 
             for s in self.allstreams:
                 # pylint: disable=W0104
                 s.get_filesize()
+
+    def _fetch_basic(self):
+        """ Fetch info url page and set member vars. """
+
+        if self._have_basic:
+            return
+
+        new.callback("Fetching video info..")
+        allinfo = get_video_info(self.videoid)
+        new.callback("Fetched video info")
+        f = lambda x: allinfo.get(x, ["unknown"])[0]
+        z = lambda x: allinfo.get(x, [""])[0]
+        self._title = f('title').replace("/", "-")
+        self._author = f('author')
+        self._videoid = f('video_id')
+        self._rating = float(f('avg_rating'))
+        self._length = int(f('length_seconds'))
+        self._viewcount = int(f('view_count'))
+        self._thumb = unquote_plus(f('thumbnail_url'))
+        self._duration = time.strftime('%H:%M:%S', time.gmtime(self._length))
+        self._formats = [x.split("/") for x in f('fmt_list').split(",")]
+        self._keywords = z('keywords').split(',')
+        self._bigthumb = z('iurlsd')
+        self._bigthumbhd = z('iurlsdmaxres')
+        self.ciphertag = f("use_cipher_signature") == "True"
+        self.expiry = None
+
+        if self.ciphertag:
+            dbg("Encrypted signature detected.")
+
+        # extract stream maps
+        self._sm = _extract_smap(g.UEFSM, allinfo, not self.js_url)
+        self._asm = _extract_smap(g.AF, allinfo, not self.js_url)
+
+        self._have_basic = 1
+        self._process_streams()
+        self.expiry = time.time() + g.lifespan
+
+    def _fetch_gdata(self):
+        """ Extract gdata values, fetch gdata if necessary. """
+
+        if self._have_gdata:
+            return
+
+        new.callback("Fetching video data")
+        gdata = get_video_gdata(self.videoid)
+        new.callback("Fetched video gdata")
+        t0 = "{http://search.yahoo.com/mrss/}"
+        t1 = "{http://www.w3.org/2005/Atom}"
+        tree = ElementTree.fromstring(gdata)
+        groups = tree.find(t0 + "group")
+        published = tree.find(t1 + "published").text
+        description = groups.find(t0 + "description").text
+        category = groups.find(t0 + "category").text
+        setattr(self, "_published", published)
+        setattr(self, "_description", description)
+        setattr(self, "_category", category)
+
+        self._have_gdata = 1
 
     def _process_streams(self):
         """ Create Stream object lists from internal stream maps. """
@@ -731,6 +817,25 @@ class Pafy(object):
         self._videostreams = videostreams
         self._m4astreams, self._oggstreams = m4astreams, oggstreams
         self._allstreams = streams + videostreams + audiostreams
+
+    def __repr__(self):
+        """ Print video metadata. Return str. """
+
+        keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
+        keys = keys.split(" ")
+        keywords = ", ".join(self.keywords)
+        length = time.strftime('%H:%M:%S', time.gmtime(self.length))
+
+        info = dict(Title=self.title,
+                    Author=self.author,
+                    Views=self.viewcount,
+                    Rating=self.rating,
+                    Duration=length,
+                    ID=self.videoid,
+                    Thumbnail=self.thumb,
+                    Keywords=keywords)
+
+        return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
     @property
     def streams(self):
