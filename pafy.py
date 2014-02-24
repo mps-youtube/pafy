@@ -441,7 +441,6 @@ class Stream(object):
 
         safeint = lambda x: int(x) if x.isdigit() else x
 
-        # TODO: most of these should be converted to properties and prefixed _.
         self.itag = sm['itag']
         self.threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self.resolution = g.itags[self.itag][0]
@@ -705,8 +704,8 @@ class Pafy(object):
             self._fetch_gdata()
 
         if self._init_args['signature'] and self.ciphertag:
-            # fetch of url to force fetch of new stream map and js funcs.
             # pylint: disable=W0104
+            # fetch of url to force fetch of new stream map and js funcs.
             self.streams[0].url
 
         if self._init_args['size']:
