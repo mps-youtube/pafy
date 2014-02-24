@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 from pafy import Pafy
 
 url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
@@ -12,11 +13,13 @@ video = Pafy(url)
 # get certain attributes
 
 print("\n\n")
-print("Title, Rating, Length...")
-print("------------------------")
+print("Title, Rating, Length, Upload date, Uploader")
+print("--------------------------------------------")
 print(video.title)
 print(video.rating)  # out of 5
 print(video.length)  # seconds
+print(video.published)
+print(video.author)
 print("\n")
 
 # get video metadata
@@ -39,7 +42,7 @@ print("\n")
 print("All available streams...")
 print("------------------------")
 for s in streams:
-    print(s.resolution, s.extension, s.url)
+    print(s.resolution, s.extension, s.url[:60] + "...")
 print("\n")
 
 # get best resolution regardless of file format
@@ -72,7 +75,7 @@ print("\n")
 
 print("Best available quality url")
 print("--------------------------")
-print(best.url)
+print(best.url[:60] + "...")
 print("\n")
 
 # download video, show progress
