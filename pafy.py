@@ -76,7 +76,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
         basic - fetch basic metadata and streams
         gdata - fetch gdata info (upload date, description, category)
         signature - fetch data required to decrypt urls, if encrypted
-        size - fetch the size of each stream (decrypting urls if needed)
+        size - fetch the size of each stream (slow)(decrypts urls if needed)
         callback - a callback function to receive status strings
 
     If any of the first four above arguments are False, those data items will
@@ -85,9 +85,9 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     The defaults are recommended for most cases. If you wish to create
     many video objects at once, you may want to set all to False, eg:
 
-        pafy.new(basic=False, signature=False)
+        video = pafy.new(basic=False, signature=False)
 
-    This will be quick because no http requests are made on initialisation.
+    This will be quick because no http requests will be made on initialisation.
 
     Setting signature or size to True will override the basic argument
     and force basic data to be fetched too (basic data is required to
@@ -274,7 +274,7 @@ def _get_func_from_call(caller, name, arguments, js_url):
 
 
 def _solve(f, js_url):
-    """Solve basic javascript function. Return solution value (int). """
+    """Solve basic javascript function. Return solution value (str). """
 
     # pylint: disable=R0914
     patterns = {
