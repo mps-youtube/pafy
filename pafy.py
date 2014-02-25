@@ -441,7 +441,7 @@ def _get_matching_stream(smap, itag):
 
     for x in smap:
 
-        if x['itag'] == itag:
+        if x['itag'] == itag and x.get("s"):
             return x['url'], x['s']
 
     raise IOError("Sorry this video is not currently supported by pafy")
