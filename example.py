@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from pafy import Pafy
+import pafy
 
 url = "http://www.youtube.com/watch?v=cyMHZVT91Dw"
 
 # create a video instance
 
-video = Pafy(url)
+video = pafy.new(url)
 
 # get certain attributes
 
