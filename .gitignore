@@ -3,6 +3,7 @@ docs-sphinx/_build/
 *.help
 /dist
 .test
+test.py
 *.pyc
 .pypi
 __pycache__
