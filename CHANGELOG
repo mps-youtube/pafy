@@ -1,15 +1,20 @@
-Date TBD
+25 February 2014
 Version 0.3.37
 
 [Feature] - Added signature, gdata, basic and size parameters to new()
-[Feature] - Pafy objects can be `lazy` only fetching data when called for
+    These parameters can be used to restrict the data fetched on instantiation 
+    of Pafy objects and can significantly reduce the time taken to create new
+    instances. Any missing data will be fetched when needed.
+
 [Feature] - Javascript is released internally once functions are extracted
-[Feature] - Extracted javascript functions are shared between pafy objects
+    Smaller memory footprint for Pafy / Stream objects
+
+[Bugfix] - release unneeded internal data, smaller pafy objects
 [Update] - getbest and getbestaudio() return None if no streams available
 [Update] - Pafy raises ValueError or IOError.  RuntimeError removed
 [Update] - len() has been removed.  use .length property instead
-[Bugfix] - release unneeded internal data, smaller pafy objects
 
+-------------------------------------------------------------------------------
 
 20 February 2014
 Version 0.3.36
@@ -17,6 +22,7 @@ Version 0.3.36
 [Feature] - Added published date field
 [Bugfix] - Added missing notes field to itag 264 
 
+-------------------------------------------------------------------------------
 
 17 February 2014
 Version 0.3.35
@@ -25,12 +31,14 @@ Version 0.3.35
 [Feature] - Added function to fetch playlists (leokewitz)
 [Bugfix] - Add missing itag (83)
 
+-------------------------------------------------------------------------------
 
 11 February 2014
 Version 0.3.34
 
 [Bugfix] - getbest() and getbestaudio() now return False if no streams available
 
+-------------------------------------------------------------------------------
 
 7 February 2014
 Version 0.3.33
@@ -40,6 +48,7 @@ Authors: leokewitz, nagev
 [Feature] - Removed redundant looping in js function extraction
 [Bugfix] - Display correct units for data rate
 
+-------------------------------------------------------------------------------
 
 4 February 2014
 Version 0.3.31
@@ -48,6 +57,7 @@ Authors: nagev
 [Bugfix] - Handle error getting stream map
 [Bugfix] - Handle dollar character in js function name
 
+-------------------------------------------------------------------------------
 
 3 February 2014
 Version 0.3.30
@@ -56,6 +66,7 @@ Authors: nagev
 [Bugfix] - Fix regex for decrypting signatures
 [Feature] - Added callback function for status reporting
 
+-------------------------------------------------------------------------------
 
 14 January 2014
 Version 0.3.26
@@ -64,6 +75,7 @@ Authors: nagev
 [Feature] - Change dimensions property from (str, str) to (int, int)
 [Bugfix] - Replace bad characters in filenames
 
+-------------------------------------------------------------------------------
 
 15 December 2013
 Version 0.3.25
@@ -71,6 +83,7 @@ Authors: nagev
 
 [Feature] Get video category metadata.
 
+-------------------------------------------------------------------------------
 
 12 December 2013
 Version 0.3.24
@@ -80,6 +93,7 @@ Authors: hugovk, nagev
 [Feature] Get video description
 [Bugfix] Fix for js file without protocol specifier
 
+-------------------------------------------------------------------------------
 
 14 November 2013
 Version 0.3.23
@@ -90,6 +104,7 @@ Authors: davidfischer-ch, nagev
 [Bugfix] Update shebang to /usr/bin/env python instead of /usr/bin/python
 [Docs] Added README to PyPI
 
+-------------------------------------------------------------------------------
 
 27 October 2013
 Version 0.3.22
@@ -105,6 +120,7 @@ Authors: nagev
 [Docs] Using reStructured text instead of GitHub markdown for README
 [Docs] Added full documentation at http://pythonhosted.org/Pafy/
 
+-------------------------------------------------------------------------------
 
 19 October 2013
 Version 0.3.20
