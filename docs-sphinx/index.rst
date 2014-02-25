@@ -44,7 +44,7 @@ Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video
     :type gdata: bool
     :param signature: fetch data required to decrypt urls, if encrypted
     :type signature: bool
-    :param size: fetch the size of each stream (decrypting urls if needed) (slow)
+    :param size: fetch the size of each stream (slow)(decrypts urls if needed) 
     :type size: bool
     :param callback: a callback function to receive status strings
     :type callback: function
