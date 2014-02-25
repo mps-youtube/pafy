@@ -27,16 +27,41 @@ Pafy Objects
 
 .. autoclass:: pafy.Pafy
 
-Create a Pafy object using the *pafy.new()* function, giving a YouTube video URL as
-the argument
+
+Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video URL as the argument.
 
 
-.. function:: new(video_url)
+.. function:: pafy.new(video_url[, basic=True][, gdata=False][, signature=True][, size=False][, callback=None])
 
-    Create a new Pafy object
+
+    Creates a new Pafy object.  All optional arguments (apart from callback) are used to specify  which data items are fetched on initialisation.  
 
     :param url: The YouTube url or 11 character video id of the video
+    :type url: str
+    :param basic: fetch basic metadata and streams
+    :type basic: bool
+    :param gdata: fetch gdata info (upload date, description, category)
+    :type gdata: bool
+    :param signature: fetch data required to decrypt urls, if encrypted
+    :type signature: bool
+    :param size: fetch the size of each stream (decrypting urls if needed) (slow)
+    :type size: bool
+    :param callback: a callback function to receive status strings
+    :type callback: function
     :rtype: Pafy object
+
+If any of **basic**, **gdata**, **signature** or **size** are *False*, those data items will be fetched only when first called for.
+
+The defaults are recommended for most cases. If you wish to create many video objects at once, you may want to set all to *False*, eg::
+
+    vid = pafy.new(basic=False, signature=False)
+
+This will be quick because no http requests will be made on initialisation.
+
+Setting **signature** or **size** to *True* will override the **basic** argument and force basic data to be fetched too (basic data is required to obtain Stream objects and determine whether signatures are encrypted).
+
+Similarly, setting **size** to *True* will force the signature data to be fetched if the videos have encrypted signatures, so will override the value set in the **signature** argument.
+
 
 Example::
 
