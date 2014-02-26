@@ -108,9 +108,9 @@ class g(object):
     """ Class for holding constants needed throughout the module. """
 
     urls = {
-        'gdata': "https://gdata.youtube.com/feeds/api/videos/%s?v=2",
-        'watchv': "https://www.youtube.com/watch?v=%s",
-        'vidinfo': ('https://www.youtube.com/get_video_info?'
+        'gdata': "http://gdata.youtube.com/feeds/api/videos/%s?v=2",
+        'watchv': "http://www.youtube.com/watch?v=%s",
+        'vidinfo': ('http://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?',
                      'style=json&action_get_list=1&list=%s')
@@ -585,7 +585,7 @@ class Stream(object):
             # encrypted url signatures
 
             if self._parent.js_url:
-                dbg("using cached js %s" % self._parent.js_url[-15:])
+                #dbg("using cached js %s" % self._parent.js_url[-15:])
                 enc_streams = self._parent.enc_streams
 
             else:
