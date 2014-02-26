@@ -382,7 +382,6 @@ def get_video_info(video_id):
     """ Return info for video_id.  Returns dict. """
 
     url = g.urls['vidinfo'] % video_id
-    dbg("Fetching video info")
     info = decode_if_py3(g.opener.open(url).read())
     info = parse_qs(info)
     dbg("Fetched video info")
@@ -397,10 +396,12 @@ def get_video_info(video_id):
 def get_video_gdata(video_id):
     """ Return xml string containing video metadata from gdata api. """
 
-    dbg("Fetching gdata info")
+    new.callback("Fetching video gdata")
     url = g.urls['gdata'] % video_id
+    gdata = g.opener.open(g.urls['gdata'] % video_id).read()
     dbg("Fetched video gdata")
-    return g.opener.open(url).read()
+    new.callback("Fetched video gdata")
+    return gdata
 
 
 def get_js_sm(video_id):
@@ -416,7 +417,6 @@ def get_js_sm(video_id):
 
     watch_url = g.urls['watchv'] % video_id
     new.callback("Fetching watchv page")
-    dbg("Fetching watchv page")
     watchinfo = g.opener.open(watch_url).read().decode("utf8")
     dbg("Fetched watchv page")
     new.callback("Fetched watchv page")
@@ -432,6 +432,7 @@ def get_js_sm(video_id):
     if not funcs:
         new.callback("Fetching javascript")
         javascript = g.opener.open(js_url).read().decode("UTF-8")
+        dbg("Fetched javascript")
         new.callback("Fetched javascript")
         mainfunc = _get_mainfunc_from_js(javascript)
         funcs = _get_other_funcs(mainfunc, javascript)
@@ -679,12 +680,11 @@ class Pafy(object):
 
     """ Class to represent a YouTube video. """
 
-    funcmap = {}
+    funcmap = {}  # keep functions as a class variable
 
     def __init__(self, video_url, basic=True, gdata=False,
                  signature=True, size=False, callback=None):
 
-        dbg("funcmap size is %s", len(Pafy.funcmap))
         args = dict(basic=basic, gdata=gdata, signature=signature,
                     size=size, callback=callback, video_url=video_url)
 
@@ -751,7 +751,6 @@ class Pafy(object):
         if self._have_basic:
             return
 
-        new.callback("Fetching video info..")
         allinfo = get_video_info(self.videoid)
         new.callback("Fetched video info")
         f = lambda x: allinfo.get(x, ["unknown"])[0]
@@ -788,9 +787,7 @@ class Pafy(object):
         if self._have_gdata:
             return
 
-        new.callback("Fetching video data")
         gdata = get_video_gdata(self.videoid)
-        new.callback("Fetched video gdata")
         t0 = "{http://search.yahoo.com/mrss/}"
         t1 = "{http://www.w3.org/2005/Atom}"
         tree = ElementTree.fromstring(gdata)
