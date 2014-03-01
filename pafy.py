@@ -112,7 +112,7 @@ class g(object):
         'watchv': "http://www.youtube.com/watch?v=%s",
         'vidinfo': ('http://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
-        'playlist': ('http://www.youtube.com/list_ajax?',
+        'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s')
     }
     ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
@@ -763,7 +763,6 @@ class Pafy(object):
         self._length = int(f('length_seconds'))
         self._viewcount = int(f('view_count'))
         self._thumb = unquote_plus(f('thumbnail_url'))
-        self._duration = time.strftime('%H:%M:%S', time.gmtime(self._length))
         self._formats = [x.split("/") for x in f('fmt_list').split(",")]
         self._keywords = z('keywords').split(',')
         self._bigthumb = z('iurlsd')
@@ -887,8 +886,15 @@ class Pafy(object):
     def title(self):
         """ Return YouTube video title as a string. """
 
-        self._fetch_basic()
+        if not self._title:
+            self._fetch_basic()
+
         return self._title
+
+    def set_title(self, title):
+        """ Manually set title of video. """
+
+        self._title = title
 
     @property
     def author(self):
@@ -908,8 +914,15 @@ class Pafy(object):
     def length(self):
         """ Length of a video in seconds. Returns int. """
 
-        self._fetch_basic()
+        if not self._length:
+            self._fetch_basic()
+
         return self._length
+
+    def set_length(self, length):
+        """ Manually set item length. """
+
+        self._length = int(length)
 
     @property
     def viewcount(self):
@@ -943,7 +956,10 @@ class Pafy(object):
     def duration(self):
         """ Duration of a video (HH:MM:SS). Returns str. """
 
-        self._fetch_basic()
+        if not self._length:
+            self._fetch_basic()
+
+        self._duration = time.strftime('%H:%M:%S', time.gmtime(self._length))
         return self._duration
 
     @property
@@ -1061,8 +1077,11 @@ def get_playlist(playlist_url, callback=None):
     for v in allinfo['video']:
 
         try:
-            video = Pafy(v['encrypted_id'])
-            callback("Added video: %s" % v.title)
+            vid = v['encrypted_id'].encode("utf8")
+            video = new(vid, basic=False, signature=False)
+            video.set_title(v['title'])
+            video.set_length(v['length_seconds'])
+            callback("Added video: %s" % v['title'])
             videos.append(video)
 
         except IOError as e:
