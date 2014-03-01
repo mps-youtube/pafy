@@ -388,7 +388,7 @@ def get_video_info(video_id):
 
     if info['status'][0] == "fail":
         reason = info['reason'][0] or "Bad video argument"
-        raise IOError("Youtube says: %s" % reason)
+        raise IOError("Youtube says: %s [%s]" % (reason, video_id))
 
     return info
 
