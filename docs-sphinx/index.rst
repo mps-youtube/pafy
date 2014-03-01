@@ -40,7 +40,7 @@ Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video
     :type url: str
     :param basic: fetch basic metadata and streams
     :type basic: bool
-    :param gdata: fetch gdata info (upload date, description, category)
+    :param gdata: fetch gdata info (upload date, description, category, username)
     :type gdata: bool
     :param signature: fetch data required to decrypt urls, if encrypted
     :type signature: bool
@@ -121,6 +121,10 @@ attributes are available
 .. attribute:: Pafy.title
 
     The title of the video (*str*)
+
+.. attribute:: Pafy.username
+
+    The username of the uploader (*str*)
 
 .. attribute:: Pafy.videoid
 

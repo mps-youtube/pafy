@@ -701,6 +701,7 @@ class Pafy(object):
         self._description = None
         self._category = None
         self._published = None
+        self._username = None
 
         self._sm = []
         self._asm = []
@@ -795,6 +796,8 @@ class Pafy(object):
         published = tree.find(t1 + "published").text
         description = groups.find(t0 + "description").text
         category = groups.find(t0 + "category").text
+        username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
+        setattr(self, "_username", username)
         setattr(self, "_published", published)
         setattr(self, "_description", description)
         setattr(self, "_category", category)
@@ -963,6 +966,13 @@ class Pafy(object):
 
         self._fetch_gdata()
         return self._description
+
+    @property
+    def username(self):
+        """ The username of the uploader. """
+
+        self._fetch_gdata()
+        return self._username
 
     @property
     def published(self):
