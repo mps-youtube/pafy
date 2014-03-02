@@ -347,7 +347,8 @@ Stream Methods
     - download rate (kbps), *float*
     - ETA in seconds, *float*
 
-Download example::
+:func:`Stream.download` example
+-------------------------------
 
     import pafy
     v = pafy.new("cyMHZVT91Dw")
@@ -386,3 +387,92 @@ The output of this will appear as follows, while the file is downloading::
     (131072, 0.011596393963137, 14.31917945870373)
     ...
     
+
+Playlist Retrieval
+==================
+
+
+The :func:`pafy.get_playlist` function is initialised with similar arguments to :func:`pafy.new` and will return a dict containing metadata and :class:`Pafy` objects as listed in the YouTube playlist.
+
+.. function:: pafy.get_playlist(playlist_url[, basic=False][, gdata=False][, signature=False][, size=False][, callback=None])
+
+
+    :param playlist_url: The YouTube playlist url
+    :type playlist_url: str
+    :param basic: fetch basic metadata and streams
+    :type basic: bool
+    :param gdata: fetch gdata info (upload date, description, category, username)
+    :type gdata: bool
+    :param signature: fetch data required to decrypt urls, if encrypted
+    :type signature: bool
+    :param size: fetch the size of each stream (slow)(decrypts urls if needed) 
+    :type size: bool
+    :param callback: a callback function to receive status strings
+    :type callback: function
+    :rtype: dict
+
+The returned dict contains the following keys:
+
+    **playlist_id**: the id of the playlist
+
+    **likes**: the number of likes for the playlist
+
+    **dislikes**: the number of dislikes for the playlist
+
+    **title**: the title of the playlist
+
+    **author**: the author of the playlist
+
+    **description**: the description of the playlist
+
+    **items**: a list of dicts with each dict representing a video and containing the following keys:
+        
+        **pafy**: The :class:`Pafy` object for this video, initialised with the arguments given to :func:`pafy.get_playlist`
+
+        **playlist_meta**: a dict of various video-specific metadata fetched from the playlist data, including:
+
+            **added**, 
+            **likes**,
+            **dislikes**,
+            **thumbnail**,
+            **is_cc**,
+            **is_hd**,
+            **user_id**,
+            **cc_license**,
+            **privacy**,
+            **category_id**
+
+:func:`pafy.get_playlist` example
+---------------------------------
+
+    >>> import pafy
+    >>> plurl = "https://www.youtube.com/playlist?list=PL634F2B56B8C346A2"
+    >>> playlist = pafy.get_playlist(plurl)
+    >>> 
+    >>> playlist['title']
+    u'Rick Astley playlist'
+    >>> 
+    >>> playlist['author']
+    u'Deborah Back'
+    >>>
+    >>> len(playlist['items'])
+    43
+    >>>
+    >>> playlist['items'][21]['pafy']
+    Title: Body and Soul - Rick astley
+    Author: jadiafa
+    ID: QtHnEJ8UArY
+    Duration: 00:04:11
+    Rating: 5.0
+    Views: 18855
+    Thumbnail: http://i1.ytimg.com/vi/QtHnEJ8UArY/default.jpg
+    Keywords: Rick, astely, body, and, soul, pop
+    >>>
+    >>> playlist['items'][21]['pafy'].audiostreams
+    [audio:m4a@128k]
+    >>>
+    >>> playlist['items'][21]['pafy'].getbest()
+    normal:webm@640x360
+    >>>
+    >>> playlist['items'][21]['pafy'].getbest().url
+    u'http://r4---sn-4g57knzr.googlevideo.com/videoplayback?ipbits=0&ratebypas...'
