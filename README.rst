@@ -16,6 +16,7 @@ Features
 - Select highest quality stream for download or streaming
 - Download audio only (no video) in ogg or m4a format
 - Download video only (no audio) in m4v format
+- Retreive playlists and playlist metadata
 - Works with Python 2.7 and 3.x
 - No dependencies
 
