@@ -1,6 +1,8 @@
-Version 0.3.39 (in development, not yet released)
+2 March 2014
+Version 0.3.39 
 
 [Feature] - Add username property (fetched from gdata)
+[Update] - Improved and documented get_playlist() feature
 
 -------------------------------------------------------------------------------
 
