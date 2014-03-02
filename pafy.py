@@ -97,7 +97,6 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     fetched if the videos have encrypted signatures, so will override the
     value set in the signature argument.
 
-
     """
 
     return Pafy(url, basic, gdata, signature, size, callback)
@@ -197,7 +196,6 @@ def _extract_function_from_js(name, js):
     m = re.search(fpattern % re.escape(name), js)
     args, body = m.groups()
     dbg("extracted function %s(%s){%s};", name, args, body)
-    time.sleep(1)
     func = {'name': name, 'parameters': args.split(","), 'body': body}
     return func
 
@@ -368,6 +366,7 @@ def extract_video_id(url):
 
     ok = (r"\w-",) * 3
     regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
+    url = str(url)
     m = regx.search(url)
 
     if not m:
@@ -398,7 +397,7 @@ def get_video_gdata(video_id):
 
     new.callback("Fetching video gdata")
     url = g.urls['gdata'] % video_id
-    gdata = g.opener.open(g.urls['gdata'] % video_id).read()
+    gdata = g.opener.open(url).read()
     dbg("Fetched video gdata")
     new.callback("Fetched video gdata")
     return gdata
@@ -726,6 +725,8 @@ class Pafy(object):
         self._bigthumb = None
         self._viewcount = None
         self._bigthumbhd = None
+        self.expiry = None
+        self.playlist_meta = None
 
         if self._init_args['basic']:
             self._fetch_basic()
@@ -768,7 +769,6 @@ class Pafy(object):
         self._bigthumb = z('iurlsd')
         self._bigthumbhd = z('iurlsdmaxres')
         self.ciphertag = f("use_cipher_signature") == "True"
-        self.expiry = None
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
@@ -891,23 +891,22 @@ class Pafy(object):
 
         return self._title
 
-    def set_title(self, title):
-        """ Manually set title of video. """
-
-        self._title = title
-
     @property
     def author(self):
         """ The uploader of the video. Returns str. """
 
-        self._fetch_basic()
+        if not self._author:
+            self._fetch_basic()
+
         return self._author
 
     @property
     def rating(self):
         """ Rating for a video. Returns float. """
 
-        self._fetch_basic()
+        if not self._rating:
+            self._fetch_basic()
+
         return self._rating
 
     @property
@@ -919,16 +918,13 @@ class Pafy(object):
 
         return self._length
 
-    def set_length(self, length):
-        """ Manually set item length. """
-
-        self._length = int(length)
-
     @property
     def viewcount(self):
         """ Number of views for a video. Returns int. """
 
-        self._fetch_basic()
+        if not self._viewcount:
+            self._fetch_basic()
+
         return self._viewcount
 
     @property
@@ -949,7 +945,9 @@ class Pafy(object):
     def thumb(self):
         """ Thumbnail image url. Returns str. """
 
-        self._fetch_basic()
+        if not self._thumb:
+            self._fetch_basic()
+
         return self._thumb
 
     @property
@@ -980,12 +978,14 @@ class Pafy(object):
     def description(self):
         """ Description of the video. Returns string. """
 
-        self._fetch_gdata()
+        if not self._description:
+            self._fetch_gdata()
+
         return self._description
 
     @property
     def username(self):
-        """ The username of the uploader. """
+        """ Return the username of the uploader. """
 
         self._fetch_gdata()
         return self._username
@@ -1049,22 +1049,42 @@ class Pafy(object):
         else:
             return r
 
+    def populate_from_playlist(self, pl_data):
+        """ Populate Pafy object with items fetched from playlist data. """
 
-def get_playlist(playlist_url, callback=None):
-    """ Return a list of Pafy objects from a YouTube Playlist. """
+        self._title = pl_data.get("title")
+        self._author = pl_data.get("author")
+        self._length = int(pl_data.get("length_seconds", 0))
+        self._rating = pl_data.get("rating", 0.0)
+        self._viewcount = int(pl_data.get("views", 0).replace(",", ""))
+        self._thumb = pl_data.get("thumbnail")
+        self._description = pl_data.get("description")
+        self.playlist_meta = pl_data
 
+
+def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
+                 size=False, callback=None):
+    """ Return a dict containing Pafy objects from a YouTube Playlist.
+
+    The returned Pafy objects are initialised using the arguments to
+    get_playlist() in the manner documented for pafy.new()
+
+    """
+
+    # pylint: disable=R0914
+    # too many local vars
     nullf = lambda x: None
     callback = callback or nullf
-    ok = (r"\w-",) * 3
-    regx = re.compile(r'(?:^|[^%s]+)([%s]{18})(?:[^%s]+|$)' % ok)
+    x = (r"-_0-9a-zA-Z",) * 2 + (r'(?:\&|\#.{1,1000})',)
+    regx = re.compile(r'(?:^|[^%s]+)([%s]{18,})(?:%s|$)' % x)
     m = regx.search(playlist_url)
 
     if not m:
-        err = "Need 18 character video id or the URL of the video. Got %s"
+        err = "Unrecognized playlist url: %s"
         raise ValueError(err % playlist_url)
 
-    playlistid = m.groups(0)
-    url = g.urls["playlist"] % playlistid
+    playlist_id = m.groups(0)
+    url = g.urls["playlist"] % playlist_id
 
     try:
         allinfo = json.loads(decode_if_py3(g.opener.open(url).read()))
@@ -1072,21 +1092,57 @@ def get_playlist(playlist_url, callback=None):
     except:
         raise IOError("Error fetching playlist %s" % m.groups(0))
 
-    videos = []
+    playlist = dict(
+        playlist_id=playlist_id,
+        likes=allinfo.get('likes'),
+        title=allinfo.get('title'),
+        author=allinfo.get('author'),
+        dislikes=allinfo.get('dislikes'),
+        description=allinfo.get('description'),
+        items=[]
+    )
 
     for v in allinfo['video']:
 
+        vid_data = dict(
+            added=v.get('added'),
+            is_cc=v.get('is_cc'),
+            is_hd=v.get('is_hd'),
+            likes=v.get('likes'),
+            title=v.get('title'),
+            views=v.get('views'),
+            rating=v.get('rating'),
+            author=v.get('author'),
+            user_id=v.get('user_id'),
+            privacy=v.get('privacy'),
+            dislikes=v.get('dislikes'),
+            duration=v.get('duration'),
+            comments=v.get('comments'),
+            keywords=v.get('keywords'),
+            thumbnail=v.get('thumbnail'),
+            cc_license=v.get('cc_license'),
+            category_id=v.get('category_id'),
+            description=v.get('description'),
+            encrypted_id=v.get('encrypted_id'),
+            time_created=v.get('time_created'),
+            length_seconds=v.get('length_seconds')
+        )
+
         try:
-            vid = v['encrypted_id'].encode("utf8")
-            video = new(vid, basic=False, signature=False)
-            video.set_title(v['title'])
-            video.set_length(v['length_seconds'])
-            callback("Added video: %s" % v['title'])
-            videos.append(video)
+            pafy_obj = new(vid_data['encrypted_id'],
+                           basic=basic,
+                           gdata=gdata,
+                           signature=signature,
+                           size=size,
+                           callback=callback)
 
         except IOError as e:
-
             callback("%s: %s" % (v['title'], e.message))
             continue
 
-    return videos
+        pafy_obj.populate_from_playlist(vid_data)
+        playlist['items'].append(dict(pafy=pafy_obj,
+                                      playlist_meta=vid_data))
+        callback("Added video: %s" % v['title'])
+
+    return playlist
