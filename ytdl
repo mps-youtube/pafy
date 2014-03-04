@@ -39,7 +39,7 @@ def download(video, audio=False, stream=None):
         stream = video.getbestaudio()
 
     size = stream.get_filesize()
-    print("-Downloading '{}' [{:,} Bytes]".format(stream.filename, size))
+    print("-Downloading '{0}' [{1:,} Bytes]".format(stream.filename, size))
     print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
     stream.download(quiet=False)
     print("\nDone")

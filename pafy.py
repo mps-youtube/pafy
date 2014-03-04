@@ -644,8 +644,8 @@ class Stream(object):
         # pylint: disable=R0914
         # Too many local variables - who cares?
 
-        status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
-                         'KB/s].  ETA: [{:.0f} secs]')
+        status_string = ('  {0:,} Bytes [{1:.2%}] received. Rate: [{2:4.0f} '
+                         'KB/s].  ETA: [{3:.0f} secs]')
         response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
