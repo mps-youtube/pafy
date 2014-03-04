@@ -1125,6 +1125,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
             description=v.get('description'),
             encrypted_id=v.get('encrypted_id'),
             time_created=v.get('time_created'),
+            time_updated=v.get('time_updated'),
             length_seconds=v.get('length_seconds')
         )
 
