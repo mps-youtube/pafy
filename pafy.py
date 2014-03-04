@@ -178,10 +178,16 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = smap[0] if zero_idx else smap
         smap = smap.split(",")
         smap = [parse_qs(x) for x in smap]
-        smap = [{k: v[0] for k, v in x.items()} for x in smap]
-        return smap
 
-    return []
+        # Python 2.6 compatibility
+        #smap = [{k: v[0] for k, v in x.items()} for x in smap]
+        r = []
+        for x in smap:
+            z = {}
+            for k, v in x.items():
+                z[k] = v[0]
+            r.append(z)
+        return r
 
 
 def _extract_function_from_js(name, js):
