@@ -21,10 +21,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
 import pafy
-import argparse
 import sys
 
-__version__ = "0.3.23"
+early_py_version = sys.version_info[:2] < (2, 7)
+
+try:
+    import argparse
+
+except ImportError:
+
+    if early_py_version:
+        msg = ("ytdl requires the argparse library to be installed separately "
+               "for Python versions earlier than 2.7")
+        sys.exit(msg)
+
+    else:
+        raise
+
+
+__version__ = "0.3.40"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -40,8 +55,10 @@ def download(video, audio=False, stream=None):
 
     size = stream.get_filesize()
     dl_str = "-Downloading '{0}' [{1:,} Bytes]"
-    if sys.version_info[:2] < (2, 7):
+
+    if early_py_version:
         dl_str = "-Downloading '{0}' [{1} Bytes]"
+
     print(dl_str.format(stream.filename, size))
     print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
     stream.download(quiet=False)

@@ -180,15 +180,18 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = smap.split(",")
         smap = [parse_qs(x) for x in smap]
 
-        # Python 2.6 compatibility
-        #smap = [{k: v[0] for k, v in x.items()} for x in smap]
-        r = []
-        for x in smap:
-            z = {}
-            for k, v in x.items():
-                z[k] = v[0]
-            r.append(z)
-        return r
+        if not early_py_version:
+            return = [{k: v[0] for k, v in x.items()} for x in smap]
+
+        else:
+            # Python 2.6 compatibility
+            r = []
+            for x in smap:
+                z = {}
+                for k, v in x.items():
+                    z[k] = v[0]
+                r.append(z)
+            return r
 
     return []
 
