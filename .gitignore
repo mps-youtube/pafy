@@ -3,6 +3,7 @@ docs-sphinx/_build/
 *.help
 /dist
 .test
+yydl.py
 test.py
 *.pyc
 .pypi
