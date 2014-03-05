@@ -35,6 +35,7 @@ import json
 import logging
 from xml.etree import ElementTree
 
+early_py_version = sys.version_info[:2] < (2, 7)
 decode_if_py3 = lambda x: x.decode("utf8")
 
 if sys.version_info[:2] >= (3, 0):
@@ -644,8 +645,13 @@ class Stream(object):
         # pylint: disable=R0914
         # Too many local variables - who cares?
 
-        status_string = ('  {0:,} Bytes [{1:.2%}] received. Rate: [{2:4.0f} '
-                         'KB/s].  ETA: [{3:.0f} secs]')
+        status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
+                         'KB/s].  ETA: [{:.0f} secs]')
+
+        if early_py_version:
+            status_string = ('  {0:} Bytes [{1:.2%}] received. Rate:'
+                                 ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
+
         response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
