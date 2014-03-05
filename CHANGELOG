@@ -1,7 +1,8 @@
-
+Not yet released - dev version
 Version 0.3.40
 
-[Feature] = Fetch updated time for playlists 
+[Feature] - Fetch updated time for playlists 
+[Bugfix] - Handle location specific viewcount number formats
 
 -------------------------------------------------------------------------------
 
