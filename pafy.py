@@ -1056,7 +1056,8 @@ class Pafy(object):
         self._author = pl_data.get("author")
         self._length = int(pl_data.get("length_seconds", 0))
         self._rating = pl_data.get("rating", 0.0)
-        self._viewcount = int(pl_data.get("views", 0).replace(",", ""))
+        self._viewcount = "".join(re.findall("\d", pl_data.get("views", 0)))
+        self._viewcount = int(self._viewcount)
         self._thumb = pl_data.get("thumbnail")
         self._description = pl_data.get("description")
         self.playlist_meta = pl_data
