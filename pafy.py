@@ -35,6 +35,7 @@ import json
 import logging
 from xml.etree import ElementTree
 
+early_py_version = sys.version_info[:2] < (2, 7)
 decode_if_py3 = lambda x: x.decode("utf8")
 
 if sys.version_info[:2] >= (3, 0):
@@ -178,8 +179,16 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = smap[0] if zero_idx else smap
         smap = smap.split(",")
         smap = [parse_qs(x) for x in smap]
-        smap = [{k: v[0] for k, v in x.items()} for x in smap]
-        return smap
+
+        # Python 2.6 compatibility
+        #smap = [{k: v[0] for k, v in x.items()} for x in smap]
+        r = []
+        for x in smap:
+            z = {}
+            for k, v in x.items():
+                z[k] = v[0]
+            r.append(z)
+        return r
 
     return []
 
@@ -638,6 +647,11 @@ class Stream(object):
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
+
+        if early_py_version:
+            status_string = ('  {0:} Bytes [{1:.2%}] received. Rate:'
+                                 ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
+
         response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
