@@ -1,9 +1,9 @@
-Not yet released - dev version
+5 March 2014
 Version 0.3.40
 
-[Feature] - Fetch updated time for playlists 
+[Feature] - Fetch updated time for playlist items
 [Feature] - Added Python 2.6 compatibility (requires argparse from PyPI)
-[Bugfix] - Handle location specific viewcount number formats
+[Bugfix] - Handle location-specific number formats (thousands separator)
 
 -------------------------------------------------------------------------------
 
