@@ -181,7 +181,7 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = [parse_qs(x) for x in smap]
 
         if not early_py_version:
-            return = [{k: v[0] for k, v in x.items()} for x in smap]
+            return [{k: v[0] for k, v in x.items()} for x in smap]
 
         else:
             # Python 2.6 compatibility
