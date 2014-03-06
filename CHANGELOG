@@ -1,5 +1,5 @@
 5 March 2014
-Version 0.3.40
+Version 0.3.41
 
 [Feature] - Fetch updated time for playlist items
 [Feature] - Added Python 2.6 compatibility (requires argparse from PyPI)
