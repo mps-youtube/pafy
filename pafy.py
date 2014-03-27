@@ -119,7 +119,7 @@ class g(object):
           " Trident/5.0)")
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
-    jsplayer = r';ytplayer.config = ({.*?});'
+    jsplayer = r';\s*ytplayer\.config\s*=\s*(\s*{.*?}\s*)\s*;'
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
     opener.addheaders = [('User-Agent', ua)]
@@ -650,7 +650,7 @@ class Stream(object):
 
         if early_py_version:
             status_string = ('  {0:} Bytes [{1:.2%}] received. Rate:'
-                                 ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
+                             ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
 
         response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
@@ -663,7 +663,7 @@ class Stream(object):
         except IOError:
             ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
             fname = "".join(x if ok.match(x) else "_" for x in self.filename)
-            outfh = open(fname, 'wb')
+            outfh = open(fname.encode("utf8", errors="ignore"), 'wb')
 
         while True:
             chunk = response.read(chunksize)
@@ -1070,7 +1070,7 @@ class Pafy(object):
         self._author = pl_data.get("author")
         self._length = int(pl_data.get("length_seconds", 0))
         self._rating = pl_data.get("rating", 0.0)
-        self._viewcount = "".join(re.findall("\d", pl_data.get("views", "0")))
+        self._viewcount = "".join(re.findall(r"\d", pl_data.get("views", "0")))
         self._viewcount = int(self._viewcount)
         self._thumb = pl_data.get("thumbnail")
         self._description = pl_data.get("description")
