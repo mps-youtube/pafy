@@ -113,7 +113,10 @@ class g(object):
         'vidinfo': ('http://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?'
-                     'style=json&action_get_list=1&list=%s')
+                     'style=json&action_get_list=1&list=%s'),
+        'age_vidinfo': ('https://www.youtube.com/get_video_info?video_id=%s&'
+                        'el=player_embedded&gl=US&hl=en&eurl=https://youtube.'
+                        'googleapis.com/v/%s&asv=3&sts=1588')
     }
     ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
           " Trident/5.0)")
@@ -386,10 +389,11 @@ def extract_video_id(url):
     return vidid
 
 
-def get_video_info(video_id):
+def get_video_info(video_id, newurl=None):
     """ Return info for video_id.  Returns dict. """
 
     url = g.urls['vidinfo'] % video_id
+    url = newurl if newurl else url
     info = decode_if_py3(g.opener.open(url).read())
     info = parse_qs(info)
     dbg("Fetched video info")
@@ -426,6 +430,15 @@ def get_js_sm(video_id):
     watch_url = g.urls['watchv'] % video_id
     new.callback("Fetching watchv page")
     watchinfo = g.opener.open(watch_url).read().decode("utf8")
+
+    if re.search(r'player-age-gate-content">', watchinfo) is not None:
+        # create a new Pafy object
+        dbg("creating new instance for age restrictved video")
+        doppleganger = new(video_id, False, False, False)
+        video_info_url = g.urls['age_vidinfo'] % (video_id, video_id)
+        doppleganger._fetch_basic(ageurl=video_info_url)
+        return "age", "age", doppleganger
+
     dbg("Fetched watchv page")
     new.callback("Fetched watchv page")
     m = re.search(g.jsplayer, watchinfo)
@@ -447,6 +460,18 @@ def get_js_sm(video_id):
         funcs['mainfunction'] = mainfunc
 
     return smap, js_url, funcs
+
+
+def gen_ageurl(dop, itag):
+    """ Decrypt signature for age-restricted item. Return url """
+
+    for x in dop._sm + dop._asm:
+
+        if x['itag'] == itag and len(x['s']) == 86:
+            s = x['s']
+            s = s[2:63] + s[82] + s[64:82] + s[63]
+            dbg("decrypted agesig: %s%s", s[:22], "..")
+            return _make_url(x['url'], s)
 
 
 def _get_matching_stream(smap, itag):
@@ -586,12 +611,14 @@ class Stream(object):
         if self._url:
             pass
 
+        elif self._parent.age:
+            self._url = gen_ageurl(self._parent.doppleganger, self.itag)
+
         elif not self.encrypted:
             self._url = _make_url(self._rawurl, self._sig)
 
         else:
             # encrypted url signatures
-
             if self._parent.js_url:
                 #dbg("using cached js %s" % self._parent.js_url[-15:])
                 enc_streams = self._parent.enc_streams
@@ -600,6 +627,14 @@ class Stream(object):
                 enc_streams, js_url, funcs = get_js_sm(self._parent.videoid)
                 self._parent.expiry = time.time() + g.lifespan
                 self._parent.js_url = js_url
+
+                # check for age
+                if type(enc_streams) == str and enc_streams == "age":
+                    self._parent.age = True
+                    dop = self._parent.doppleganger = funcs
+                    self._url = gen_ageurl(dop, self.itag)
+                    return self._url
+
 
                 # Create Pafy funcmap dict for this js_url
                 if not Pafy.funcmap.get(js_url):
@@ -719,6 +754,7 @@ class Pafy(object):
         self._sm = []
         self._asm = []
         self.js_url = None  # if js_url is set then has new stream map
+        self.age = False
         self._streams = []
         self._oggstreams = []
         self._m4astreams = []
@@ -761,13 +797,18 @@ class Pafy(object):
                 # pylint: disable=W0104
                 s.get_filesize()
 
-    def _fetch_basic(self):
+    def _fetch_basic(self, ageurl=None):
         """ Fetch info url page and set member vars. """
 
         if self._have_basic:
             return
 
-        allinfo = get_video_info(self.videoid)
+        if ageurl:
+            allinfo = get_video_info("none", ageurl)
+
+        else:
+            allinfo = get_video_info(self.videoid)
+
         new.callback("Fetched video info")
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         z = lambda x: allinfo.get(x, [""])[0]
@@ -783,6 +824,10 @@ class Pafy(object):
         self._bigthumb = z('iurlsd')
         self._bigthumbhd = z('iurlsdmaxres')
         self.ciphertag = f("use_cipher_signature") == "True"
+
+        if ageurl:
+            self.ciphertag = False
+            dbg("Encrypted signature detected - age restricted")
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
