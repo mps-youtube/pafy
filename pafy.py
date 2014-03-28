@@ -57,18 +57,6 @@ if os.environ.get("pafydebug") == "1":
 dbg = logging.debug
 
 
-def _make_url(raw, sig, quick=True):
-    """ Return usable url. Set quick=False to disable ratebypass override. """
-
-    if quick and not "ratebypass=" in raw:
-        raw += "&ratebypass=yes"
-
-    if not "signature=" in raw:
-        raw += "&signature=" + sig
-
-    return raw
-
-
 def new(url, basic=True, gdata=False, signature=True, size=False,
         callback=None):
     """ Return a new pafy instance given a url or video id.
@@ -101,6 +89,49 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     """
 
     return Pafy(url, basic, gdata, signature, size, callback)
+
+
+def get_video_info(video_id, newurl=None):
+    """ Return info for video_id.  Returns dict. """
+
+    url = g.urls['vidinfo'] % video_id
+    url = newurl if newurl else url
+    info = decode_if_py3(g.opener.open(url).read())
+    info = parse_qs(info)
+    dbg("Fetched video info")
+
+    if info['status'][0] == "fail":
+        reason = info['reason'][0] or "Bad video argument"
+        raise IOError("Youtube says: %s [%s]" % (reason, video_id))
+
+    return info
+
+
+def get_video_gdata(video_id):
+    """ Return xml string containing video metadata from gdata api. """
+
+    new.callback("Fetching video gdata")
+    url = g.urls['gdata'] % video_id
+    gdata = g.opener.open(url).read()
+    dbg("Fetched video gdata")
+    new.callback("Fetched video gdata")
+    return gdata
+
+
+def extract_video_id(url):
+    """ Extract the video id from a url, return video id as str. """
+
+    ok = (r"\w-",) * 3
+    regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
+    url = str(url)
+    m = regx.search(url)
+
+    if not m:
+        err = "Need 11 character video id or the URL of the video. Got %s"
+        raise ValueError(err % url)
+
+    vidid = m.group(1)
+    return vidid
 
 
 class g(object):
@@ -140,6 +171,10 @@ class g(object):
         '44': ('854x480', 'webm', "normal", ''),
         '45': ('1280x720', 'webm', "normal", ''),
         '46': ('1920x1080', 'webm', "normal", ''),
+
+        #'59': ('1x1', 'mp4', 'normal', ''),
+        #'78': ('1x1', 'mp4', 'normal', ''),
+
         '82': ('640x360-3D', 'mp4', "normal", ''),
         '83': ('640x480-3D', 'mp4', 'normal', ''),
         '84': ('1280x720-3D', 'mp4', "normal", ''),
@@ -373,49 +408,6 @@ def _decodesig(sig, js_url):
     return solved
 
 
-def extract_video_id(url):
-    """ Extract the video id from a url, return video id as str. """
-
-    ok = (r"\w-",) * 3
-    regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
-    url = str(url)
-    m = regx.search(url)
-
-    if not m:
-        err = "Need 11 character video id or the URL of the video. Got %s"
-        raise ValueError(err % url)
-
-    vidid = m.group(1)
-    return vidid
-
-
-def get_video_info(video_id, newurl=None):
-    """ Return info for video_id.  Returns dict. """
-
-    url = g.urls['vidinfo'] % video_id
-    url = newurl if newurl else url
-    info = decode_if_py3(g.opener.open(url).read())
-    info = parse_qs(info)
-    dbg("Fetched video info")
-
-    if info['status'][0] == "fail":
-        reason = info['reason'][0] or "Bad video argument"
-        raise IOError("Youtube says: %s [%s]" % (reason, video_id))
-
-    return info
-
-
-def get_video_gdata(video_id):
-    """ Return xml string containing video metadata from gdata api. """
-
-    new.callback("Fetching video gdata")
-    url = g.urls['gdata'] % video_id
-    gdata = g.opener.open(url).read()
-    dbg("Fetched video gdata")
-    new.callback("Fetched video gdata")
-    return gdata
-
-
 def get_js_sm(video_id):
     """ Fetch watchinfo page and extract stream map and js funcs if not known.
 
@@ -460,6 +452,18 @@ def get_js_sm(video_id):
         funcs['mainfunction'] = mainfunc
 
     return smap, js_url, funcs
+
+
+def _make_url(raw, sig, quick=True):
+    """ Return usable url. Set quick=False to disable ratebypass override. """
+
+    if quick and not "ratebypass=" in raw:
+        raw += "&ratebypass=yes"
+
+    if not "signature=" in raw:
+        raw += "&signature=" + sig
+
+    return raw
 
 
 def gen_ageurl(dop, itag):
@@ -811,11 +815,12 @@ class Pafy(object):
 
         new.callback("Fetched video info")
         f = lambda x: allinfo.get(x, ["unknown"])[0]
+        t = lambda x: allinfo.get(x, [0.0])[0]
         z = lambda x: allinfo.get(x, [""])[0]
         self._title = f('title').replace("/", "-")
         self._author = f('author')
         self._videoid = f('video_id')
-        self._rating = float(f('avg_rating'))
+        self._rating = float(t('avg_rating'))
         self._length = int(f('length_seconds'))
         self._viewcount = int(f('view_count'))
         self._thumb = unquote_plus(f('thumbnail_url'))
