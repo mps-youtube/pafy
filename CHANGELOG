@@ -1,3 +1,10 @@
+Version 0.3.42 - In development, not yet released
+
+[Feature] - Added support for age-restricted videos with encrypted signatures
+[Feature] - Added likes and dislikes properties for pafy objects
+
+-------------------------------------------------------------------------------
+
 5 March 2014
 Version 0.3.41
 

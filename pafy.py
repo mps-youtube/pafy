@@ -849,9 +849,12 @@ class Pafy(object):
         gdata = get_video_gdata(self.videoid)
         t0 = "{http://search.yahoo.com/mrss/}"
         t1 = "{http://www.w3.org/2005/Atom}"
+        t2 = "{http://gdata.youtube.com/schemas/2007}"
         tree = ElementTree.fromstring(gdata)
         groups = tree.find(t0 + "group")
         published = tree.find(t1 + "published").text
+        likes = tree.find(t2 + "rating").get("numLikes")
+        dislikes = tree.find(t2 + "rating").get("numDislikes")
         description = groups.find(t0 + "description").text
         category = groups.find(t0 + "category").text
         username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
@@ -859,6 +862,8 @@ class Pafy(object):
         setattr(self, "_published", published)
         setattr(self, "_description", description)
         setattr(self, "_category", category)
+        setattr(self, "_likes", likes)
+        setattr(self, "_dislikes", dislikes)
 
         self._have_gdata = 1
 
@@ -1055,6 +1060,20 @@ class Pafy(object):
 
         self._fetch_gdata()
         return self._published.rstrip(".000Z").replace("T", " ")
+
+    @property
+    def likes(self):
+        """ The number of likes for the video. Returns int. """
+
+        self._fetch_gdata()
+        return int(self._likes)
+
+    @property
+    def dislikes(self):
+        """ The number of dislikes for the video. Returns int. """
+
+        self._fetch_gdata()
+        return int(self._dislikes)
 
     def getbest(self, preftype="any", ftypestrict=True):
         """
