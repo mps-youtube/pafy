@@ -1064,7 +1064,7 @@ class Pafy(object):
         """ The upload date and time of the video. Returns string. """
 
         self._fetch_gdata()
-        return self._published.rstrip(".000Z").replace("T", " ")
+        return self._published.replace(".000Z", "").replace("T", " ")
 
     @property
     def likes(self):
