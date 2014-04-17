@@ -858,8 +858,10 @@ class Pafy(object):
         tree = ElementTree.fromstring(gdata)
         groups = tree.find(t0 + "group")
         published = tree.find(t1 + "published").text
-        likes = tree.find(t2 + "rating").get("numLikes")
-        dislikes = tree.find(t2 + "rating").get("numDislikes")
+        likes = tree.find(t2 + "rating") or {}
+        likes = likes.get("numLikes", -1)
+        dislikes = tree.find(t2 + "rating") or {}
+        dislikes = dislikes.get("numDislikes", -1)
         description = groups.find(t0 + "description").text
         category = groups.find(t0 + "category").text
         username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
@@ -1176,6 +1178,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
     except:
         raise IOError("Error fetching playlist %s" % m.groups(0))
 
+    # playlist specific metadata
     playlist = dict(
         playlist_id=playlist_id,
         likes=allinfo.get('likes'),
@@ -1186,6 +1189,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
         items=[]
     )
 
+    # playlist items specific metadata
     for v in allinfo['video']:
 
         vid_data = dict(
