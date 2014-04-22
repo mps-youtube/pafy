@@ -2,7 +2,8 @@ Version 0.3.42 - In development, not yet released
 
 [Feature] - Added support for age-restricted videos with encrypted signatures
 [Feature] - Added likes and dislikes properties for pafy objects
-[Bugfix] - Fix bad formatted published date
+[Bugfix] - Fix incorrectly formatted published date
+[Bugfix] - Fix incorrect media type for itags 242 - 248
 
 -------------------------------------------------------------------------------
 
