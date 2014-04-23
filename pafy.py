@@ -858,10 +858,9 @@ class Pafy(object):
         tree = ElementTree.fromstring(gdata)
         groups = tree.find(t0 + "group")
         published = tree.find(t1 + "published").text
-        likes = tree.find(t2 + "rating")
-        likes = likes.get("numLikes")  if likes is not None else -1
-        dlk = tree.find(t2 + "rating")
-        dislikes = dlk.get("numDislikes") if dlk is not None else -1
+        rating = tree.find(t2 + "rating")
+        likes = rating.get("numLikes") if rating is not None else 0
+        dislikes = rating.get("numDislikes") if rating is not None else 0
         description = groups.find(t0 + "description").text
         category = groups.find(t0 + "category").text
         username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
