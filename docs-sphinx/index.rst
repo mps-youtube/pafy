@@ -40,7 +40,7 @@ Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video
     :type url: str
     :param basic: fetch basic metadata and streams
     :type basic: bool
-    :param gdata: fetch gdata info (upload date, description, category, username)
+    :param gdata: fetch gdata info (upload date, description, category, username, likes, dislikes)
     :type gdata: bool
     :param signature: fetch data required to decrypt urls, if encrypted
     :type signature: bool
@@ -94,6 +94,10 @@ attributes are available
 
     The video description text (*str*)
 
+.. attribute:: Pafy.dislikes
+
+    The number of dislikes received for the video (*int*)
+
 .. attribute:: Pafy.duration
 
     The duration of the stream (*string formatted as HH:MM:SS*)
@@ -105,6 +109,10 @@ attributes are available
 .. attribute:: Pafy.length
 
     The duration of the streams in seconds (*int*)
+
+.. attribute:: Pafy.likes
+
+    The number of likes received for the video (*int*)
 
 .. attribute:: Pafy.published
 
@@ -401,7 +409,7 @@ The :func:`pafy.get_playlist` function is initialised with similar arguments to 
     :type playlist_url: str
     :param basic: fetch basic metadata and streams
     :type basic: bool
-    :param gdata: fetch gdata info (upload date, description, category, username)
+    :param gdata: fetch gdata info (upload date, description, category, username, likes, dislikes)
     :type gdata: bool
     :param signature: fetch data required to decrypt urls, if encrypted
     :type signature: bool
