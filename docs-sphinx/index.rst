@@ -355,8 +355,11 @@ Stream Methods
     - download rate (kbps), *float*
     - ETA in seconds, *float*
 
+
 :func:`Stream.download` example
 -------------------------------
+
+Example of using stream.download()::
 
     import pafy
     v = pafy.new("cyMHZVT91Dw")
