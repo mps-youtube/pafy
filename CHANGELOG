@@ -5,7 +5,7 @@ Version 0.3.42
 [Feature] - Added likes and dislikes properties
 [Bugfix] - Fix incorrectly formatted published date
 [Bugfix] - Fix incorrect media type for itags 242 - 248
-[Known Issue] - Playlist search returns maximum of 80 items
+[Known Issue] - Playlist retrieval returns maximum of 80 items
 
 -------------------------------------------------------------------------------
 
