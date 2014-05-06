@@ -2,7 +2,7 @@
     :target: https://pypi.python.org/pypi/Pafy
 .. image:: https://pypip.in/d/Pafy/badge.png
     :target: https://pypi.python.org/pypi/Pafy
-
+.. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
 
 Features
 --------
