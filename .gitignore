@@ -4,7 +4,6 @@ docs-sphinx/_build/
 dev/
 /dist
 .test
-yydl.py
 *.pyc
 .pypi
 __pycache__
