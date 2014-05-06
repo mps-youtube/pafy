@@ -9,10 +9,11 @@ class Test(unittest.TestCase):
 
     def setUp(self):
 
+        self.videos = VIDEOS
+        self.playlists = PLAYLISTS
         self.properties = ("videoid title length duration author "
                            "username").split()
 
-        self.videos = VIDEOS
         for video in self.videos:
             time.sleep(2)
             video['pafy'] = pafy.new(video['identifier'])
@@ -20,8 +21,28 @@ class Test(unittest.TestCase):
             video['best'] = video['pafy'].getbest()
             video['bestaudio'] = video['pafy'].getbestaudio()
 
+        for playlist in self.playlists:
+            playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
+
+    def test_misc_tests(self):
+        self.assertIs(pafy._extract_smap("a", "bcd"), [])
+        self.assertRaises(IOError, pafy._getval, "no_digits_here", 0)
+
+    def test_pafy_download(self):
+        vid = pafy.new("DsAn_n6O5Ns").audiostreams[-1]
+        name = vid.download(filepath="file", quiet=True)
+        self.assertEqual(name, "file")
+
     def test_pafy_init(self):
         """ Test Pafy object creation. """
+
+        # test bad video id, 11 chars
+        badid = "12345678901"
+        too_short = "123"
+        self.assertRaises(IOError, pafy.new, badid)
+        self.assertRaises(ValueError, pafy.new, too_short)
+        self.assertRaises(ValueError, pafy.get_playlist, badid)
+        self.assertRaises(IOError, pafy.get_playlist, "a" * 18)
 
         for video in self.videos:
             #self.assertIsInstance(video['pafy'], pafy.Pafy)
@@ -42,7 +63,6 @@ class Test(unittest.TestCase):
         for video in self.videos:
 
             paf = video['pafy']
-
             self.assertEqual(video['all streams'], len(paf.allstreams))
             self.assertEqual(video['normal streams'], len(paf.streams))
             self.assertEqual(video['audio streams'], len(paf.audiostreams))
@@ -55,8 +75,31 @@ class Test(unittest.TestCase):
 
         for video in self.videos:
             time.sleep(2)
-            size = video['pafy'].getbest().get_filesize()
+            size = video['best'].get_filesize()
             self.assertEqual(video['bestsize'], size)
+
+    def test_get_playlist(self):
+        """ Test get_playlist function. """
+
+        for pl in self.playlists:
+            fetched = pl['fetched']
+
+            self.assertEqual(len(fetched['items']), pl['count'])
+
+            for field in "playlist_id description author title".split():
+                self.assertEqual(fetched[field], pl[field])
+
+
+PLAYLISTS = [
+    {
+        'identifier': "http://www.youtube.com/playlist?list=PL91EF4BD43796A9A4",
+        'playlist_id': "PL91EF4BD43796A9A4",
+        'description': "",
+        'author': "sanjeev virmani",
+        'title': "Android Development 200 lectures",
+        'count': 200,
+    },
+]
 
 
 VIDEOS = [
