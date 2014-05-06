@@ -883,8 +883,8 @@ class Pafy(object):
         adpt_streams = [Stream(sm, self) for sm in self._asm]
         audiostreams = [x for x in adpt_streams if x.bitrate]
         videostreams = [x for x in adpt_streams if not x.bitrate]
-        m4astreams = [x for x in self.audiostreams if x.extension == "m4a"]
-        oggstreams = [x for x in self.audiostreams if x.extension == "ogg"]
+        m4astreams = [x for x in audiostreams if x.extension == "m4a"]
+        oggstreams = [x for x in audiostreams if x.extension == "ogg"]
         self._streams = streams
         self._audiostreams = audiostreams
         self._videostreams = videostreams
