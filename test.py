@@ -25,8 +25,8 @@ class Test(unittest.TestCase):
             playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
 
     def test_misc_tests(self):
-        self.assertIs(pafy._extract_smap("a", "bcd"), [])
-        self.assertRaises(IOError, pafy._getval, "no_digits_here", 0)
+        self.assertEqual(pafy._extract_smap("a", "bcd"), [])
+        self.assertRaises(IOError, pafy._getval, "no_digits_here", "88")
 
     def test_pafy_download(self):
         vid = pafy.new("DsAn_n6O5Ns").audiostreams[-1]
