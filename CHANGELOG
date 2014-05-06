@@ -1,7 +1,7 @@
 Version 0.3.43
 Development version, not yet released
 
-[Bugfix] - m4astreams and oggstreams returns empty list
+[Bugfix] - Fixed m4astreams and oggstreams return empty lists
 
 -------------------------------------------------------------------------------
 
