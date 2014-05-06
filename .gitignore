@@ -1,6 +1,8 @@
 MANIFEST
 docs-sphinx/_build/
 *.help
+.coverage
+htmlcov/
 dev/
 /dist
 .test
