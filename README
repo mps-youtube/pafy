@@ -3,6 +3,9 @@
 .. image:: https://pypip.in/d/Pafy/badge.png
     :target: https://pypi.python.org/pypi/Pafy
 .. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
+    :target https://travis-ci.org/np1/pafy
+.. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=develop
+  :target: https://coveralls.io/r/np1/pafy?branch=develop
 
 Features
 --------
