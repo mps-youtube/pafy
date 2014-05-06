@@ -1,3 +1,10 @@
+Version 0.3.43
+Development version, not yet released
+
+[Bugfix] - m4astreams and oggstreams returns empty list
+
+-------------------------------------------------------------------------------
+
 30 April 2014
 Version 0.3.42
 
