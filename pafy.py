@@ -1169,7 +1169,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
         err = "Unrecognized playlist url: %s"
         raise ValueError(err % playlist_url)
 
-    playlist_id = m.groups(0)
+    playlist_id = m.group(1)
     url = g.urls["playlist"] % playlist_id
 
     try:
