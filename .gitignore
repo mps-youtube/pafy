@@ -1,6 +1,7 @@
 MANIFEST
 docs-sphinx/_build/
 *.help
+dev/
 /dist
 .test
 yydl.py
