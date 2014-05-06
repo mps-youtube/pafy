@@ -6,4 +6,8 @@ python:
     - "2.6"
     - "2.7"
 
+branches:
+    only:
+    - develop
+
 script: python test.py
