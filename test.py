@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
             for prop in self.properties:
                 self.assertEqual(getattr(video['pafy'], prop), video[prop])
 
-            self.assertIsNot(video.__repr__(), None)
+            self.assertNotEqual(video.__repr__(), None)
 
     def test_streams_exist(self):
         """ Test for expected number of streams. """
