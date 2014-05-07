@@ -130,7 +130,7 @@ class Test(unittest.TestCase):
 
         self.assertEqual(mainfunc['name'], "mthr")
         self.assertEqual(mainfunc["parameters"], ["a"])
-        self.assertGreater(len(mainfunc['body']), 3)
+        self.assertTrue(len(mainfunc['body']) > 3)
         self.assertIn("return", mainfunc['body'])
         self.assertEqual(otherfuncs['fkr']['parameters'], ['a', 'b'])
 
