@@ -15,9 +15,6 @@ class Test(unittest.TestCase):
         Test.videos = VIDEOS if not os.environ.get("quick") else []
         Test.playlists = PLAYLISTS if not os.environ.get("quick") else []
 
-        Test.properties = ("videoid title length duration author "
-                           "username category thumb published").split()
-
         for video in Test.videos:
             time.sleep(self.delay)
             video['pafy'] = pafy.new(video['identifier'])
@@ -32,11 +29,13 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.delay = 3
+        self.properties = ("videoid title length duration author "
+                           "username category thumb published").split()
+
         self.runOnce()
 
     def test_pafy_download(self):
         """ Test downloading using a custom filename with invalid char. """
-
         callback = lambda a, b, c, d, e: 0
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1]
@@ -44,6 +43,7 @@ class Test(unittest.TestCase):
         self.assertEqual(name[0:5], "WASTE")
 
     def test_lazy_pafy(self):
+        """ Test initialising pafy object without fetching data. """
         vid = pafy.new("DsAn_n6O5Ns", basic=False, signature=False)
         self.assertEqual(vid.bigthumb, '')
         self.assertEqual(vid.bigthumbhd, '')
@@ -62,29 +62,26 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy.get_playlist, "a" * 18)
 
         for video in Test.videos:
-            #self.assertIsInstance(video['pafy'], pafy.Pafy)
             # python 2.6 unittest doesn't have assertIsInstance
+            #self.assertIsInstance(video['pafy'], pafy.Pafy)
             self.assertTrue(isinstance(video['pafy'], pafy.Pafy))
 
     def test_video_properties(self):
         """ Test video properties. """
 
         for video in Test.videos:
-
             description = video['pafy'].description.encode("utf8")
             self.assertEqual(hashlib.sha1(description).hexdigest(),
                              video['description'])
 
-            for prop in Test.properties:
+            for prop in self.properties:
                 self.assertEqual(getattr(video['pafy'], prop), video[prop])
 
             self.assertNotEqual(video.__repr__(), None)
 
     def test_streams_exist(self):
         """ Test for expected number of streams. """
-
         for video in Test.videos:
-
             paf = video['pafy']
             self.assertEqual(video['all streams'], len(paf.allstreams))
             self.assertEqual(video['normal streams'], len(paf.streams))
@@ -95,13 +92,13 @@ class Test(unittest.TestCase):
 
     def test_best_stream_size(self):
         """ Test stream filesize. """
-
         for video in Test.videos:
             time.sleep(self.delay)
             size = video['best'].get_filesize()
             self.assertEqual(video['bestsize'], size)
 
     def test_get_other_funcs(self):
+        """ Test extracting  other functions called from a parent function. """
         js = "function  f$(x,y){var X=x[1];var Y=y[1];return X;}"
         primary_func = dict(body="a=f$(12,34);b=f$(56,67)")
         otherfuncs = pafy._get_other_funcs(primary_func, js)
@@ -131,7 +128,7 @@ class Test(unittest.TestCase):
         self.assertEqual(mainfunc['name'], "mthr")
         self.assertEqual(mainfunc["parameters"], ["a"])
         self.assertTrue(len(mainfunc['body']) > 3)
-        self.assertIn("return", mainfunc['body'])
+        self.assertTrue("return" in mainfunc['body'])
         self.assertEqual(otherfuncs['fkr']['parameters'], ['a', 'b'])
 
         # test pafy._solve
@@ -168,13 +165,13 @@ class Test(unittest.TestCase):
 
         for pl in Test.playlists:
             fetched = pl['fetched']
-
             self.assertEqual(len(fetched['items']), pl['count'])
 
             for field in "playlist_id description author title".split():
                 self.assertEqual(fetched[field], pl[field])
 
     def test_misc_tests(self):
+        """ Other tests. """
         self.assertEqual(pafy._extract_smap("a", "bcd"), [])
         self.assertRaises(IOError, pafy._getval, "no_digits_here", "88")
 
