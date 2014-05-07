@@ -5,6 +5,9 @@ python:
     - "2.6"
     - "2.7"
 
+env:
+    - pafydebug=1
+
 install:
     - pip install coveralls > /dev/null
 
