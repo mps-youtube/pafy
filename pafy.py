@@ -275,14 +275,14 @@ def _get_other_funcs(primary_func, js):
         if call.match(part):
             match = call.match(part)
             name = match.group(1)
-            dbg("found secondary function '%s'", name)
+            #dbg("found secondary function '%s'", name)
 
             if not name in functions:
                 #  extract from javascript if not previously done
                 functions[name] = _extract_function_from_js(name, js)
 
-            else:
-                dbg("function '%s' is already in map.", name)
+            #else:
+                #dbg("function '%s' is already in map.", name)
 
     return functions
 
@@ -347,8 +347,11 @@ def _solve(f, js_url):
 
         for n, p in patterns.items():
             m, name = re.match(p, part), n
+
             if m:
                 break
+        else:
+            raise IOError("no match for %s" % part)
 
         if name == "split_or_join":
             pass
@@ -383,9 +386,6 @@ def _solve(f, js_url):
         elif name == "slice":
             a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
             f['args'][m.group(1)] = b[c:]
-
-        else:
-            raise IOError("no match for %s" % part)
 
     raise IOError("Processed js funtion parts without finding return")
 
@@ -674,7 +674,7 @@ class Stream(object):
                 self._fsize = int(g.opener.open(self.url).headers[cl])
                 dbg("Got stream size")
 
-            except (HTTPError, URLError):
+            except (AttributeError, HTTPError, URLError):
                 self._fsize = 0
 
         return self._fsize
