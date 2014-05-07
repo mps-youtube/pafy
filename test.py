@@ -1,9 +1,11 @@
 # encoding: utf8
 
 import unittest
+import hashlib
 import time
 import pafy
 
+DELAY = 0
 
 class Test(unittest.TestCase):
 
@@ -12,10 +14,10 @@ class Test(unittest.TestCase):
         self.videos = VIDEOS
         self.playlists = PLAYLISTS
         self.properties = ("videoid title length duration author "
-                           "username").split()
+                           "username category thumb published").split()
 
         for video in self.videos:
-            time.sleep(2)
+            time.sleep(DELAY)
             video['pafy'] = pafy.new(video['identifier'])
             video['streams'] = video['pafy'].streams
             video['best'] = video['pafy'].getbest()
@@ -28,10 +30,24 @@ class Test(unittest.TestCase):
         self.assertEqual(pafy._extract_smap("a", "bcd"), [])
         self.assertRaises(IOError, pafy._getval, "no_digits_here", "88")
 
+        # _get_func_from_call
+        xcaller = {"args": [1, 2, 3]}
+        xname = {'parameters': [1, 2, 3]}
+        xarguments = ["1", "2", "3"]
+        pafy.Pafy.funcmap["js_url"] = {"hello": xname}
+        pafy._get_func_from_call(xcaller, "hello", xarguments, "js_url")
+
     def test_pafy_download(self):
-        vid = pafy.new("DsAn_n6O5Ns").audiostreams[-1]
-        name = vid.download(filepath="file", quiet=True)
+        callback = lambda a, b, c, d, e: 0
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True, size=True)
+        vstr = vid.audiostreams[-1]
+        name = vstr.download(filepath="file", quiet=False, callback=callback)
         self.assertEqual(name, "file")
+
+    def test_lazy_pafy(self):
+        vid = pafy.new("DsAn_n6O5Ns", basic=False, signature=False)
+        vid.bigthumb
+        vid.bigthumbhd
 
     def test_pafy_init(self):
         """ Test Pafy object creation. """
@@ -54,8 +70,14 @@ class Test(unittest.TestCase):
 
         for video in self.videos:
 
+            description = video['pafy'].description.encode("utf8")
+            self.assertEqual(hashlib.sha1(description).hexdigest(),
+                             video['description'])
+
             for prop in self.properties:
                 self.assertEqual(getattr(video['pafy'], prop), video[prop])
+
+            self.assertIsNot(video.__repr__(), None)
 
     def test_streams_exist(self):
         """ Test for expected number of streams. """
@@ -74,7 +96,7 @@ class Test(unittest.TestCase):
         """ Test stream filesize. """
 
         for video in self.videos:
-            time.sleep(2)
+            time.sleep(DELAY)
             size = video['best'].get_filesize()
             self.assertEqual(video['bestsize'], size)
 
@@ -100,7 +122,6 @@ PLAYLISTS = [
         'count': 200,
     },
 ]
-
 
 VIDEOS = [
     {
@@ -206,4 +227,4 @@ VIDEOS = [
 ]
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=3)
