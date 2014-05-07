@@ -12,8 +12,6 @@ branches:
     only:
     - develop
 
-env:
-    - pafydebug=1
 script:
     coverage run test.py
 
