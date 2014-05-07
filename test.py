@@ -5,7 +5,7 @@ import hashlib
 import time
 import pafy
 
-DELAY = 0
+DELAY = 3
 
 class Test(unittest.TestCase):
 
