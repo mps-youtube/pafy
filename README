@@ -5,7 +5,7 @@
 .. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=develop
     :target: https://coveralls.io/r/np1/pafy?branch=develop
 .. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
-    :target https://travis-ci.org/np1/pafy
+    :target: https://travis-ci.org/np1/pafy
 
 Features
 --------
