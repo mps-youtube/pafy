@@ -9,22 +9,29 @@ DELAY = 3
 
 class Test(unittest.TestCase):
 
-    def setUp(self):
+    def runOnce(self):
+        if Test.hasrun:
+            return
 
-        self.videos = VIDEOS
-        self.playlists = PLAYLISTS
-        self.properties = ("videoid title length duration author "
+        Test.videos = VIDEOS
+        Test.playlists = PLAYLISTS
+        Test.properties = ("videoid title length duration author "
                            "username category thumb published").split()
 
-        for video in self.videos:
+        for video in Test.videos:
             time.sleep(DELAY)
             video['pafy'] = pafy.new(video['identifier'])
             video['streams'] = video['pafy'].streams
             video['best'] = video['pafy'].getbest()
             video['bestaudio'] = video['pafy'].getbestaudio()
 
-        for playlist in self.playlists:
+        for playlist in Test.playlists:
             playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
+
+        Test.hasrun = True
+
+    def setUp(self):
+        self.runOnce()
 
     def test_misc_tests(self):
         self.assertEqual(pafy._extract_smap("a", "bcd"), [])
@@ -60,7 +67,7 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, pafy.get_playlist, badid)
         self.assertRaises(IOError, pafy.get_playlist, "a" * 18)
 
-        for video in self.videos:
+        for video in Test.videos:
             #self.assertIsInstance(video['pafy'], pafy.Pafy)
             # python 2.6 testing
             self.assertTrue(isinstance(video['pafy'], pafy.Pafy))
@@ -68,13 +75,13 @@ class Test(unittest.TestCase):
     def test_video_properties(self):
         """ Test video properties. """
 
-        for video in self.videos:
+        for video in Test.videos:
 
             description = video['pafy'].description.encode("utf8")
             self.assertEqual(hashlib.sha1(description).hexdigest(),
                              video['description'])
 
-            for prop in self.properties:
+            for prop in Test.properties:
                 self.assertEqual(getattr(video['pafy'], prop), video[prop])
 
             self.assertNotEqual(video.__repr__(), None)
@@ -82,7 +89,7 @@ class Test(unittest.TestCase):
     def test_streams_exist(self):
         """ Test for expected number of streams. """
 
-        for video in self.videos:
+        for video in Test.videos:
 
             paf = video['pafy']
             self.assertEqual(video['all streams'], len(paf.allstreams))
@@ -95,7 +102,7 @@ class Test(unittest.TestCase):
     def test_best_stream_size(self):
         """ Test stream filesize. """
 
-        for video in self.videos:
+        for video in Test.videos:
             time.sleep(DELAY)
             size = video['best'].get_filesize()
             self.assertEqual(video['bestsize'], size)
@@ -103,7 +110,7 @@ class Test(unittest.TestCase):
     def test_get_playlist(self):
         """ Test get_playlist function. """
 
-        for pl in self.playlists:
+        for pl in Test.playlists:
             fetched = pl['fetched']
 
             self.assertEqual(len(fetched['items']), pl['count'])
@@ -227,4 +234,5 @@ VIDEOS = [
 ]
 
 if __name__ == "__main__":
+    Test.hasrun = False
     unittest.main()
