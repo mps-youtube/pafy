@@ -9,11 +9,17 @@ env:
     - xpafydebug=1
 
 install:
+    - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
     - pip install coveralls > /dev/null
 
 branches:
     only:
     - develop
+
+before_script:
+    - pwd
+    - ls -l
+    - coverage debug sys
 
 script:
     coverage run test.py
