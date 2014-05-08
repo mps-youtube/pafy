@@ -22,7 +22,7 @@ before_script:
     - coverage debug sys
 
 script:
-    coverage run test.py
+    coverage run --omit=/unittest2/ test.py
 
 after_success:
     - coverage report
