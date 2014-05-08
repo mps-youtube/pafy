@@ -22,7 +22,7 @@ before_script:
     - coverage debug sys
 
 script:
-    coverage run --omit=/unittest2/ test.py
+    coverage run --omit="/home/travis/virtualenv/python2.6.9/lib/python2.6/site-packages/unittest2/*" test.py
 
 after_success:
     - coverage report
