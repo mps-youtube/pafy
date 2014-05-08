@@ -25,5 +25,5 @@ script:
     coverage run test.py
 
 after_success:
-    coverage report
-    coveralls
+    - coverage report
+    - coveralls
