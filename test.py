@@ -1,10 +1,14 @@
 # encoding: utf8
 
-import unittest
 import hashlib
 import pafy
 import time
 import os
+
+try:
+    import unittest2 as unittest
+except:
+    import unittest
 
 class Test(unittest.TestCase):
 
@@ -47,8 +51,8 @@ class Test(unittest.TestCase):
         vid = pafy.new("DsAn_n6O5Ns", basic=False, signature=False)
         self.assertEqual(vid.bigthumb, '')
         self.assertEqual(vid.bigthumbhd, '')
-        self.assertTrue(isinstance(vid.likes, int))
-        self.assertTrue(isinstance(vid.dislikes, int))
+        self.assertIsInstance(vid.likes, int)
+        self.assertIsInstance(vid.dislikes, int)
 
     def test_pafy_init(self):
         """ Test Pafy object creation. """
@@ -62,9 +66,8 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy.get_playlist, "a" * 18)
 
         for video in Test.videos:
-            # python 2.6 unittest doesn't have assertIsInstance
-            #self.assertIsInstance(video['pafy'], pafy.Pafy)
-            self.assertTrue(isinstance(video['pafy'], pafy.Pafy))
+            self.assertIsInstance(video['pafy'], pafy.Pafy)
+            #self.assertTrue(isinstance(video['pafy'], pafy.Pafy))
 
     def test_video_properties(self):
         """ Test video properties. """
@@ -127,8 +130,8 @@ class Test(unittest.TestCase):
 
         self.assertEqual(mainfunc['name'], "mthr")
         self.assertEqual(mainfunc["parameters"], ["a"])
-        self.assertTrue(len(mainfunc['body']) > 3)
-        self.assertTrue("return" in mainfunc['body'])
+        self.assertGreater(len(mainfunc['body']), 3)
+        self.assertIn("return", mainfunc['body'])
         self.assertEqual(otherfuncs['fkr']['parameters'], ['a', 'b'])
 
         # test pafy._solve
