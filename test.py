@@ -1,14 +1,31 @@
 # encoding: utf8
 
+from functools import wraps
 import hashlib
 import pafy
 import time
 import os
+import sys
 
 try:
     import unittest2 as unittest
-except:
+
+except ImportError:
     import unittest
+
+def stdout_to_null(fn):
+    """  Supress stdout. """
+
+    @wraps(fn)
+    def wrapper(*a, **b):
+        with open(os.devnull, "w") as nul:
+            stash = sys.stdout
+            sys.stdout = nul
+            retval = fn(*a, **b)
+            sys.stdout = stash
+        return retval
+    return wrapper
+
 
 class Test(unittest.TestCase):
 
@@ -16,11 +33,12 @@ class Test(unittest.TestCase):
         if hasattr(Test, "hasrun"):
             return
 
-        Test.videos = VIDEOS if not os.environ.get("quick") else []
-        Test.playlists = PLAYLISTS if not os.environ.get("quick") else []
+        Test.quick = os.environ.get("quick")
+        Test.videos = VIDEOS if not Test.quick else []
+        Test.playlists = PLAYLISTS if not Test.quick else []
 
         for video in Test.videos:
-            time.sleep(self.delay)
+            time.sleep(0 if Test.quick else self.delay)
             video['pafy'] = pafy.new(video['identifier'])
             video['streams'] = video['pafy'].streams
             video['best'] = video['pafy'].getbest()
@@ -35,19 +53,33 @@ class Test(unittest.TestCase):
         self.delay = 3
         self.properties = ("videoid title length duration author "
                            "username category thumb published").split()
-
         self.runOnce()
 
+    def get_all_funcs(self):
+        mainfunc = pafy._get_mainfunc_from_js(JAVASCRIPT)
+        otherfuncs = pafy._get_other_funcs(mainfunc, JAVASCRIPT)
+
+        # store all functions in Pafy.funcmap
+        pafy.Pafy.funcmap = {"jsurl": {mainfunc['name']: mainfunc}}
+        pafy.Pafy.funcmap["jsurl"]["mainfunction"] = mainfunc
+        for funcname, func in otherfuncs.items():
+            pafy.Pafy.funcmap['jsurl'][funcname] = func
+
+        return mainfunc, otherfuncs
+
+    @stdout_to_null
     def test_pafy_download(self):
-        """ Test downloading using a custom filename with invalid char. """
+        """ Test downloading. """
+
         callback = lambda a, b, c, d, e: 0
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1]
-        name = vstream.download(filepath="file/", quiet=False, callback=callback)
+        name = vstream.download(filepath="file/", callback=callback)
         self.assertEqual(name[0:5], "WASTE")
 
     def test_lazy_pafy(self):
-        """ Test initialising pafy object without fetching data. """
+        """ Test create pafy object without fetching data. """
+
         vid = pafy.new("DsAn_n6O5Ns", basic=False, signature=False)
         self.assertEqual(vid.bigthumb, '')
         self.assertEqual(vid.bigthumbhd, '')
@@ -56,7 +88,6 @@ class Test(unittest.TestCase):
 
     def test_pafy_init(self):
         """ Test Pafy object creation. """
-
         # test bad video id, 11 chars
         badid = "12345678901"
         too_short = "123"
@@ -71,7 +102,6 @@ class Test(unittest.TestCase):
 
     def test_video_properties(self):
         """ Test video properties. """
-
         for video in Test.videos:
             description = video['pafy'].description.encode("utf8")
             self.assertEqual(hashlib.sha1(description).hexdigest(),
@@ -96,12 +126,12 @@ class Test(unittest.TestCase):
     def test_best_stream_size(self):
         """ Test stream filesize. """
         for video in Test.videos:
-            time.sleep(self.delay)
+            time.sleep(0 if Test.quick else self.delay)
             size = video['best'].get_filesize()
             self.assertEqual(video['bestsize'], size)
 
     def test_get_other_funcs(self):
-        """ Test extracting  other functions called from a parent function. """
+        """ Test extracting javascript functions. """
         js = "function  f$(x,y){var X=x[1];var Y=y[1];return X;}"
         primary_func = dict(body="a=f$(12,34);b=f$(56,67)")
         otherfuncs = pafy._get_other_funcs(primary_func, js)
@@ -113,33 +143,24 @@ class Test(unittest.TestCase):
         self.assertEqual(otherfuncs['f$']['name'], 'f$')
         self.assertEqual(otherfuncs['f$']['parameters'], ['x', 'y'])
 
-    def get_all_funcs(self):
-        mainfunc = pafy._get_mainfunc_from_js(JAVASCRIPT)
-        otherfuncs = pafy._get_other_funcs(mainfunc, JAVASCRIPT)
-
-        # store all functions in Pafy.funcmap
-        pafy.Pafy.funcmap = {"jsurl": {mainfunc['name']: mainfunc}}
-        pafy.Pafy.funcmap["jsurl"]["mainfunction"] = mainfunc
-        for funcname, func in otherfuncs.items():
-            pafy.Pafy.funcmap['jsurl'][funcname] = func
-
-        return mainfunc, otherfuncs
-
     def test_solve(self):
+        """ Test solve js function. """
         mainfunc, otherfuncs = self.get_all_funcs()
-
         self.assertEqual(mainfunc['name'], "mthr")
         self.assertEqual(mainfunc["parameters"], ["a"])
         self.assertGreater(len(mainfunc['body']), 3)
+        #self.assertTrue(len(mainfunc['body']) > 3,
+                        #"%s not greater than %s" % (len(mainfunc['body']), 3))
         self.assertIn("return", mainfunc['body'])
         self.assertEqual(otherfuncs['fkr']['parameters'], ['a', 'b'])
-
         # test pafy._solve
         mainfunc['args'] = {'a': "1234567890"}
         solved = pafy._solve(mainfunc, "jsurl")
         self.assertEqual(solved, "2109876752")
 
     def test_solve_errors(self):
+        """ Test solve function exceptions. """
+
         mainfunc, otherfuncs = self.get_all_funcs()
 
         # test unknown javascript
@@ -154,14 +175,13 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy._solve, mainfunc, "jsurl")
 
     def test_decodesig(self):
+        """ Test signature decryption function. """
         mainfunc, otherfuncs = self.get_all_funcs()
         pafy.new.callback = lambda x: None
         self.assertEqual('2109876752', pafy._decodesig('1234567890', 'jsurl'))
-
         mainfunc, otherfuncs = self.get_all_funcs()
         pafy.Pafy.funcmap["jsurl"]['mainfunction']['parameters'] = ["a", "b"]
         self.assertRaises(IOError, pafy._decodesig, '1234567890', 'jsurl')
-
 
     def test_get_playlist(self):
         """ Test get_playlist function. """
@@ -174,7 +194,7 @@ class Test(unittest.TestCase):
                 self.assertEqual(fetched[field], pl[field])
 
     def test_misc_tests(self):
-        """ Other tests. """
+        """ Test extract_smap and _getval. """
         self.assertEqual(pafy._extract_smap("a", "bcd"), [])
         self.assertRaises(IOError, pafy._getval, "no_digits_here", "88")
 
@@ -184,6 +204,7 @@ class Test(unittest.TestCase):
         xarguments = ["1", "2", "3"]
         pafy.Pafy.funcmap["js_url"] = {"hello": xname}
         pafy._get_func_from_call(xcaller, "hello", xarguments, "js_url")
+
 
 JAVASCRIPT = """\
 function mthr(a){a=a.split("");a=fkr(a,59);a=a.slice(1);a=fkr(a,66);\
@@ -301,14 +322,15 @@ VIDEOS = [
         'category': 'Music',
         'description': 'eea422bad07d30339bc40f6c3df09b1125ab05e8',
         'bestsize': 8734671,
-        'all streams': 12,
+        'all streams': 17,
         'normal streams': 6,
-        'video streams': 5,
-        'audio streams': 1,
-        'ogg streams': 0,
+        'video streams': 9,
+        'audio streams': 2,
+        'ogg streams': 1,
         'm4a streams': 1,
     }
 ]
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
+    #unittest.main()
