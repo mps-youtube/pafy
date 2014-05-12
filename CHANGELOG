@@ -2,6 +2,7 @@ Version 0.3.43
 Development version, not yet released
 
 [Bugfix] - Fixed m4astreams and oggstreams return empty lists
+[Bugfix] - Fixed get_playlist() returns a tuple for playlist_id
 
 -------------------------------------------------------------------------------
 
