@@ -738,15 +738,11 @@ class Pafy(object):
     def __init__(self, video_url, basic=True, gdata=False,
                  signature=True, size=False, callback=None):
 
-        args = dict(basic=basic, gdata=gdata, signature=signature,
-                    size=size, callback=callback, video_url=video_url)
-
         self.version = __version__
         self.videoid = extract_video_id(video_url)
         self.watchv_url = g.urls['watchv'] % self.videoid
 
         nullf = lambda x: None
-        self._init_args = args
         new.callback = callback or nullf
         self._have_basic = False
         self._have_gdata = False
@@ -783,20 +779,20 @@ class Pafy(object):
         self.expiry = None
         self.playlist_meta = None
 
-        if self._init_args['basic']:
+        if basic:
             self._fetch_basic()
 
-        if self._init_args['gdata']:
+        if gdata:
             self._fetch_gdata()
 
-        if self._init_args['signature']:
+        if signature:
             # pylint: disable=W0104
             s = self.streams
 
             if self.ciphertag:
                 s[0].url  # forces signature decryption
 
-        if self._init_args['size']:
+        if size:
 
             for s in self.allstreams:
                 # pylint: disable=W0104
