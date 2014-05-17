@@ -20,6 +20,7 @@ before_script:
     - printenv
     - ls -l
     - coverage debug sys
+    - pip install wheel
     - python setup.py sdist bdist_wheel
     - python setup.py install
 
