@@ -1,6 +1,7 @@
 MANIFEST
 docs-sphinx/_build/
 *.help
+.tox
 .coverage
 htmlcov/
 dev/
@@ -9,6 +10,3 @@ dev/
 *.pyc
 .pypi
 __pycache__
-.project
-.pydevproject
-.settings/org.eclipse.core.resources.prefs
