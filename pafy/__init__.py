@@ -6,7 +6,7 @@ __version__ = "0.3.43"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
-if not "test" in sys.argv[0]:
+if "test" not in sys.argv[0]:
     del api
 
 del sys
