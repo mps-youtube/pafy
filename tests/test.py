@@ -6,7 +6,9 @@ import pafy
 import time
 import os
 import sys
-pafy = pafy.api
+# pafy = pafy.pafy
+p = pafy.pafy
+pafy = p
 
 try:
     import unittest2 as unittest
