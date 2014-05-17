@@ -1,0 +1,170 @@
+#!/usr/bin/python
+
+""" pafy - Command Line Downloader Tool - ytdl.
+
+Copyright (C)  2013-2014 nagev
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+from __future__ import print_function
+import pafy
+import sys
+
+early_py_version = sys.version_info[:2] < (2, 7)
+
+try:
+    import argparse
+
+except ImportError:
+
+    if early_py_version:
+        msg = ("ytdl requires the argparse library to be installed separately "
+               "for Python versions earlier than 2.7")
+        sys.exit(msg)
+
+    else:
+        raise
+
+
+__version__ = "0.3.43"
+__author__ = "nagev"
+__license__ = "GPLv3"
+
+
+def download(video, audio=False, stream=None):
+    """ Download a video. """
+
+    if not stream and not audio:
+        stream = video.getbest(preftype="mp4")
+
+    if not stream and audio:
+        stream = video.getbestaudio()
+
+    size = stream.get_filesize()
+    dl_str = "-Downloading '{0}' [{1:,} Bytes]"
+
+    if early_py_version:
+        dl_str = "-Downloading '{0}' [{1} Bytes]"
+
+    print(dl_str.format(stream.filename, size))
+    print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
+    stream.download(quiet=False)
+    print("\nDone")
+
+
+def printstreams(streams):
+    """ Dump stream info. """
+
+    fstring = "{0:<7}{1:<8}{2:<7}{3:<15}{4:<10}       "
+    out = []
+    l = len(streams)
+    text = " [Fetching stream info]      >"
+
+    for n, s in enumerate(streams):
+        sys.stdout.write(text + "-" * n + ">" + " " * (l - n - 1) + "<\r")
+        sys.stdout.flush()
+        megs = "%3.f" % (s.get_filesize() / 1024 ** 2) + " MB"
+        q = "[%s]" % s.quality
+        out.append(fstring.format(n + 1, s.mediatype, s.extension, q, megs))
+
+    sys.stdout.write("\r")
+    print(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
+    print(fstring.format("------", "----", "------", "-------", " ----"))
+
+    for x in out:
+        print(x)
+
+
+def main():
+    """ Parse args and show info or download. """
+
+    # pylint: disable=R0912
+    # too many branches
+    description = "YouTube Download Tool"
+    parser = argparse.ArgumentParser(description=description)
+    paa = parser.add_argument
+    paa('url', help="YouTube video URL to download")
+    paa('-i', required=False, help="Display vid info", action="store_true")
+    paa('-s', help="Display available streams", action="store_true")
+    paa('-t', help="Stream types to display", type=str, nargs="+",
+        choices="audio video normal all".split())
+    paa('-n', required=False, metavar="N", type=int, help='Specify stream to '
+        'download by stream number (use -s to list available streams)')
+    paa('-b', required=False, help='Download the best quality video (ignores '
+        '-n)', action="store_true")
+    paa('-a', required=False, help='Download the best quality audio (ignores '
+        '-n)', action="store_true")
+
+    args = parser.parse_args()
+    vid = pafy.new(args.url)
+    streams = []
+
+    if args.t:
+
+        if "video" in args.t:
+            streams += vid.videostreams
+
+        if "audio" in args.t:
+            streams += vid.audiostreams[::-1]
+
+        if "normal" in args.t:
+            streams += vid.streams
+
+        if "all" in args.t:
+            streams = vid.allstreams
+
+    else:
+        streams = vid.streams + vid.audiostreams[::-1]
+
+    # if requested print vid info and list streams
+    if args.i:
+        print(vid)
+
+    if args.s:
+        printstreams(streams)
+
+    if args.b or args.a:
+
+        if args.a and args.b:
+            print("-a and -b cannot be used together! Use only one.")
+
+        else:
+            download(vid, audio=args.a)
+            sys.exit()
+
+    elif args.n:
+        streamnumber = int(args.n) - 1
+
+        try:
+            download(vid, stream=streams[streamnumber])
+
+        except IndexError:
+            em = "Sorry, %s is not a valid option, use 1-%s"
+            em = em % (int(args.n), len(streams))
+            print(em)
+
+    if not any([args.i, args.s, args.b, args.n, args.t, args.a]):
+        streams = vid.streams + vid.audiostreams[::-1]
+        printstreams(streams)
+
+    elif args.t and not args.a and not args.b and not args.s:
+        printstreams(streams)
+
+    else:
+        pass
+
+if __name__ == "__main__":
+    main()
