@@ -6,6 +6,9 @@
     :target: https://coveralls.io/r/np1/pafy?branch=develop
 .. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
     :target: https://travis-ci.org/np1/pafy
+.. image:: https://pypip.in/wheel/Pafy/badge.png
+    :target: http://pythonwheels.com/
+    :alt: Wheel Status
 
 Features
 --------
