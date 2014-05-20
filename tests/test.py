@@ -108,7 +108,9 @@ class Test(unittest.TestCase):
                              video['description'])
 
             for prop in self.properties:
-                self.assertEqual(getattr(video['pafy'], prop), video[prop])
+                paf_prop = getattr(video['pafy'], prop)
+                exp_prop = video[prop]
+                self.assertEqual(paf_prop, exp_prop)
 
             self.assertNotEqual(video.__repr__(), None)
 
@@ -301,7 +303,7 @@ VIDEOS = [
         'thumb': 'http://i1.ytimg.com/vi/EnHp24CVORc/default.jpg',
         'category': 'People',
         'description': '3c884d9791be15646ddf351edffcb2dd22ec70f8',
-        'bestsize': 103405966,
+        'bestsize': 101083389,
         'all streams': 19,
         'normal streams': 6,
         'video streams': 11,
@@ -310,21 +312,21 @@ VIDEOS = [
         'm4a streams': 1,
     },
     {
-        'identifier': 'Wbohqf64mNA',
-        'videoid': 'Wbohqf64mNA',
-        'title': 'EXO-K - 월광 (Moonlight) (Korean Ver.) (Full Audio) [Mini Album - Overdose]',
-        'length': 266,
-        'duration': '00:04:26',
-        'author': 'BubbleFeetMusic Blast Channel 5 (#SpringTime)',
-        'username': 'BubbleFeetBlastCH5',
-        'published': '2014-05-06 13:35:09',
-        'thumb': 'http://i1.ytimg.com/vi/Wbohqf64mNA/default.jpg',
+        'identifier': '9bZkp7q19f0',
+        'videoid': '9bZkp7q19f0',
+        'title': 'PSY - GANGNAM STYLE (강남스타일) M-V',
+        'length': 253,
+        'duration': '00:04:13',
+        'author': 'officialpsy',
+        'username': 'officialpsy',
+        'published': '2012-07-15 07:46:32',
+        'thumb': 'http://i1.ytimg.com/vi/9bZkp7q19f0/default.jpg',
         'category': 'Music',
-        'description': 'eea422bad07d30339bc40f6c3df09b1125ab05e8',
-        'bestsize': 8734671,
-        'all streams': 17,
+        'description': '1aeb27805ad5e0b1c13968409c9aac8dc2e5ddd2',
+        'bestsize': 90898244,
+        'all streams': 21,
         'normal streams': 6,
-        'video streams': 9,
+        'video streams': 13,
         'audio streams': 2,
         'ogg streams': 1,
         'm4a streams': 1,
