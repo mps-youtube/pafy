@@ -448,6 +448,10 @@ def _make_url(raw, sig, quick=True):
         raw += "&ratebypass=yes"
 
     if "signature=" not in raw:
+
+        if not sig:
+            raise IOError("Error retrieving url")
+
         raw += "&signature=" + sig
 
     return raw
@@ -468,10 +472,10 @@ def _get_matching_stream(smap, itag):
     """ Return the url and signature for a stream matching itag in smap. """
     for x in smap:
 
-        if x['itag'] == itag and x.get("s"):
-            return x['url'], x['s']
+        if x['itag'] == itag:
+            return x['url'], x.get('s')
 
-    raise IOError("Sorry this video is not currently supported by pafy")
+    raise IOError("Error fetching stream")
 
 
 class Stream(object):
@@ -621,7 +625,7 @@ class Stream(object):
                 self._parent.enc_streams = enc_streams
 
             url, s = _get_matching_stream(enc_streams, self.itag)
-            sig = _decodesig(s, self._parent.js_url)
+            sig = _decodesig(s, self._parent.js_url) if s else None
             self._url = _make_url(url, sig)
 
         return self._url
