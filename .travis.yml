@@ -20,9 +20,9 @@ before_script:
     - printenv
     - ls -l
     - coverage debug sys
-    #- pip install wheel
-    #- python setup.py sdist bdist_wheel
-    #- python setup.py install
+    - pip install wheel
+    - python setup.py sdist bdist_wheel
+    - python setup.py install
 
 script:
     coverage run --omit="/home/travis/virtualenv/python2.6.9/lib/python2.6/site-packages/unittest2/*" tests/test.py
