@@ -2,13 +2,10 @@
 
 from functools import wraps
 import hashlib
-import pafy
+import pafy.pafy as pafy
 import time
 import os
 import sys
-# pafy = pafy.pafy
-p = pafy.pafy
-pafy = p
 
 try:
     import unittest2 as unittest
