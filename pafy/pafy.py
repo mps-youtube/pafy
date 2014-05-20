@@ -491,7 +491,7 @@ class Stream(object):
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
         self._title = parent.title
-        self.encrypted = parent.ciphertag
+        self.encrypted = 's' in sm
         self._parent = parent
         self._filename = self.title + "." + self.extension
         self._fsize = None
