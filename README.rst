@@ -2,10 +2,13 @@
     :target: https://pypi.python.org/pypi/Pafy
 .. image:: https://pypip.in/d/Pafy/badge.png
     :target: https://pypi.python.org/pypi/Pafy
-.. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=develop
-    :target: https://coveralls.io/r/np1/pafy?branch=develop
-.. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
+.. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=master
+    :target: https://coveralls.io/r/np1/pafy?branch=master
+.. image:: https://travis-ci.org/np1/pafy.svg?branch=master
     :target: https://travis-ci.org/np1/pafy
+.. image:: https://pypip.in/wheel/Pafy/badge.png
+    :target: http://pythonwheels.com/
+    :alt: Wheel Status
 
 Features
 --------
@@ -223,12 +226,13 @@ or use a `virtualenv <http://virtualenv.org>`_ if you don't want to install it s
     $ source venv/bin/activate
     $ pip install pafy
 
+
 Alternatively you can just grab the pafy.py file and import it in your python
 code:
 
 .. code-block:: bash
 
-    wget https://raw.github.com/np1/pafy/master/pafy.py
+    wget https://raw.githubusercontent.com/np1/pafy/master/pafy/pafy.py
 
 
 Command Line Tool (ytdl) Usage

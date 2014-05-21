@@ -1,3 +1,15 @@
+21 May 2014
+Version 0.3.44
+
+[Bugfix] - Fixed m4astreams and oggstreams return empty lists
+[Bugfix] - Fixed get_playlist() returns a tuple for playlist_id
+[Bugfix] - Fixed TypeError on getting url (issue #30)
+[Update] - Properties now return Unicode in both Python 2 and 3
+[Update] - Package now includes wheel (PEP 427)
+
+
+-------------------------------------------------------------------------------
+
 30 April 2014
 Version 0.3.42
 
@@ -5,7 +17,6 @@ Version 0.3.42
 [Feature] - Added likes and dislikes properties
 [Bugfix] - Fix incorrectly formatted published date
 [Bugfix] - Fix incorrect media type for itags 242 - 248
-[Known Issue] - Playlist retrieval returns maximum of 80 items
 
 -------------------------------------------------------------------------------
 
