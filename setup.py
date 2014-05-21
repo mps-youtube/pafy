@@ -19,7 +19,7 @@ setup(
     name='Pafy',
     packages=['pafy'],
     scripts=['scripts/ytdl'],
-    version='0.3.44',
+    version='0.3.45',
     description="Python API for YouTube, query and download YouTube content",
     keywords=["Pafy", "API", "YouTube", "youtube", "download", "video"],
     author="nagev",
