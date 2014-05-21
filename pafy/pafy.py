@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+
+from __future__ import unicode_literals
+
 __version__ = "0.3.43"
 __author__ = "nagev"
 __license__ = "GPLv3"
@@ -37,25 +40,60 @@ from xml.etree import ElementTree
 
 
 early_py_version = sys.version_info[:2] < (2, 7)
-decode_if_py3 = lambda x: x.decode("utf8")
 
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
     from urllib.error import HTTPError, URLError
     from urllib.parse import parse_qs, unquote_plus
+    uni, pyver = str, 3
 
 else:
-    decode_if_py3 = lambda x: x
     from urllib2 import build_opener, HTTPError, URLError
     from urllib import unquote_plus
     from urlparse import parse_qs
+    uni, pyver = unicode, 2
 
 
 if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
 
 dbg = logging.debug
+
+
+def parseqs(data):
+    """ parse_qs, return unicode. """
+    if type(data) == uni:
+        return parse_qs(data)
+
+    elif pyver == 3:
+        data = data.decode("utf8")
+        data = parse_qs(data)
+
+    else:
+        data = parse_qs(data)
+        out = {}
+
+        for k, v in data.items():
+            k = k.decode("utf8")
+            out[k] = [x.decode("utf8") for x in v]
+            data = out
+
+    return data
+
+
+def fetch_decode(url):
+    """ Fetch url and decode. """
+    req = g.opener.open(url)
+    ct = req.headers['content-type']
+
+    if "charset=" in ct:
+        encoding = re.search(r"charset=([\w-]+)\s*(:?;|$)", ct).group(1)
+        dbg("encoding: %s", ct)
+        return req.read().decode(encoding)
+
+    else:
+        return req.read()
 
 
 def new(url, basic=True, gdata=False, signature=True, size=False,
@@ -95,8 +133,8 @@ def get_video_info(video_id, newurl=None):
     """ Return info for video_id.  Returns dict. """
     url = g.urls['vidinfo'] % video_id
     url = newurl if newurl else url
-    info = decode_if_py3(g.opener.open(url).read())
-    info = parse_qs(info)
+    info = fetch_decode(url)  # bytes
+    info = parseqs(info)  # unicode dict
     dbg("Fetched video info")
 
     if info['status'][0] == "fail":
@@ -110,7 +148,7 @@ def get_video_gdata(video_id):
     """ Return xml string containing video metadata from gdata api. """
     new.callback("Fetching video gdata")
     url = g.urls['gdata'] % video_id
-    gdata = g.opener.open(url).read()
+    gdata = fetch_decode(url)  # unicode
     dbg("Fetched video gdata")
     new.callback("Fetched video gdata")
     return gdata
@@ -212,9 +250,9 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = dic.get(map_name)
         smap = smap[0] if zero_idx else smap
         smap = smap.split(",")
-        smap = [parse_qs(x) for x in smap]
+        smap = [parseqs(x) for x in smap]
 
-        # Python 2.6 compatibility
+        # line removed for Python 2.6 compatibility
         # return [{k: v[0] for k, v in x.items()} for x in smap]
         r = []
         for x in smap:
@@ -409,7 +447,7 @@ def get_js_sm(video_id):
     """
     watch_url = g.urls['watchv'] % video_id
     new.callback("Fetching watchv page")
-    watchinfo = g.opener.open(watch_url).read().decode("utf8")
+    watchinfo = fetch_decode(watch_url)  # unicode
 
     if re.search(r'player-age-gate-content">', watchinfo) is not None:
         # create a new Pafy object
@@ -432,7 +470,8 @@ def get_js_sm(video_id):
 
     if not funcs:
         new.callback("Fetching javascript")
-        javascript = g.opener.open(js_url).read().decode("UTF-8")
+        javascript = fetch_decode(js_url)  # bytes
+        javascript = javascript.decode("utf8")  # unicode
         dbg("Fetched javascript")
         new.callback("Fetched javascript")
         mainfunc = _get_mainfunc_from_js(javascript)
@@ -606,7 +645,7 @@ class Stream(object):
                 self._parent.js_url = js_url
 
                 # check for age
-                if type(enc_streams) == str and enc_streams == "age":
+                if type(enc_streams) == uni and enc_streams == "age":
                     self._parent.age = True
                     dop = self._parent.doppleganger = funcs
                     self._url = gen_ageurl(dop, self.itag)
@@ -782,6 +821,7 @@ class Pafy(object):
         f = lambda x: allinfo.get(x, ["unknown"])[0]
         t = lambda x: allinfo.get(x, [0.0])[0]
         z = lambda x: allinfo.get(x, [""])[0]
+
         self._title = f('title').replace("/", "-")
         self._author = f('author')
         self._videoid = f('video_id')
@@ -819,14 +859,15 @@ class Pafy(object):
         t0 = "{http://search.yahoo.com/mrss/}"
         t1 = "{http://www.w3.org/2005/Atom}"
         t2 = "{http://gdata.youtube.com/schemas/2007}"
+        gdata = gdata.encode("utf8")
         tree = ElementTree.fromstring(gdata)
         groups = tree.find(t0 + "group")
-        published = tree.find(t1 + "published").text
-        rating = tree.find(t2 + "rating")
-        likes = rating.get("numLikes") if rating is not None else 0
-        dislikes = rating.get("numDislikes") if rating is not None else 0
-        description = groups.find(t0 + "description").text
-        category = groups.find(t0 + "category").text
+        published = uni(tree.find(t1 + "published").text)
+        rating = tree.find(t2 + "rating")  # already exists in basic data
+        likes = int(rating.get("numLikes") if rating is not None else 0)
+        dislikes = int(rating.get("numDislikes") if rating is not None else 0)
+        description = uni(groups.find(t0 + "description").text)
+        category = uni(groups.find(t0 + "category").text)
         username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
         setattr(self, "_username", username)
         setattr(self, "_published", published)
@@ -855,22 +896,28 @@ class Pafy(object):
         self._allstreams = streams + videostreams + audiostreams
 
     def __repr__(self):
-        """ Print video metadata. Return str. """
-        keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
-        keys = keys.split(" ")
-        keywords = ", ".join(self.keywords)
-        length = time.strftime('%H:%M:%S', time.gmtime(self.length))
+        """ Print video metadata. Return utf8 string. """
+        sso = sys.getdefaultencoding()
 
-        info = dict(Title=self.title,
-                    Author=self.author,
-                    Views=self.viewcount,
-                    Rating=self.rating,
-                    Duration=length,
-                    ID=self.videoid,
-                    Thumbnail=self.thumb,
-                    Keywords=keywords)
+        if self._have_basic:
+            keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
+            keys = keys.split(" ")
+            keywords = ", ".join(self.keywords)
+            info = {"Title": self.title,
+                    "Author": self.author,
+                    "Views": self.viewcount,
+                    "Rating": self.rating,
+                    "Duration": self.duration,
+                    "ID": self.videoid,
+                    "Thumbnail": self.thumb,
+                    "Keywords": keywords}
 
-        return "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
+            nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
+
+        else:
+            nfo = "Pafy object: %s [%s]" % (self.videoid, self.title)
+
+        return nfo.encode(sso, "replace") if pyver == 2 else nfo
 
     @property
     def streams(self):
@@ -975,6 +1022,8 @@ class Pafy(object):
             self.fetch_basic()
 
         self._duration = time.strftime('%H:%M:%S', time.gmtime(self._length))
+        self._duration = uni(self._duration)
+
         return self._duration
 
     @property
@@ -1013,13 +1062,13 @@ class Pafy(object):
     def likes(self):
         """ The number of likes for the video. Returns int. """
         self._fetch_gdata()
-        return int(self._likes)
+        return self._likes
 
     @property
     def dislikes(self):
         """ The number of dislikes for the video. Returns int. """
         self._fetch_gdata()
-        return int(self._dislikes)
+        return self._dislikes
 
     def getbest(self, preftype="any", ftypestrict=True):
         """
@@ -1105,7 +1154,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
     url = g.urls["playlist"] % playlist_id
 
     try:
-        allinfo = json.loads(decode_if_py3(g.opener.open(url).read()))
+        allinfo = fetch_decode(url)  # unicode
+        allinfo = json.loads(allinfo)
 
     except:
         raise IOError("Error fetching playlist %s" % m.groups(0))

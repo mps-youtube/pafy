@@ -1,5 +1,6 @@
 # encoding: utf8
 
+from __future__ import unicode_literals
 from functools import wraps
 import hashlib
 import pafy.pafy as pafy
@@ -294,7 +295,7 @@ VIDEOS = [
     {
         'identifier': 'EnHp24CVORc',
         'videoid': 'EnHp24CVORc',
-        'title': 'Chinese Knock Off Sky Loop Roller Coaster POV Chuanlord Holiday Manor China 魔环垂直过山车',
+        'title': 'Chinese Knock Off Sky Loop Roller Coaster POV Chuanlord Holiday Manor China \u9b54\u73af\u5782\u76f4\u8fc7\u5c71\u8f66',
         'length': 313,
         'duration': '00:05:13',
         'author': 'Theme Park Review',
