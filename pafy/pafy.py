@@ -251,16 +251,7 @@ def _extract_smap(map_name, dic, zero_idx=True):
         smap = smap[0] if zero_idx else smap
         smap = smap.split(",")
         smap = [parseqs(x) for x in smap]
-
-        # line removed for Python 2.6 compatibility
-        # return [{k: v[0] for k, v in x.items()} for x in smap]
-        r = []
-        for x in smap:
-            z = {}
-            for k, v in x.items():
-                z[k] = v[0]
-            r.append(z)
-        return r
+        return [dict((k, v[0]) for k, v in x.items()) for x in smap]
 
     return []
 
@@ -550,7 +541,7 @@ class Stream(object):
             self._bitrate = self.resolution
             self._quality = self.bitrate
             self._resolution = "0x0"
-            self._rawbitrate = int(sm["bitrate"][0])
+            self._rawbitrate = int(sm["bitrate"])
 
     @property
     def rawbitrate(self):
@@ -915,7 +906,8 @@ class Pafy(object):
             nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
         else:
-            nfo = "Pafy object: %s [%s]" % (self.videoid, self.title)
+            nfo = "Pafy object: %s [%s]" % (self.videoid,
+                                            self.title[:45] + "..")
 
         return nfo.encode(sso, "replace") if pyver == 2 else nfo
 
