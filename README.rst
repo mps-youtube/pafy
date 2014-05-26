@@ -168,7 +168,6 @@ Get the best quality audio stream:
 
     >>> bestaudio = video.getbestaudio()
     >>> bestaudio.bitrate
-
     '128k'
 
 Download the best quality audio file:
