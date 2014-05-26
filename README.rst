@@ -127,7 +127,6 @@ get url, for download or streaming in mplayer / vlc etc:
 .. code-block:: pycon
     
     >>> best.url
-
     'http://r12---sn-aig7kner.c.youtube.com/videoplayback?expire=1369...
 
 Download video and show progress:
@@ -135,7 +134,6 @@ Download video and show progress:
 .. code-block:: pycon
 
     >>> best.download(quiet=False)
-
     3,734,976 Bytes [0.20%] received. Rate: [ 719 KB/s].  ETA: [3284 secs]
 
 Download video, use specific filepath:
@@ -152,8 +150,8 @@ Get audio-only streams (m4a and/or ogg vorbis):
 
     >>> audiostreams = video.audiostreams
     >>> for a in audiostreams:
-    >>>     print(a.bitrate, a.extension, a.get_filesize())
-
+    ...     print(a.bitrate, a.extension, a.get_filesize())
+    ...
     128k m4a 165076649
     128k ogg 108981120
 
@@ -184,7 +182,7 @@ show ALL formats for a video (video+audio, video-only and audio-only):
 .. code-block:: pycon
 
     >>> allstreams = video.allstreams
-    ... for s in allstreams:
+    >>> for s in allstreams:
     ...     print(s.mediatype, s.extension, s.quality)
     ...
     normal mp4 1280x720
