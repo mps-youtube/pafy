@@ -323,7 +323,7 @@ VIDEOS = [
         'published': '2012-07-15 07:46:32',
         'thumb': 'http://i1.ytimg.com/vi/9bZkp7q19f0/default.jpg',
         'category': 'Music',
-        'description': '1aeb27805ad5e0b1c13968409c9aac8dc2e5ddd2',
+        'description': '02274382fd8f286e9ae02df102f3c0e506b8968a',
         'bestsize': 90898244,
         'all streams': 21,
         'normal streams': 6,
