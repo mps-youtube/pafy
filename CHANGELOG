@@ -1,5 +1,5 @@
-Version 0.3.45
-Development version - not yet released
+5 June 2014
+Version 0.3.46 - Bugfix release
 
 [Bugfix] - Fix truncated rawbitrate stream property
 [Bugfix] - Use unicode literals in ytdl (#31)

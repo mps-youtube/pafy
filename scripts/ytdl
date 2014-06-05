@@ -39,7 +39,7 @@ except ImportError:
         raise
 
 
-__version__ = "0.3.45"
+__version__ = "0.3.46"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
