@@ -1,3 +1,11 @@
+Version 0.3.45
+Development version - not yet released
+
+[Bugfix] - Fix truncated rawbitrate stream property
+[Bugfix] - Use unicode literals in ytdl (#31)
+
+-------------------------------------------------------------------------------
+
 21 May 2014
 Version 0.3.44
 
@@ -6,7 +14,6 @@ Version 0.3.44
 [Bugfix] - Fixed TypeError on getting url (issue #30)
 [Update] - Properties now return Unicode in both Python 2 and 3
 [Update] - Package now includes wheel (PEP 427)
-
 
 -------------------------------------------------------------------------------
 
