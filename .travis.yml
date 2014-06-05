@@ -7,7 +7,7 @@ python:
 
 install:
     - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
-    - pip install coveralls
+    - pip install coveralls > /dev/null
 
 before_script:
     - printenv
