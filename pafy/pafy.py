@@ -888,8 +888,6 @@ class Pafy(object):
 
     def __repr__(self):
         """ Print video metadata. Return utf8 string. """
-        sso = sys.getdefaultencoding()
-
         if self._have_basic:
             keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
             keys = keys.split(" ")
@@ -909,7 +907,7 @@ class Pafy(object):
             nfo = "Pafy object: %s [%s]" % (self.videoid,
                                             self.title[:45] + "..")
 
-        return nfo.encode(sso, "replace") if pyver == 2 else nfo
+        return nfo.encode("utf8", "replace") if pyver == 2 else nfo
 
     @property
     def streams(self):
