@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
         callback = lambda a, b, c, d, e: 0
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1]
-        name = vstream.download(filepath="file/", callback=callback)
+        name = vstream.download(callback=callback)
         self.assertEqual(name[0:5], "WASTE")
 
     def test_lazy_pafy(self):
@@ -276,15 +276,15 @@ VIDEOS = [
         'identifier': 'https://youtu.be/watch?v=07FYdnEawAQ',
         'videoid': '07FYdnEawAQ',
         'title': 'Justin Timberlake - Tunnel Vision (Explicit)',
-        'length': 420,
-        'duration': '00:07:00',
+        'length': 419,
+        'duration': '00:06:59',
         'author': 'justintimberlakeVEVO',
         'username': 'justintimberlakeVEVO',
         'published': '2013-07-03 22:00:16',
         'thumb': 'http://i1.ytimg.com/vi/07FYdnEawAQ/default.jpg',
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
-        'bestsize': 80664244,
+        'bestsize': 79885533,
         'all streams': 21,
         'normal streams': 6,
         'video streams': 13,
