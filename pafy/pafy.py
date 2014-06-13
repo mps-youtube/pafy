@@ -687,9 +687,11 @@ class Stream(object):
         # Too many local variables - who cares?
 
         def safe_filename(ff):
-            """ Remove troublesome characters. """
+            """ Remove troublesome characters in basename. """
+            d, b = os.path.split(ff)
             ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
-            ff = "".join(x if ok.match(x) else "_" for x in ff)
+            b = "".join(x if ok.match(x) else "_" for x in b)
+            ff = os.path.join(d, b)
             return ff.encode("utf8", "ignore")
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
@@ -703,8 +705,16 @@ class Stream(object):
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
         fname = filepath or self.filename
-        title = self._parent.title
-        tempfname = "%s_%s_%s.part" % (title, self._parent.videoid, self.itag)
+        dirname = os.path.dirname(fname)
+
+        if dirname and not os.path.isdir(dirname):
+            raise IOError("Invalid directory: %s" % dirname)
+
+        elif os.path.isdir(fname):
+            fname = os.path.join(fname, self.filename)
+
+        temp = os.path.join(os.path.dirname(fname), self._parent.title)
+        tempfname = "%s_%s_%s.part" % (temp, self._parent.videoid, self.itag)
         safename, fmode, offset = safe_filename(tempfname), "wb", 0
 
         if os.path.exists(tempfname) and os.stat(tempfname).st_size < total:
@@ -727,7 +737,7 @@ class Stream(object):
         if offset:
             # partial file exists, resume download
             resuming_opener = build_opener()
-            resuming_opener.addheaders = [('User-Agent', ua),
+            resuming_opener.addheaders = [('User-Agent', g.ua),
                                           ("Range", "bytes=%s-" % offset)]
             response = resuming_opener.open(self.url)
             bytesdone = offset
