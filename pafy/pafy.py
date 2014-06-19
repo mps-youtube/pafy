@@ -275,7 +275,7 @@ def _extract_function_from_js(name, js):
 def _get_mainfunc_from_js(js):
     """ Return main signature decryption function from javascript as dict. """
     dbg("Scanning js for main function.")
-    m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
+    m = re.search(r'\w\.sig\|\|([$\w]+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
     dbg("Found main function: %s", funcname)
     function = _extract_function_from_js(funcname, js)
