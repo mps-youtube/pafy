@@ -71,12 +71,34 @@ class Test(unittest.TestCase):
     @stdout_to_null
     def test_pafy_download(self):
         """ Test downloading. """
-
         callback = lambda a, b, c, d, e: 0
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1]
-        name = vstream.download(filepath="file/", callback=callback)
+        name = vstream.download(callback=callback)
         self.assertEqual(name[0:5], "WASTE")
+
+    @stdout_to_null
+    def test_pafy_download_resume(self):
+        """ Test resuming a partial download. """
+        tempname = "WASTE  2 SECONDS OF YOUR LIFE_DsAn_n6O5Ns_171.part"
+        open(tempname, "w").write("abc")
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        vstream = vid.audiostreams[-1].download()
+        name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
+        self.assertEqual(22675, os.stat(name).st_size)
+
+    def test_pafy_download_invalid_dirname(self):
+        """ Test user specified invalid path. """
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        self.assertRaises(IOError, vid.audiostreams[-1].download, "/bad/h/")
+
+    @stdout_to_null
+    def test_pafy_download_to_dir(self):
+        """ Test user specified path. """
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        vstream = vid.audiostreams[-1].download("/tmp")
+        name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.ogg"
+        self.assertEqual(22675, os.stat(name).st_size)
 
     def test_lazy_pafy(self):
         """ Test create pafy object without fetching data. """
@@ -276,15 +298,15 @@ VIDEOS = [
         'identifier': 'https://youtu.be/watch?v=07FYdnEawAQ',
         'videoid': '07FYdnEawAQ',
         'title': 'Justin Timberlake - Tunnel Vision (Explicit)',
-        'length': 420,
-        'duration': '00:07:00',
+        'length': 419,
+        'duration': '00:06:59',
         'author': 'justintimberlakeVEVO',
         'username': 'justintimberlakeVEVO',
         'published': '2013-07-03 22:00:16',
         'thumb': 'http://i1.ytimg.com/vi/07FYdnEawAQ/default.jpg',
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
-        'bestsize': 80664244,
+        'bestsize': 79885533,
         'all streams': 21,
         'normal streams': 6,
         'video streams': 13,

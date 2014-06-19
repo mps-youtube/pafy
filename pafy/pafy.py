@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.48"
+__version__ = "0.3.50"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -275,7 +275,7 @@ def _extract_function_from_js(name, js):
 def _get_mainfunc_from_js(js):
     """ Return main signature decryption function from javascript as dict. """
     dbg("Scanning js for main function.")
-    m = re.search(r'\w\.sig\|\|(\w+)\(\w+\.\w+\)', js)
+    m = re.search(r'\w\.sig\|\|([$\w]+)\(\w+\.\w+\)', js)
     funcname = m.group(1)
     dbg("Found main function: %s", funcname)
     function = _extract_function_from_js(funcname, js)
@@ -685,6 +685,15 @@ class Stream(object):
         """ Download.  Use quiet=True to supress output. Return filename. """
         # pylint: disable=R0914
         # Too many local variables - who cares?
+
+        def safe_filename(ff):
+            """ Remove troublesome characters in basename. """
+            d, b = os.path.split(ff)
+            ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
+            b = "".join(x if ok.match(x) else "_" for x in b)
+            ff = os.path.join(d, b)
+            return ff.encode("utf8", "ignore")
+
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
 
@@ -696,21 +705,49 @@ class Stream(object):
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
         fname = filepath or self.filename
+        dirname = os.path.dirname(fname)
+
+        if dirname and not os.path.isdir(dirname):
+            raise IOError("Invalid directory: %s" % dirname)
+
+        elif os.path.isdir(fname):
+            fname = os.path.join(fname, self.filename)
+
+        temp = os.path.join(os.path.dirname(fname), self._parent.title)
+        tempfname = "%s_%s_%s.part" % (temp, self._parent.videoid, self.itag)
+        safename, fmode, offset = safe_filename(tempfname), "wb", 0
+
+        if os.path.exists(tempfname) and os.stat(tempfname).st_size < total:
+            offset = os.stat(tempfname).st_size
+            fmode = "ab"
+
+        elif os.path.exists(safename) and os.stat(safename).st_size < total:
+            offset = os.stat(safename).st_size
+            fmode = "ab"
 
         try:
-            outfh = open(fname, 'wb')
+            outfh = open(tempfname, fmode)
 
         except IOError:
-            ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
-            fname = "".join(x if ok.match(x) else "_" for x in self.filename)
-            outfh = open(fname.encode("utf8", "ignore"), 'wb')
+            # remove special chars from filename
+            fname = safe_filename(fname)
+            tempfname = safename
+            outfh = open(tempfname, fmode)
+
+        if offset:
+            # partial file exists, resume download
+            resuming_opener = build_opener()
+            resuming_opener.addheaders = [('User-Agent', g.ua),
+                                          ("Range", "bytes=%s-" % offset)]
+            response = resuming_opener.open(self.url)
+            bytesdone = offset
 
         while True:
             chunk = response.read(chunksize)
             outfh.write(chunk)
             elapsed = time.time() - t0
             bytesdone += len(chunk)
-            rate = (bytesdone / 1024) / elapsed
+            rate = ((bytesdone - offset) / 1024) / elapsed
             eta = (total - bytesdone) / (rate * 1024)
             progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
 
@@ -726,6 +763,7 @@ class Stream(object):
             if callback:
                 callback(total, *progress_stats)
 
+        os.rename(tempfname, fname)
         return fname
 
 
