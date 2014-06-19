@@ -71,12 +71,34 @@ class Test(unittest.TestCase):
     @stdout_to_null
     def test_pafy_download(self):
         """ Test downloading. """
-
         callback = lambda a, b, c, d, e: 0
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1]
         name = vstream.download(callback=callback)
         self.assertEqual(name[0:5], "WASTE")
+
+    @stdout_to_null
+    def test_pafy_download_resume(self):
+        """ Test resuming a partial download. """
+        tempname = "WASTE  2 SECONDS OF YOUR LIFE_DsAn_n6O5Ns_171.part"
+        open(tempname, "w").write("abc")
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        vstream = vid.audiostreams[-1].download()
+        name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
+        self.assertEqual(22675, os.stat(name).st_size)
+
+    def test_pafy_download_invalid_dirname(self):
+        """ Test user specified invalid path. """
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        self.assertRaises(IOError, vid.audiostreams[-1].download, "/bad/h/")
+
+    @stdout_to_null
+    def test_pafy_download_to_dir(self):
+        """ Test user specified path. """
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        vstream = vid.audiostreams[-1].download("/tmp")
+        name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.ogg"
+        self.assertEqual(22675, os.stat(name).st_size)
 
     def test_lazy_pafy(self):
         """ Test create pafy object without fetching data. """
