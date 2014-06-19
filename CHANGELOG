@@ -1,7 +1,8 @@
-Development version - not yet released
-Version 0.3.49
+19 June 2014
+Version 0.3.50
 
 [Feature] - Resume partially downloaded files (issue #32)
+[Bugfix] - Fix javascript function extraction
 
 -------------------------------------------------------------------------------
 
