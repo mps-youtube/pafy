@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.50"
+__version__ = "0.3.52"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -231,6 +231,8 @@ class g(object):
         '170': ('1920x1080', 'webm', 'video', ''),
         '171': ('128k', 'ogg', 'audio', ''),
         '172': ('192k', 'ogg', 'audio', ''),
+        '218': ('854x480', 'webm', 'video', 'VP8'),
+        '219': ('854x480', 'webm', 'video', 'VP8'),
         '242': ('360x240', 'webm', 'video', 'VP9'),
         '243': ('480x360', 'webm', 'video', 'VP9'),
         '244': ('640x480', 'webm', 'video', 'VP9'),
@@ -241,7 +243,8 @@ class g(object):
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
-        '271': ('1920x1280', 'webm', 'video', 'VP9')
+        '271': ('1920x1280', 'webm', 'video', 'VP9'),
+        '272': ('3414x1080', 'webm', 'video', 'VP9')
     }
 
 
