@@ -729,6 +729,9 @@ class Stream(object):
             fmode = "ab"
 
         try:
+            if os.name == "nt" and ":" in os.path.split(tempfname)[1]:
+                raise IOError
+
             outfh = open(tempfname, fmode)
 
         except IOError:
