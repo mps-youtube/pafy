@@ -93,6 +93,15 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, vid.audiostreams[-1].download, "/bad/h/")
 
     @stdout_to_null
+    def test_pafy_download_invalid_win_filename(self):
+        """ Test Windows and colon character in video name. """
+        os.name = "nt"
+        vid = pafy.new("Yocja_N5s1I", gdata=True)
+        name = vid.audiostreams[-1].download().decode("utf8")
+        self.assertEquals(name, "The Agricultural Revolution_ Crash Course Wor"
+                          "ld History #1.ogg")
+
+    @stdout_to_null
     def test_pafy_download_to_dir(self):
         """ Test user specified path. """
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
