@@ -531,7 +531,7 @@ class Stream(object):
         self._title = parent.title
         self.encrypted = 's' in sm
         self._parent = parent
-        self._filename = self.title + "." + self.extension
+        self._filename = self.generate_filename()
         self._fsize = None
         self._bitrate = self._rawbitrate = None
         self._mediatype = g.itags[self.itag][2]
@@ -546,6 +546,21 @@ class Stream(object):
             self._quality = self.bitrate
             self._resolution = "0x0"
             self._rawbitrate = int(sm["bitrate"])
+
+    def generate_filename(self, meta=False):
+        """ Generate filename """
+        ok = re.compile(r'[^/]')
+
+        if os.name == "nt":
+            ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
+
+        filename = "".join(x if ok.match(x) else "_" for x in self._title)
+
+        if meta:
+            filename += "-%s-%s" % (self._parent.videoid, self._itag)
+
+        filename += "." + self._extension
+        return filename
 
     @property
     def rawbitrate(self):
@@ -684,18 +699,27 @@ class Stream(object):
 
         return self._fsize
 
-    def download(self, filepath="", quiet=False, callback=None):
-        """ Download.  Use quiet=True to supress output. Return filename. """
+    def download(self, filepath="", quiet=False, callback=None, meta=False):
+        """ Download.  Use quiet=True to supress output. Return filename.
+
+        Use meta=True to append video id and itag to generated filename
+
+        """
         # pylint: disable=R0914
         # Too many local variables - who cares?
+        savedir = filename = ""
 
-        def safe_filename(ff):
-            """ Remove troublesome characters in basename. """
-            d, b = os.path.split(ff)
-            ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
-            b = "".join(x if ok.match(x) else "_" for x in b)
-            ff = os.path.join(d, b)
-            return ff.encode("utf8", "ignore")
+        if filepath and os.path.isdir(filepath):
+            savedir, filename = filepath, self.generate_filename()
+
+        elif filepath:
+            savedir, filename = os.path.split(filepath)
+
+        else:
+            filename = self.generate_filename(meta=meta)
+
+        filepath = os.path.join(savedir, filename)
+        temp_filepath = filepath + ".temp"
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
@@ -707,38 +731,16 @@ class Stream(object):
         response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
         chunksize, bytesdone, t0 = 16384, 0, time.time()
-        fname = filepath or self.filename
-        dirname = os.path.dirname(fname)
 
-        if dirname and not os.path.isdir(dirname):
-            raise IOError("Invalid directory: %s" % dirname)
+        fmode, offset = "wb", 0
 
-        elif os.path.isdir(fname):
-            fname = os.path.join(fname, self.filename)
+        if os.path.exists(temp_filepath):
+            if os.stat(temp_filepath).st_size < total:
 
-        temp = os.path.join(os.path.dirname(fname), self._parent.title)
-        tempfname = "%s_%s_%s.part" % (temp, self._parent.videoid, self.itag)
-        safename, fmode, offset = safe_filename(tempfname), "wb", 0
+                offset = os.stat(temp_filepath).st_size
+                fmode = "ab"
 
-        if os.path.exists(tempfname) and os.stat(tempfname).st_size < total:
-            offset = os.stat(tempfname).st_size
-            fmode = "ab"
-
-        elif os.path.exists(safename) and os.stat(safename).st_size < total:
-            offset = os.stat(safename).st_size
-            fmode = "ab"
-
-        try:
-            if os.name == "nt" and ":" in os.path.split(tempfname)[1]:
-                raise IOError
-
-            outfh = open(tempfname, fmode)
-
-        except IOError:
-            # remove special chars from filename
-            fname = safe_filename(fname)
-            tempfname = safename
-            outfh = open(tempfname, fmode)
+        outfh = open(temp_filepath, fmode)
 
         if offset:
             # partial file exists, resume download
@@ -769,8 +771,8 @@ class Stream(object):
             if callback:
                 callback(total, *progress_stats)
 
-        os.rename(tempfname, fname)
-        return fname
+        os.rename(temp_filepath, filepath)
+        return filepath
 
 
 class Pafy(object):

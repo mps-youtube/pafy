@@ -97,7 +97,7 @@ class Test(unittest.TestCase):
         """ Test Windows and colon character in video name. """
         os.name = "nt"
         vid = pafy.new("Yocja_N5s1I", gdata=True)
-        name = vid.audiostreams[-1].download().decode("utf8")
+        name = vid.audiostreams[-1].download()
         self.assertEquals(name, "The Agricultural Revolution_ Crash Course Wor"
                           "ld History #1.ogg")
 
