@@ -97,7 +97,7 @@ def fetch_decode(url):
 
 
 def new(url, basic=True, gdata=False, signature=True, size=False,
-        callback=None):
+        callback=lambda x: None):
     """ Return a new pafy instance given a url or video id.
 
     Optional arguments:
@@ -518,7 +518,9 @@ class Stream(object):
 
     def __init__(self, sm, parent):
         """ Set initial values. """
-        safeint = lambda x: int(x) if x.isdigit() else x
+        def safeint(x):
+            """ Return type int if x is a digit. """
+            return int(x) if x.isdigit() else x
 
         self._itag = sm['itag']
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
@@ -548,7 +550,7 @@ class Stream(object):
             self._rawbitrate = int(sm["bitrate"])
 
     def generate_filename(self, meta=False):
-        """ Generate filename """
+        """ Generate filename. """
         ok = re.compile(r'[^/]')
 
         if os.name == "nt":
@@ -699,7 +701,8 @@ class Stream(object):
 
         return self._fsize
 
-    def download(self, filepath="", quiet=False, callback=None, meta=False):
+    def download(self, filepath="", quiet=False, callback=lambda *x: None,
+                 meta=False):
         """ Download.  Use quiet=True to supress output. Return filename.
 
         Use meta=True to append video id and itag to generated filename
@@ -782,14 +785,13 @@ class Pafy(object):
     funcmap = {}  # keep functions as a class variable
 
     def __init__(self, video_url, basic=True, gdata=False,
-                 signature=True, size=False, callback=None):
+                 signature=True, size=False, callback=lambda x: None):
         """ Set initial values. """
         self.version = __version__
         self.videoid = extract_video_id(video_url)
         self.watchv_url = g.urls['watchv'] % self.videoid
 
-        nullf = lambda x: None
-        new.callback = callback or nullf
+        new.callback = callback
         self._have_basic = False
         self._have_gdata = False
 
@@ -856,22 +858,24 @@ class Pafy(object):
             allinfo = get_video_info(self.videoid)
 
         new.callback("Fetched video info")
-        f = lambda x: allinfo.get(x, ["unknown"])[0]
-        t = lambda x: allinfo.get(x, [0.0])[0]
-        z = lambda x: allinfo.get(x, [""])[0]
 
-        self._title = f('title').replace("/", "-")
-        self._author = f('author')
-        self._videoid = f('video_id')
-        self._rating = float(t('avg_rating'))
-        self._length = int(f('length_seconds'))
-        self._viewcount = int(f('view_count'))
-        self._thumb = unquote_plus(f('thumbnail_url'))
-        self._formats = [x.split("/") for x in f('fmt_list').split(",")]
-        self._keywords = z('keywords').split(',')
-        self._bigthumb = z('iurlsd')
-        self._bigthumbhd = z('iurlsdmaxres')
-        self.ciphertag = f("use_cipher_signature") == "True"
+        def _get_lst(key, default="unknown", dic=allinfo):
+            """ Dict get function, returns first index. """
+            retval = dic.get(key, default)
+            return retval[0] if retval != default else default
+
+        self._title = _get_lst('title')
+        self._author = _get_lst('author')
+        self._videoid = _get_lst('video_id')
+        self._rating = float(_get_lst('avg_rating', 0.0))
+        self._length = int(_get_lst('length_seconds', 0))
+        self._viewcount = int(_get_lst('view_count'), 0)
+        self._thumb = unquote_plus(_get_lst('thumbnail_url', ""))
+        self._formats = [x.split("/") for x in _get_lst('fmt_list').split(",")]
+        self._keywords = _get_lst('keywords', "").split(',')
+        self._bigthumb = _get_lst('iurlsd', "")
+        self._bigthumbhd = _get_lst('iurlsdmaxres', "")
+        self.ciphertag = _get_lst("use_cipher_signature") == "True"
 
         if ageurl:
             self.ciphertag = False
@@ -1168,7 +1172,7 @@ class Pafy(object):
 
 
 def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
-                 size=False, callback=None):
+                 size=False, callback=lambda x: None):
     """ Return a dict containing Pafy objects from a YouTube Playlist.
 
     The returned Pafy objects are initialised using the arguments to
@@ -1177,8 +1181,6 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
     """
     # pylint: disable=R0914
     # too many local vars
-    nullf = lambda x: None
-    callback = callback or nullf
     x = (r"-_0-9a-zA-Z",) * 2 + (r'(?:\&|\#.{1,1000})',)
     regx = re.compile(r'(?:^|[^%s]+)([%s]{18,})(?:%s|$)' % x)
     m = regx.search(playlist_url)
