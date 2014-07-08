@@ -554,7 +554,7 @@ class Stream(object):
         ok = re.compile(r'[^/]')
 
         if os.name == "nt":
-            ok = re.compile(r'[^\\/?*$\'"%&:<>|]')
+            ok = re.compile(r'[^\\/:*?"<>|]')
 
         filename = "".join(x if ok.match(x) else "_" for x in self._title)
 
