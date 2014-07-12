@@ -1,8 +1,7 @@
 12 July 2014
 Version 0.3.54
 
-[Bufix] - Don't allow : character in Windows filenames (issue #35)
-[Bufix] - Fix issues with Windows filenames (issues #38, #39)
+[Bufix] - Fix issues with Windows filenames (issues #35, #38, #39)
 
 -------------------------------------------------------------------------------
 
