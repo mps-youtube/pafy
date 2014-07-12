@@ -2,7 +2,7 @@ Pafy Documentation
 ******************
 .. module:: Pafy
 
-This is the documentation for Pafy - Python API for YouTube
+This is the documentation for Pafy - a Python library for retrieving content and metadata from YouTube
 
 A quick start intro with usage examples is available in the `README <http://github.com/np1/pafy/blob/master/README.rst>`_
 
@@ -24,9 +24,6 @@ object contains multiple stream objects.
 
 Pafy Objects
 ============
-
-.. autoclass:: pafy.Pafy
-
 
 Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video URL as the argument.
 

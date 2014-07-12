@@ -68,6 +68,29 @@ class Test(unittest.TestCase):
 
         return mainfunc, otherfuncs
 
+    def test_make_url_no_sig(self):
+        """ Test signature not in raw and no sig argument. """
+        args=dict(raw="a=b&c=d", sig=None, quick=False)
+        self.assertRaises(IOError, pafy._make_url, **args)
+
+    def test_no_matching_stream(self):
+        """ Test no matching stream found. """
+        smap = dict()
+        self.assertRaises(IOError, pafy._get_matching_stream, smap, None)
+
+    def test_generate_filename_with_meta(self):
+        p = pafy.new('jrNLsC_Y9Oo')
+        a = p.getbestaudio()
+        filename = a.generate_filename(meta=True)
+        self.assertEqual(filename, 'Jessie J - WILD (Official) ft. Big Sean'
+                         ', Dizzee Rascal-jrNLsC_Y9Oo-171.ogg')
+        self.assertEqual(a.threed, False)
+        self.assertEqual(a.title, 'Jessie J - WILD (Official) ft. Big Sean'
+                         ', Dizzee Rascal')
+        self.assertEqual(a.notes, '')
+        self.assertEqual(a.filename, 'Jessie J - WILD (Official) ft. Big Sean'
+                         ', Dizzee Rascal.ogg')
+
     @stdout_to_null
     def test_pafy_download(self):
         """ Test downloading. """
@@ -80,10 +103,10 @@ class Test(unittest.TestCase):
     @stdout_to_null
     def test_pafy_download_resume(self):
         """ Test resuming a partial download. """
-        tempname = "WASTE  2 SECONDS OF YOUR LIFE_DsAn_n6O5Ns_171.part"
+        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-171.ogg.temp"
         open(tempname, "w").write("abc")
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
-        vstream = vid.audiostreams[-1].download()
+        vstream = vid.audiostreams[-1].download(meta=True)
         name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
         self.assertEqual(22675, os.stat(name).st_size)
 
@@ -93,10 +116,20 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, vid.audiostreams[-1].download, "/bad/h/")
 
     @stdout_to_null
+    def test_pafy__invalid_win_filename(self):
+        """ Test Windows and colon character in video name. """
+        os.name = "nt"
+        youtube_title = "#$&#@)($&)(*_)&@#()&#@$_*#(&@"
+        vid = pafy.new("http://www.youtube.com/watch?v=6vaX2P5R3VI")
+        audio = vid.getbestaudio()
+        expected = "#$&#@)($&)(__)&@#()&#@$__#(&@.m4a"
+        self.assertEquals(expected, audio.generate_filename())
+
+    @stdout_to_null
     def test_pafy_download_to_dir(self):
         """ Test user specified path. """
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
-        vstream = vid.audiostreams[-1].download("/tmp")
+        vstream = vid.audiostreams[-1].download("/tmp", meta=True)
         name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.ogg"
         self.assertEqual(22675, os.stat(name).st_size)
 
