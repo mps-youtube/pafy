@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.54"
+__version__ = "0.3.55"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -275,6 +275,18 @@ def _extract_function_from_js(name, js):
     return func
 
 
+def _extract_dictfunc_from_js(name, js):
+    """ Find anonymous function from within a dict. """
+
+    dbg("Extracting function '%s' from javascript", name)
+    var, dot, fname = name.partition(".")
+    fpattern = r'var\s+%s\s*\=\s*\{.*?%s\:function\(((?:\w+,?)+)\)\{([^}]+)\}'
+    m = re.search(fpattern % (re.escape(var), re.escape(fname)), js)
+    args, body = m.groups()
+    dbg("extracted dict function %s(%s){%s};", name, args, body)
+    func = {'name': name, 'parameters': args.split(","), 'body': body}
+    return func
+
 def _get_mainfunc_from_js(js):
     """ Return main signature decryption function from javascript as dict. """
     dbg("Scanning js for main function.")
@@ -291,6 +303,7 @@ def _get_other_funcs(primary_func, js):
     body = primary_func['body']
     body = body.split(";")
     call = re.compile(r'(?:[$\w+])=([$\w]+)\(((?:\w+,?)+)\)$')
+    call2 = re.compile(r'(?:[$\w+])=([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
 
     functions = {}
 
@@ -308,6 +321,12 @@ def _get_other_funcs(primary_func, js):
 
             # else:
                 # dbg("function '%s' is already in map.", name)
+        elif call2.match(part):
+            match = call2.match(part)
+            name = "%s.%s" % (match.group(1), match.group(2))
+
+            if name not in functions:
+                functions[name] = _extract_dictfunc_from_js(name, js)
 
     return functions
 
@@ -340,8 +359,11 @@ def _get_func_from_call(caller, name, arguments, js_url):
 
     for n, arg in enumerate(arguments):
         value = _getval(arg, caller['args'])
-        param = newfunction['parameters'][n]
-        newfunction['args'][param] = value
+        try:
+            param = newfunction['parameters'][n]
+            newfunction['args'][param] = value
+        except IndexError:
+            pass
 
     return newfunction
 
@@ -357,7 +379,10 @@ def _solve(f, js_url):
         'x3': r'(\w+)\[(\w+)\]=(\w+)$',
         'return': r'return (\w+)(\.join\(""\))?$',
         'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
-        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$'
+        'return_reverse': r'return (\w+)\.reverse()',
+        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
+        'return_slice': r'return (\w+)\.slice\((\w+)\)$',
+        'func_call_dict': r'(\w)=([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$'
     }
 
     parts = f['body'].split(";")
@@ -377,6 +402,12 @@ def _solve(f, js_url):
 
         if name == "split_or_join":
             pass
+
+        elif name == "func_call_dict":
+            lhs, dic, key, args = m.group(1, 2, 3, 4)
+            funcname = "%s.%s" % (dic, key)
+            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
+            f['args'][lhs] = _solve(newfunc, js_url)
 
         elif name == "func_call":
             lhs, funcname, args = m.group(1, 2, 3)
@@ -404,6 +435,13 @@ def _solve(f, js_url):
 
         elif name == "reverse":
             f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
+
+        elif name == "return_reverse":
+            return f['args'][m.group(1)][::-1]
+
+        elif name == "return_slice":
+            a, b = [_getval(x, f['args']) for x in m.group(1, 2)]
+            return a[b:]
 
         elif name == "slice":
             a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
