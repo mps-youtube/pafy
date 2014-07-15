@@ -302,8 +302,11 @@ def _get_other_funcs(primary_func, js):
     dbg("scanning javascript for secondary functions.")
     body = primary_func['body']
     body = body.split(";")
+    # standard function call; X=F(A,B,C...)
     call = re.compile(r'(?:[$\w+])=([$\w]+)\(((?:\w+,?)+)\)$')
-    call2 = re.compile(r'(?:[$\w+])=([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
+
+    # dot notation function call; X=O.F(A,B,C..)
+    dotcall = re.compile(r'(?:[$\w+])=([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
 
     functions = {}
 
@@ -321,11 +324,13 @@ def _get_other_funcs(primary_func, js):
 
             # else:
                 # dbg("function '%s' is already in map.", name)
-        elif call2.match(part):
+        elif dotcall.match(part):
 
-            match = call2.match(part)
+            match = dotcall.match(part)
             name = "%s.%s" % (match.group(1), match.group(2))
-            if match.group(2) in ["slice", "join"]:
+
+            # don't treat X=A.slice(B) as X=O.F(B)
+            if match.group(2) == "slice":
                 continue
 
             if name not in functions:
@@ -362,11 +367,11 @@ def _get_func_from_call(caller, name, arguments, js_url):
 
     for n, arg in enumerate(arguments):
         value = _getval(arg, caller['args'])
-        try:
+
+        # function may not use all arguments
+        if n < len(newfunction['parameters']):
             param = newfunction['parameters'][n]
             newfunction['args'][param] = value
-        except IndexError:
-            pass
 
     return newfunction
 
@@ -406,7 +411,7 @@ def _solve(f, js_url):
         if name == "split_or_join":
             pass
 
-        elif name == "func_call_dict":
+        elif name == "func_call_dict" and ".slice" not in part:
             lhs, dic, key, args = m.group(1, 2, 3, 4)
             funcname = "%s.%s" % (dic, key)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
