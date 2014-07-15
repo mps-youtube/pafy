@@ -322,8 +322,11 @@ def _get_other_funcs(primary_func, js):
             # else:
                 # dbg("function '%s' is already in map.", name)
         elif call2.match(part):
+
             match = call2.match(part)
             name = "%s.%s" % (match.group(1), match.group(2))
+            if match.group(2) in ["slice", "join"]:
+                continue
 
             if name not in functions:
                 functions[name] = _extract_dictfunc_from_js(name, js)
