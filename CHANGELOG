@@ -1,3 +1,10 @@
+16 July 2014
+Version 0.3.56
+
+[Bugfix] - Update signature decryption to work with YouTube changes (#43)
+
+-------------------------------------------------------------------------------
+
 12 July 2014
 Version 0.3.54
 
