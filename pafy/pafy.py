@@ -277,15 +277,16 @@ def _extract_function_from_js(name, js):
 
 def _extract_dictfunc_from_js(name, js):
     """ Find anonymous function from within a dict. """
-
     dbg("Extracting function '%s' from javascript", name)
-    var, dot, fname = name.partition(".")
-    fpattern = r'var\s+%s\s*\=\s*\{.*?%s\:function\(((?:\w+,?)+)\)\{([^}]+)\}'
+    var, _, fname = name.partition(".")
+    fpattern = (r'var\s+%s\s*\=\s*\{.{,2000}?%s'
+                r'\:function\(((?:\w+,?)+)\)\{([^}]+)\}')
     m = re.search(fpattern % (re.escape(var), re.escape(fname)), js)
     args, body = m.groups()
     dbg("extracted dict function %s(%s){%s};", name, args, body)
     func = {'name': name, 'parameters': args.split(","), 'body': body}
     return func
+
 
 def _get_mainfunc_from_js(js):
     """ Return main signature decryption function from javascript as dict. """
@@ -378,7 +379,7 @@ def _get_func_from_call(caller, name, arguments, js_url):
 
 def _solve(f, js_url):
     """Solve basic javascript function. Return solution value (str). """
-    # pylint: disable=R0914
+    # pylint: disable=R0914,R0912
     patterns = {
         'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)$',
         'func_call': r'(\w+)=([$\w]+)\(((?:\w+,?)+)\)$',
