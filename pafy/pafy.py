@@ -282,6 +282,7 @@ def _extract_dictfunc_from_js(name, js):
     fpattern = (r'var\s+%s\s*\=\s*\{.{,2000}?%s'
                 r'\:function\(((?:\w+,?)+)\)\{([^}]+)\}')
     m = re.search(fpattern % (re.escape(var), re.escape(fname)), js)
+    dbg(m.group(0))
     args, body = m.groups()
     dbg("extracted dict function %s(%s){%s};", name, args, body)
     func = {'name': name, 'parameters': args.split(","), 'body': body}
@@ -397,7 +398,7 @@ def _solve(f, js_url):
     parts = f['body'].split(";")
 
     for part in parts:
-        # dbg("Working on part: " + part)
+        dbg("Working on part: " + part)
 
         name = ""
 
@@ -514,7 +515,7 @@ def get_js_sm(video_id):
         new.callback("Fetching javascript")
         javascript = fetch_decode(js_url)  # bytes
         javascript = javascript.decode("utf8")  # unicode
-        dbg("Fetched javascript")
+        dbg("Fetched javascript from %s", js_url)
         new.callback("Fetched javascript")
         mainfunc = _get_mainfunc_from_js(javascript)
         funcs = _get_other_funcs(mainfunc, javascript)
