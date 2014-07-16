@@ -390,7 +390,7 @@ def _solve(f, js_url):
         'return_reverse': r'return (\w+)\.reverse()',
         'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
         'return_slice': r'return (\w+)\.slice\((\w+)\)$',
-        'func_call_dict': r'(\w)=([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$'
+        'func_call_dict': r'(\w)=([$\w]+)\.(?!slice)([$\w]+)\(((?:\w+,?)+)\)$'
     }
 
     parts = f['body'].split(";")
@@ -411,7 +411,7 @@ def _solve(f, js_url):
         if name == "split_or_join":
             pass
 
-        elif name == "func_call_dict" and ".slice" not in part:
+        elif name == "func_call_dict":
             lhs, dic, key, args = m.group(1, 2, 3, 4)
             funcname = "%s.%s" % (dic, key)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)

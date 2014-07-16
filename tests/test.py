@@ -104,7 +104,8 @@ class Test(unittest.TestCase):
     def test_pafy_download_resume(self):
         """ Test resuming a partial download. """
         tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-171.ogg.temp"
-        open(tempname, "w").write("abc")
+        with open(tempname, "w") as ladeeda:
+            ladeeda.write("abc")
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1].download(meta=True)
         name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
@@ -123,7 +124,7 @@ class Test(unittest.TestCase):
         vid = pafy.new("http://www.youtube.com/watch?v=6vaX2P5R3VI")
         audio = vid.getbestaudio()
         expected = "#$&#@)($&)(__)&@#()&#@$__#(&@.m4a"
-        self.assertEquals(expected, audio.generate_filename())
+        self.assertEqual(expected, audio.generate_filename())
 
     @stdout_to_null
     def test_pafy_download_to_dir(self):
