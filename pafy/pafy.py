@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Python API for YouTube.
+pafy.py
+
+Python library to retrieve YouTube content and metadata
 
 https://github.com/np1/pafy
 
