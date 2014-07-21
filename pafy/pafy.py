@@ -836,6 +836,10 @@ class Stream(object):
             os.rename(temp_filepath, filepath)
             return filepath
 
+        else:
+            outfh.close()
+            return temp_filepath
+
 
 class Pafy(object):
 
