@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Python API for YouTube.
+pafy.py
+
+Python library to retrieve YouTube content and metadata
 
 https://github.com/np1/pafy
 
@@ -589,6 +591,7 @@ class Stream(object):
         self._url = None
         self._rawurl = sm['url']
         self._sig = sm['s'] if self.encrypted else sm.get("sig")
+        self._active = False
 
         if self.mediatype == "audio":
             self._dimensions = (0, 0)
@@ -749,6 +752,12 @@ class Stream(object):
 
         return self._fsize
 
+    def cancel(self):
+        """ Cancel an active download. """
+        if self._active:
+            self._active = False
+            return True
+
     def download(self, filepath="", quiet=False, callback=lambda *x: None,
                  meta=False):
         """ Download.  Use quiet=True to supress output. Return filename.
@@ -801,7 +810,9 @@ class Stream(object):
             response = resuming_opener.open(self.url)
             bytesdone = offset
 
-        while True:
+        self._active = True
+
+        while self._active:
             chunk = response.read(chunksize)
             outfh.write(chunk)
             elapsed = time.time() - t0
@@ -822,8 +833,13 @@ class Stream(object):
             if callback:
                 callback(total, *progress_stats)
 
-        os.rename(temp_filepath, filepath)
-        return filepath
+        if self._active:
+            os.rename(temp_filepath, filepath)
+            return filepath
+
+        else:
+            outfh.close()
+            return temp_filepath
 
 
 class Pafy(object):
