@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Python API for YouTube.
+pafy.py.
+
+Python library to retrieve YouTube content and metadata
 
 https://github.com/np1/pafy
 
@@ -25,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.56"
+__version__ = "0.3.58"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -307,7 +309,7 @@ def _get_other_funcs(primary_func, js):
     call = re.compile(r'(?:[$\w+])=([$\w]+)\(((?:\w+,?)+)\)$')
 
     # dot notation function call; X=O.F(A,B,C..)
-    dotcall = re.compile(r'(?:[$\w+])=([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
+    dotcall = re.compile(r'(?:[$\w+]=)?([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
 
     functions = {}
 
@@ -380,6 +382,7 @@ def _get_func_from_call(caller, name, arguments, js_url):
 def _solve(f, js_url):
     """Solve basic javascript function. Return solution value (str). """
     # pylint: disable=R0914,R0912
+    resv = "slice|splice|reverse"
     patterns = {
         'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)$',
         'func_call': r'(\w+)=([$\w]+)\(((?:\w+,?)+)\)$',
@@ -388,10 +391,15 @@ def _solve(f, js_url):
         'x3': r'(\w+)\[(\w+)\]=(\w+)$',
         'return': r'return (\w+)(\.join\(""\))?$',
         'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
-        'return_reverse': r'return (\w+)\.reverse()',
+        'reverse_noass': r'(\w+)\.reverse\(\)$',
+        'return_reverse': r'return (\w+)\.reverse()$',
         'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
+        'splice_noass': r'([$\w]+)\.splice\(([$\w]+)\,([$\w]+)\)$',
         'return_slice': r'return (\w+)\.slice\((\w+)\)$',
-        'func_call_dict': r'(\w)=([$\w]+)\.(?!slice)([$\w]+)\(((?:\w+,?)+)\)$'
+        'func_call_dict': r'(\w)=([$\w]+)\.(?!%s)([$\w]+)\(((?:\w+,?)+)\)$'
+                          % resv,
+        'func_call_dict_noret': r'([$\w]+)\.(?!%s)([$\w]+)\(((?:\w+,?)+)\)$'
+                                % resv
     }
 
     parts = f['body'].split(";")
@@ -417,6 +425,19 @@ def _solve(f, js_url):
             funcname = "%s.%s" % (dic, key)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
             f['args'][lhs] = _solve(newfunc, js_url)
+
+        elif name == "func_call_dict_noret":
+            dic, key, args = m.group(1, 2, 3)
+            funcname = "%s.%s" % (dic, key)
+            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
+            _solve.expect_noret = True
+            changed_args = _solve(newfunc, js_url)
+            _solve.expect_noret = False
+
+            for arg in f['args']:
+
+                if arg in changed_args:
+                    f['args'][arg] = changed_args[arg]
 
         elif name == "func_call":
             lhs, funcname, args = m.group(1, 2, 3)
@@ -445,6 +466,13 @@ def _solve(f, js_url):
         elif name == "reverse":
             f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
 
+        elif name == "reverse_noass":
+            f['args'][m.group(1)] = _getval(m.group(1), f['args'])[::-1]
+
+        elif name == "splice_noass":
+            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
+            f['args'][m.group(1)] = a[:b] + a[b + c:]
+
         elif name == "return_reverse":
             return f['args'][m.group(1)][::-1]
 
@@ -456,7 +484,12 @@ def _solve(f, js_url):
             a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
             f['args'][m.group(1)] = b[c:]
 
-    raise IOError("Processed js funtion parts without finding return")
+    if _solve.expect_noret:
+        return f['args']
+
+    else:
+        raise IOError("Processed js funtion parts without finding return")
+
 
 
 def _decodesig(sig, js_url):
@@ -588,6 +621,7 @@ class Stream(object):
         self._url = None
         self._rawurl = sm['url']
         self._sig = sm['s'] if self.encrypted else sm.get("sig")
+        self._active = False
 
         if self.mediatype == "audio":
             self._dimensions = (0, 0)
@@ -748,6 +782,12 @@ class Stream(object):
 
         return self._fsize
 
+    def cancel(self):
+        """ Cancel an active download. """
+        if self._active:
+            self._active = False
+            return True
+
     def download(self, filepath="", quiet=False, callback=lambda *x: None,
                  meta=False):
         """ Download.  Use quiet=True to supress output. Return filename.
@@ -755,8 +795,8 @@ class Stream(object):
         Use meta=True to append video id and itag to generated filename
 
         """
-        # pylint: disable=R0914
-        # Too many local variables - who cares?
+        # pylint: disable=R0912,R0914
+        # Too many branches, too many local vars
         savedir = filename = ""
 
         if filepath and os.path.isdir(filepath):
@@ -800,7 +840,9 @@ class Stream(object):
             response = resuming_opener.open(self.url)
             bytesdone = offset
 
-        while True:
+        self._active = True
+
+        while self._active:
             chunk = response.read(chunksize)
             outfh.write(chunk)
             elapsed = time.time() - t0
@@ -821,8 +863,13 @@ class Stream(object):
             if callback:
                 callback(total, *progress_stats)
 
-        os.rename(temp_filepath, filepath)
-        return filepath
+        if self._active:
+            os.rename(temp_filepath, filepath)
+            return filepath
+
+        else:
+            outfh.close()
+            return temp_filepath
 
 
 class Pafy(object):
