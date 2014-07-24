@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.58"
+__version__ = "0.3.59"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -380,7 +380,7 @@ def _get_func_from_call(caller, name, arguments, js_url):
     return newfunction
 
 
-def _solve(f, js_url):
+def _solve(f, js_url, returns=True):
     """Solve basic javascript function. Return solution value (str). """
     # pylint: disable=R0914,R0912
     resv = "slice|splice|reverse"
@@ -431,9 +431,7 @@ def _solve(f, js_url):
             dic, key, args = m.group(1, 2, 3)
             funcname = "%s.%s" % (dic, key)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            _solve.expect_noret = True
-            changed_args = _solve(newfunc, js_url)
-            _solve.expect_noret = False
+            changed_args = _solve(newfunc, js_url, returns=False)
 
             for arg in f['args']:
 
@@ -485,12 +483,12 @@ def _solve(f, js_url):
             a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
             f['args'][m.group(1)] = b[c:]
 
-    if _solve.expect_noret:
+    if not returns:
+        # Return the args dict if no return statement in function
         return f['args']
 
     else:
         raise IOError("Processed js funtion parts without finding return")
-
 
 
 def _decodesig(sig, js_url):

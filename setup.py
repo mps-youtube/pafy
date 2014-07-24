@@ -19,7 +19,7 @@ setup(
     name='Pafy',
     packages=['pafy'],
     scripts=['scripts/ytdl'],
-    version='0.3.58',
+    version='0.3.59',
     description="Retrieve YouTube content and metadata",
     keywords=["Pafy", "API", "YouTube", "youtube", "download", "video"],
     author="nagev",
