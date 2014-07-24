@@ -165,9 +165,10 @@ class Test(unittest.TestCase):
                              video['description'])
 
             for prop in self.properties:
-                paf_prop = getattr(video['pafy'], prop)
-                exp_prop = video[prop]
-                self.assertEqual(paf_prop, exp_prop)
+                if prop != "thumb":
+                    paf_prop = getattr(video['pafy'], prop)
+                    exp_prop = video[prop]
+                    self.assertEqual(paf_prop, exp_prop)
 
             self.assertNotEqual(video.__repr__(), None)
 
