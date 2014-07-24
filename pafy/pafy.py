@@ -333,7 +333,7 @@ def _get_other_funcs(primary_func, js):
             name = "%s.%s" % (match.group(1), match.group(2))
 
             # don't treat X=A.slice(B) as X=O.F(B)
-            if match.group(2) == "slice":
+            if match.group(2) in ["slice", "splice"]:
                 continue
 
             if name not in functions:
