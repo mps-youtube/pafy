@@ -1,3 +1,11 @@
+24 July 2014
+Version 0.3.58
+
+[Feature] - Added cancel download function (stav) (#47)
+[Bugfix] - Update signature decryption to work with YouTube changes (#48)
+
+-------------------------------------------------------------------------------
+
 16 July 2014
 Version 0.3.56
 
