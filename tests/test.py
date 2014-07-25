@@ -79,7 +79,7 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy._get_matching_stream, smap, None)
 
     def test_generate_filename_with_meta(self):
-        p = pafy.new('jrNLsC_Y9Oo')
+        p = pafy.new('jrNLsC_Y9Oo', size=True)
         a = p.getbestaudio()
         filename = a.generate_filename(meta=True)
         self.assertEqual(filename, 'Jessie J - WILD (Official) ft. Big Sean'
@@ -106,10 +106,29 @@ class Test(unittest.TestCase):
         tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-171.ogg.temp"
         with open(tempname, "w") as ladeeda:
             ladeeda.write("abc")
-        vid = pafy.new("DsAn_n6O5Ns", gdata=True)
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False, signature=False)
         vstream = vid.audiostreams[-1].download(meta=True)
         name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
         self.assertEqual(22675, os.stat(name).st_size)
+
+        # test fetching attributes
+        vid._title = None
+        _ = vid.title
+        vid._rating = None
+        _ = vid.rating
+        vid._author = None
+        _ = vid.author
+        vid._rating = None
+        _ = vid.rating
+        vid._length = None
+        _ = vid.length
+        vid._viewcount = None
+        _ = vid.viewcount
+        vid._thumb = None
+        _ = vid.thumb
+        vid._length = None
+        _ = vid.duration
+
 
     def test_pafy_download_invalid_dirname(self):
         """ Test user specified invalid path. """
