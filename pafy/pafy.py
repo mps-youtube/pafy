@@ -392,7 +392,7 @@ def _solve(f, js_url, returns=True):
         'return': r'return (\w+)(\.join\(""\))?$',
         'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
         'reverse_noass': r'(\w+)\.reverse\(\)$',
-        'return_reverse': r'return (\w+)\.reverse()$',
+        'return_reverse': r'return (\w+)\.reverse\(\)$',
         'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
         'splice_noass': r'([$\w]+)\.splice\(([$\w]+)\,([$\w]+)\)$',
         'return_slice': r'return (\w+)\.slice\((\w+)\)$',
