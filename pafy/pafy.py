@@ -403,6 +403,9 @@ def _solve(f, js_url, returns=True):
                                 % resv
     }
 
+    for k, v in f['args'].items():
+        dbg("arg: %s; value: %s", k, v)
+
     parts = f['body'].split(";")
 
     for part in parts:
@@ -432,6 +435,9 @@ def _solve(f, js_url, returns=True):
             funcname = "%s.%s" % (dic, key)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
             changed_args = _solve(newfunc, js_url, returns=False)
+
+            for k, v in f['args'].items():
+                dbg("arg: %s; value: %s", k, v)
 
             for arg in f['args']:
 
