@@ -45,6 +45,11 @@ class Test(unittest.TestCase):
             video['best'] = video['pafy'].getbest()
             video['bestaudio'] = video['pafy'].getbestaudio()
 
+            # get urls for age restricted vids
+            if video['pafy'].videoid == "07FYdnEawAQ":
+                _ = video['pafy'].streams[0].url
+                _ = video['pafy'].streams[1].url
+
         for playlist in Test.playlists:
             playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
 
@@ -79,6 +84,8 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy._get_matching_stream, smap, None)
 
     def test_generate_filename_with_meta(self):
+        if Test.quick:
+            return
         p = pafy.new('jrNLsC_Y9Oo', size=True)
         a = p.getbestaudio()
         filename = a.generate_filename(meta=True)
@@ -128,7 +135,6 @@ class Test(unittest.TestCase):
         _ = vid.thumb
         vid._length = None
         _ = vid.duration
-
 
     def test_pafy_download_invalid_dirname(self):
         """ Test user specified invalid path. """
@@ -184,6 +190,7 @@ class Test(unittest.TestCase):
                              video['description'])
 
             for prop in self.properties:
+
                 if prop != "thumb":
                     paf_prop = getattr(video['pafy'], prop)
                     exp_prop = video[prop]
@@ -288,9 +295,12 @@ class Test(unittest.TestCase):
 JAVASCRIPT = """\
 function mthr(a){a=a.split("");a=fkr(a,59);a=a.slice(1);a=fkr(a,66);\
 a=a.slice(3);a=fkr(a,10);a=a.reverse();a=fkr(a,55);a=fkr(a,70);\
-a=a.slice(1);return a.join("")};
+a=a.slice(1);a=np1.apple(2,a);return a.join("")};
 
 function fkr(a,b){var c=a[0];a[0]=a[b%a.length];a[b]=c;return a};
+
+var np1={apple:function(llama,zebra){zebra=zebra.reverse();\
+return zebra.reverse()}};
 
 z.sig||mthr(aaa.bbb)
 """
