@@ -1,5 +1,7 @@
 # encoding: utf8
 
+""" Tests for pafy. """
+
 from __future__ import unicode_literals
 from functools import wraps
 import hashlib
@@ -14,11 +16,12 @@ try:
 except ImportError:
     import unittest
 
+
 def stdout_to_null(fn):
     """  Supress stdout. """
-
     @wraps(fn)
     def wrapper(*a, **b):
+        """ wrapping function. """
         with open(os.devnull, "w") as nul:
             stash = sys.stdout
             sys.stdout = nul
@@ -30,7 +33,10 @@ def stdout_to_null(fn):
 
 class Test(unittest.TestCase):
 
+    """ Tests. """
+
     def runOnce(self):
+        """ Create pafy objects for tests. """
         if hasattr(Test, "hasrun"):
             return
 
@@ -49,6 +55,7 @@ class Test(unittest.TestCase):
             if video['pafy'].videoid == "07FYdnEawAQ":
                 _ = video['pafy'].streams[0].url
                 _ = video['pafy'].streams[1].url
+                del _
 
         for playlist in Test.playlists:
             playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
@@ -56,12 +63,14 @@ class Test(unittest.TestCase):
         Test.hasrun = True
 
     def setUp(self):
+        """ setup for tests. """
         self.delay = 3
         self.properties = ("videoid title length duration author "
                            "username category thumb published").split()
         self.runOnce()
 
     def get_all_funcs(self):
+        """ Populate pafy funcmap for use in tests. """
         mainfunc = pafy._get_mainfunc_from_js(JAVASCRIPT)
         otherfuncs = pafy._get_other_funcs(mainfunc, JAVASCRIPT)
 
@@ -75,7 +84,7 @@ class Test(unittest.TestCase):
 
     def test_make_url_no_sig(self):
         """ Test signature not in raw and no sig argument. """
-        args=dict(raw="a=b&c=d", sig=None, quick=False)
+        args = dict(raw="a=b&c=d", sig=None, quick=False)
         self.assertRaises(IOError, pafy._make_url, **args)
 
     def test_no_matching_stream(self):
@@ -84,8 +93,10 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy._get_matching_stream, smap, None)
 
     def test_generate_filename_with_meta(self):
+        """ Use meta argument to generate filename. """
         if Test.quick:
             return
+
         p = pafy.new('jrNLsC_Y9Oo', size=True)
         a = p.getbestaudio()
         filename = a.generate_filename(meta=True)
@@ -235,8 +246,6 @@ class Test(unittest.TestCase):
         self.assertEqual(mainfunc['name'], "mthr")
         self.assertEqual(mainfunc["parameters"], ["a"])
         self.assertGreater(len(mainfunc['body']), 3)
-        #self.assertTrue(len(mainfunc['body']) > 3,
-                        #"%s not greater than %s" % (len(mainfunc['body']), 3))
         self.assertIn("return", mainfunc['body'])
         self.assertEqual(otherfuncs['fkr']['parameters'], ['a', 'b'])
         # test pafy._solve
@@ -262,16 +271,17 @@ class Test(unittest.TestCase):
 
     def test_decodesig(self):
         """ Test signature decryption function. """
-        mainfunc, otherfuncs = self.get_all_funcs()
+        # populate functions in pafy funcmap
+        _, __ = self.get_all_funcs()
         pafy.new.callback = lambda x: None
         self.assertEqual('2109876752', pafy._decodesig('1234567890', 'jsurl'))
-        mainfunc, otherfuncs = self.get_all_funcs()
+        # repopulate functions in pafy funcmap
+        _, __ = self.get_all_funcs()
         pafy.Pafy.funcmap["jsurl"]['mainfunction']['parameters'] = ["a", "b"]
         self.assertRaises(IOError, pafy._decodesig, '1234567890', 'jsurl')
 
     def test_get_playlist(self):
         """ Test get_playlist function. """
-
         for pl in Test.playlists:
             fetched = pl['fetched']
             self.assertEqual(len(fetched['items']), pl['count'])
@@ -381,7 +391,8 @@ VIDEOS = [
     {
         'identifier': 'EnHp24CVORc',
         'videoid': 'EnHp24CVORc',
-        'title': 'Chinese Knock Off Sky Loop Roller Coaster POV Chuanlord Holiday Manor China \u9b54\u73af\u5782\u76f4\u8fc7\u5c71\u8f66',
+        'title': 'Chinese Knock Off Sky Loop Roller Coaster POV Chuanlord Holid'
+                 'ay Manor China \u9b54\u73af\u5782\u76f4\u8fc7\u5c71\u8f66',
         'length': 313,
         'duration': '00:05:13',
         'author': 'Theme Park Review',
@@ -422,4 +433,3 @@ VIDEOS = [
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
-    #unittest.main()
