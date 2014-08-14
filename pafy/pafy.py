@@ -600,7 +600,13 @@ class Stream(object):
             """ Return type int if x is a digit. """
             return int(x) if x.isdigit() else x
 
+
         self._itag = sm['itag']
+
+        if self._itag not in g.itags:
+            logging.warning("Unknown itag: %s" % self._itag)
+            return None
+
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
@@ -1018,7 +1024,9 @@ class Pafy(object):
             self.fetch_basic()
 
         streams = [Stream(z, self) for z in self.sm]
+        streams = [x for x in streams if x.itag in g.itags]
         adpt_streams = [Stream(z, self) for z in self.asm]
+        adpt_streams = [x for x in adpt_streams if x.itag in g.itags]
         audiostreams = [x for x in adpt_streams if x.bitrate]
         videostreams = [x for x in adpt_streams if not x.bitrate]
         m4astreams = [x for x in audiostreams if x.extension == "m4a"]
