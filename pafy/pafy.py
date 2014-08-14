@@ -242,6 +242,9 @@ class g(object):
         '246': ('640x480', 'webm', 'video', 'VP9'),
         '247': ('720x480', 'webm', 'video', 'VP9'),
         '248': ('1920x1080', 'webm', 'video', 'VP9'),
+        '249': ('48k', 'ogg', 'audio', 'Opus'),
+        '250': ('56k', 'ogg', 'audio', 'Opus'),
+        '251': ('128k', 'ogg', 'audio', 'Opus'),
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
@@ -596,21 +599,17 @@ class Stream(object):
 
     def __init__(self, sm, parent):
         """ Set initial values. """
-        def safeint(x):
-            """ Return type int if x is a digit. """
-            return int(x) if x.isdigit() else x
-
-
         self._itag = sm['itag']
 
         if self._itag not in g.itags:
-            logging.warning("Unknown itag: %s" % self._itag)
+            logging.warning("Unknown itag: %s", self._itag)
             return None
 
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple(map(safeint, self.dimensions))
+        self._dimensions = tuple(map(lambda x: int(x) if x.isdigit() else x,
+            self.dimensions))
         self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
