@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.58"
+__version__ = "0.3.60"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -242,6 +242,9 @@ class g(object):
         '246': ('640x480', 'webm', 'video', 'VP9'),
         '247': ('720x480', 'webm', 'video', 'VP9'),
         '248': ('1920x1080', 'webm', 'video', 'VP9'),
+        '249': ('48k', 'ogg', 'audio', 'Opus'),
+        '250': ('56k', 'ogg', 'audio', 'Opus'),
+        '251': ('128k', 'ogg', 'audio', 'Opus'),
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
@@ -333,7 +336,7 @@ def _get_other_funcs(primary_func, js):
             name = "%s.%s" % (match.group(1), match.group(2))
 
             # don't treat X=A.slice(B) as X=O.F(B)
-            if match.group(2) == "slice":
+            if match.group(2) in ["slice", "splice"]:
                 continue
 
             if name not in functions:
@@ -379,7 +382,7 @@ def _get_func_from_call(caller, name, arguments, js_url):
     return newfunction
 
 
-def _solve(f, js_url):
+def _solve(f, js_url, returns=True):
     """Solve basic javascript function. Return solution value (str). """
     # pylint: disable=R0914,R0912
     resv = "slice|splice|reverse"
@@ -392,7 +395,7 @@ def _solve(f, js_url):
         'return': r'return (\w+)(\.join\(""\))?$',
         'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
         'reverse_noass': r'(\w+)\.reverse\(\)$',
-        'return_reverse': r'return (\w+)\.reverse()$',
+        'return_reverse': r'return (\w+)\.reverse\(\)$',
         'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
         'splice_noass': r'([$\w]+)\.splice\(([$\w]+)\,([$\w]+)\)$',
         'return_slice': r'return (\w+)\.slice\((\w+)\)$',
@@ -430,9 +433,7 @@ def _solve(f, js_url):
             dic, key, args = m.group(1, 2, 3)
             funcname = "%s.%s" % (dic, key)
             newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            _solve.expect_noret = True
-            changed_args = _solve(newfunc, js_url)
-            _solve.expect_noret = False
+            changed_args = _solve(newfunc, js_url, returns=False)
 
             for arg in f['args']:
 
@@ -484,12 +485,12 @@ def _solve(f, js_url):
             a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
             f['args'][m.group(1)] = b[c:]
 
-    if _solve.expect_noret:
+    if not returns:
+        # Return the args dict if no return statement in function
         return f['args']
 
     else:
         raise IOError("Processed js funtion parts without finding return")
-
 
 
 def _decodesig(sig, js_url):
@@ -598,15 +599,17 @@ class Stream(object):
 
     def __init__(self, sm, parent):
         """ Set initial values. """
-        def safeint(x):
-            """ Return type int if x is a digit. """
-            return int(x) if x.isdigit() else x
-
         self._itag = sm['itag']
+
+        if self._itag not in g.itags:
+            logging.warning("Unknown itag: %s", self._itag)
+            return None
+
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple(map(safeint, self.dimensions))
+        self._dimensions = tuple(map(lambda x: int(x) if x.isdigit() else x,
+            self.dimensions))
         self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
@@ -1020,7 +1023,9 @@ class Pafy(object):
             self.fetch_basic()
 
         streams = [Stream(z, self) for z in self.sm]
+        streams = [x for x in streams if x.itag in g.itags]
         adpt_streams = [Stream(z, self) for z in self.asm]
+        adpt_streams = [x for x in adpt_streams if x.itag in g.itags]
         audiostreams = [x for x in adpt_streams if x.bitrate]
         videostreams = [x for x in adpt_streams if not x.bitrate]
         m4astreams = [x for x in audiostreams if x.extension == "m4a"]
