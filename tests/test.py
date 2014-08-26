@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
             # get urls for age restricted vids
             if video['pafy'].videoid == "07FYdnEawAQ":
                 _ = video['pafy'].streams[0].url
-                _ = video['pafy'].streams[1].url
+                _ = video['pafy'].streams[1].url_https
                 del _
 
         for playlist in Test.playlists:

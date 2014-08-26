@@ -257,8 +257,12 @@ Stream Attributes
 
     The direct access URL of the stream.  This can be used to stream the media
     in mplayer or vlc, or for downloading with wget or curl.  To download
-    directly, use the :func:`Stream.download` method
+    directly, use the :func:`Stream.download` method.
 
+.. attribute:: Stream.url_https
+
+    The direct access HTTPS URL of the stream.
+    
 .. attribute:: Stream.bitrate
 
     The bitrate of the stream - if it is an audio stream, otherwise None,

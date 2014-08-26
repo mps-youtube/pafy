@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.60"
+__version__ = "0.3.62"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -182,18 +182,16 @@ class g(object):
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
-        'age_vidinfo': ('https://www.youtube.com/get_video_info?video_id=%s&'
-                        'el=player_embedded&gl=US&hl=en&eurl=https://youtube.'
-                        'googleapis.com/v/%s&asv=3&sts=1588')
+        'age_vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
+                        'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
     }
-    ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-          " Trident/5.0)")
+    user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
     jsplayer = r';\s*ytplayer\.config\s*=\s*(\s*{.*?}\s*)\s*;'
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
-    opener.addheaders = [('User-Agent', ua)]
+    opener.addheaders = [('User-Agent', user_agent)]
     itags = {
         '5': ('320x240', 'flv', "normal", ''),
         '17': ('176x144', '3gp', "normal", ''),
@@ -608,8 +606,8 @@ class Stream(object):
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple(map(lambda x: int(x) if x.isdigit() else x,
-            self.dimensions))
+        self._dimensions = tuple([int(x) if x.isdigit() else x for x in
+                                  self._dimensions])
         self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
@@ -765,6 +763,11 @@ class Stream(object):
 
         return self._url
 
+    @property
+    def url_https(self):
+        """ Return https url. """
+        return self.url.replace("http://", "https://")
+
     def __repr__(self):
         """ Return string representation. """
         out = "%s:%s@%s" % (self.mediatype, self.extension, self.quality)
@@ -838,7 +841,7 @@ class Stream(object):
         if offset:
             # partial file exists, resume download
             resuming_opener = build_opener()
-            resuming_opener.addheaders = [('User-Agent', g.ua),
+            resuming_opener.addheaders = [('User-Agent', g.user_agent),
                                           ("Range", "bytes=%s-" % offset)]
             response = resuming_opener.open(self.url)
             bytesdone = offset

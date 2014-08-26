@@ -9,4 +9,5 @@ dev/
 .test
 *.pyc
 .pypi
+vi.py
 __pycache__
