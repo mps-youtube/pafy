@@ -186,14 +186,13 @@ class g(object):
                         'el=player_embedded&gl=US&hl=en&eurl=https://youtube.'
                         'googleapis.com/v/%s&asv=3&sts=1588')
     }
-    ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-          " Trident/5.0)")
+    user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
     jsplayer = r';\s*ytplayer\.config\s*=\s*(\s*{.*?}\s*)\s*;'
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
-    opener.addheaders = [('User-Agent', ua)]
+    opener.addheaders = [('User-Agent', user_agent)]
     itags = {
         '5': ('320x240', 'flv', "normal", ''),
         '17': ('176x144', '3gp', "normal", ''),
@@ -838,7 +837,7 @@ class Stream(object):
         if offset:
             # partial file exists, resume download
             resuming_opener = build_opener()
-            resuming_opener.addheaders = [('User-Agent', g.ua),
+            resuming_opener.addheaders = [('User-Agent', g.user_agent),
                                           ("Range", "bytes=%s-" % offset)]
             response = resuming_opener.open(self.url)
             bytesdone = offset
