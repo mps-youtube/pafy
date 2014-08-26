@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.61"
+__version__ = "0.3.62"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -182,9 +182,8 @@ class g(object):
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
-        'age_vidinfo': ('https://www.youtube.com/get_video_info?video_id=%s&'
-                        'el=player_embedded&gl=US&hl=en&eurl=https://youtube.'
-                        'googleapis.com/v/%s&asv=3&sts=1588')
+        'age_vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
+                        'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
     }
     user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
@@ -614,8 +613,8 @@ class Stream(object):
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple(map(lambda x: int(x) if x.isdigit() else x,
-            self.dimensions))
+        self._dimensions = tuple([int(x) if x.isdigit() else x for x in
+                                  self._dimensions])
         self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
@@ -770,6 +769,11 @@ class Stream(object):
             self._url = _make_url(url, sig)
 
         return self._url
+
+    @property
+    def url_https(self):
+        """ Return https url. """
+        return self.url.replace("http://", "https://")
 
     def __repr__(self):
         """ Return string representation. """
