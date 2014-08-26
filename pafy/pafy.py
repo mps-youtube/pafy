@@ -606,8 +606,8 @@ class Stream(object):
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple(map(lambda x: int(x) if x.isdigit() else x,
-            self.dimensions))
+        self._dimensions = tuple([int(x) if x.isdigit() else x for x in
+                                  self._dimensions])
         self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
@@ -762,6 +762,11 @@ class Stream(object):
             self._url = _make_url(url, sig)
 
         return self._url
+
+    @property
+    def url_https(self):
+        """ Return https url. """
+        return self.url.replace("http://", "https://")
 
     def __repr__(self):
         """ Return string representation. """
