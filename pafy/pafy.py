@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.59"
+__version__ = "0.3.61"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -186,14 +186,13 @@ class g(object):
                         'el=player_embedded&gl=US&hl=en&eurl=https://youtube.'
                         'googleapis.com/v/%s&asv=3&sts=1588')
     }
-    ua = ("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64;"
-          " Trident/5.0)")
+    user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
     jsplayer = r';\s*ytplayer\.config\s*=\s*(\s*{.*?}\s*)\s*;'
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
-    opener.addheaders = [('User-Agent', ua)]
+    opener.addheaders = [('User-Agent', user_agent)]
     itags = {
         '5': ('320x240', 'flv', "normal", ''),
         '17': ('176x144', '3gp', "normal", ''),
@@ -242,6 +241,9 @@ class g(object):
         '246': ('640x480', 'webm', 'video', 'VP9'),
         '247': ('720x480', 'webm', 'video', 'VP9'),
         '248': ('1920x1080', 'webm', 'video', 'VP9'),
+        '249': ('48k', 'ogg', 'audio', 'Opus'),
+        '250': ('56k', 'ogg', 'audio', 'Opus'),
+        '251': ('128k', 'ogg', 'audio', 'Opus'),
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
@@ -603,15 +605,17 @@ class Stream(object):
 
     def __init__(self, sm, parent):
         """ Set initial values. """
-        def safeint(x):
-            """ Return type int if x is a digit. """
-            return int(x) if x.isdigit() else x
-
         self._itag = sm['itag']
+
+        if self._itag not in g.itags:
+            logging.warning("Unknown itag: %s", self._itag)
+            return None
+
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
         self._resolution = g.itags[self.itag][0]
         self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple(map(safeint, self.dimensions))
+        self._dimensions = tuple(map(lambda x: int(x) if x.isdigit() else x,
+            self.dimensions))
         self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
@@ -840,7 +844,7 @@ class Stream(object):
         if offset:
             # partial file exists, resume download
             resuming_opener = build_opener()
-            resuming_opener.addheaders = [('User-Agent', g.ua),
+            resuming_opener.addheaders = [('User-Agent', g.user_agent),
                                           ("Range", "bytes=%s-" % offset)]
             response = resuming_opener.open(self.url)
             bytesdone = offset
@@ -1025,7 +1029,9 @@ class Pafy(object):
             self.fetch_basic()
 
         streams = [Stream(z, self) for z in self.sm]
+        streams = [x for x in streams if x.itag in g.itags]
         adpt_streams = [Stream(z, self) for z in self.asm]
+        adpt_streams = [x for x in adpt_streams if x.itag in g.itags]
         audiostreams = [x for x in adpt_streams if x.bitrate]
         videostreams = [x for x in adpt_streams if not x.bitrate]
         m4astreams = [x for x in audiostreams if x.extension == "m4a"]

@@ -1,3 +1,11 @@
+15 August 2014
+Version 0.3.60
+
+[Bugfix] - Add Opus audio itags 249/250/251
+[Bugfix] - Warn instead of fail on unrecognised itags
+
+-------------------------------------------------------------------------------
+
 24 July 2014
 Version 0.3.58
 
