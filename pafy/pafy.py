@@ -182,9 +182,8 @@ class g(object):
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
-        'age_vidinfo': ('https://www.youtube.com/get_video_info?video_id=%s&'
-                        'el=player_embedded&gl=US&hl=en&eurl=https://youtube.'
-                        'googleapis.com/v/%s&asv=3&sts=1588')
+        'age_vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
+                        'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
     }
     user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
