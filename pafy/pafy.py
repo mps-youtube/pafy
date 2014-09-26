@@ -38,6 +38,8 @@ import sys
 import time
 import json
 import logging
+import hashlib
+import tempfile
 from xml.etree import ElementTree
 
 
@@ -84,17 +86,21 @@ def parseqs(data):
     return data
 
 
-def fetch_decode(url):
+def fetch_decode(url, encoding=None):
     """ Fetch url and decode. """
     req = g.opener.open(url)
     ct = req.headers['content-type']
 
-    if "charset=" in ct:
+    if encoding:
+        return req.read().decode(encoding)
+
+    elif "charset=" in ct:
         encoding = re.search(r"charset=([\w-]+)\s*(:?;|$)", ct).group(1)
-        dbg("encoding: %s", ct)
+        dbg("encoding detected: %s", ct)
         return req.read().decode(encoding)
 
     else:
+        dbg("encoding unknown")
         return req.read()
 
 
@@ -509,6 +515,29 @@ def _decodesig(sig, js_url):
     return solved
 
 
+def fetch_cached(url, encoding=None, dbg_ref=""):
+    """ Fetch url - from tmpdir if already retrieved """
+    # TODO: prune cache dir
+    tmpdir = os.path.join(tempfile.gettempdir(), "pafy")
+
+    if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
+
+    url_md5 = hashlib.md5(url).hexdigest()
+    cached_filename = os.path.join(tmpdir, url_md5)
+
+    if os.path.exists(cached_filename):
+        dbg("fetched %s from cache", dbg_ref)
+        return open(cached_filename).read()
+
+    else:
+        data = fetch_decode(url, "utf8")  # unicode
+        dbg("Fetched %s", dbg_ref)
+        new.callback("Fetched %s" % dbg_ref)
+        open(cached_filename, "w").write(data)
+        return data
+
+
 def get_js_sm(video_id):
     """ Fetch watchinfo page and extract stream map and js funcs if not known.
 
@@ -543,14 +572,16 @@ def get_js_sm(video_id):
     funcs = Pafy.funcmap.get(js_url)
 
     if not funcs:
+        dbg("Fetching javascript")
         new.callback("Fetching javascript")
-        javascript = fetch_decode(js_url)  # bytes
-        javascript = javascript.decode("utf8")  # unicode
-        dbg("Fetched javascript")
-        new.callback("Fetched javascript")
+        javascript = fetch_cached(js_url, encoding="utf8", dbg_ref="javascript")
         mainfunc = _get_mainfunc_from_js(javascript)
         funcs = _get_other_funcs(mainfunc, javascript)
         funcs['mainfunction'] = mainfunc
+
+    elif funcs:
+        dbg("Using functions in memory extracted from %s", js_url)
+        dbg("Mem contains %s js func sets", len(Pafy.funcmap))
 
     return smap, js_url, funcs
 
