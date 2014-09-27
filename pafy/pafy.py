@@ -268,6 +268,36 @@ def _extract_smap(map_name, dic, zero_idx=True):
 
     return []
 
+def _extract_dash(dashurl):
+    """ Download dash url and extract some data. """
+    dbg("Fetching dash page")
+    dashdata = fetch_decode(dashurl)
+    dbg("DASH list fetched")
+    ns = {"dash": "urn:mpeg:DASH:schema:MPD:2011",
+          "yt": "http://youtube.com/yt/2012/10/10"}
+    tree = ElementTree.fromstring(dashdata)
+    tlist = tree.findall(".//dash:Representation", namespaces=ns)
+    dashmap = []
+
+    for x in tlist:
+        baseurl = x.find("dash:BaseURL", namespaces=ns)
+        url = baseurl.text
+        size = baseurl.items()[0][1]  # be more specific, don't rely on pos
+        bitrate = x.get("bandwidth")
+        itag = uni(x.get("id"))
+        width = uni(x.get("width"))
+        height = uni(x.get("height"))
+        type_ = re.search(r"(?:\?|&)mime=([\w\d\/]+)", url).group(1)
+        dashmap.append(dict(bitrate=bitrate,
+                            dash=True,
+                            itag=itag,
+                            width=width,
+                            height=height,
+                            url=url,
+                            size=size,
+                            type=type_))
+    return dashmap
+
 
 def _extract_function_from_js(name, js):
     """ Find a function definition called `name` and extract components.
@@ -516,7 +546,7 @@ def _decodesig(sig, js_url):
 
 
 def fetch_cached(url, encoding=None, dbg_ref=""):
-    """ Fetch url - from tmpdir if already retrieved """
+    """ Fetch url - from tmpdir if already retrieved. """
     # TODO: prune cache dir
     tmpdir = os.path.join(tempfile.gettempdir(), "pafy")
 
@@ -629,33 +659,57 @@ class Stream(object):
     def __init__(self, sm, parent):
         """ Set initial values. """
         self._itag = sm['itag']
+        # is_dash = "width" in sm and "height" in sm
+        is_dash = "dash" in sm
 
         if self._itag not in g.itags:
             logging.warning("Unknown itag: %s", self._itag)
             return None
 
+        self._mediatype = g.itags[self.itag][2]
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
-        self._resolution = g.itags[self.itag][0]
-        self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-        self._dimensions = tuple([int(x) if x.isdigit() else x for x in
-                                  self._dimensions])
+
+        if is_dash:
+
+            if sm['width'] != "None":  # dash video
+                self._resolution = "%sx%s" % (sm['width'], sm['height'])
+                self._quality = self._resolution
+                self._dimensions = (int(sm['width']), int(sm['height']))
+
+            else:  # dash audio
+                self._resolution = "0x0"
+                self._dimensions = (0, 0)
+                self._rawbitrate = int(sm['bitrate'])
+                self._bitrate = uni(int(sm['bitrate']) // 1024) + "k"
+                self._quality = self._bitrate
+
+
+            self._fsize = int(sm['size'])
+            # self._bitrate = sm['bitrate']
+            # self._rawbitrate = uni(int(self._bitrate) // 1024) + "k"
+
+        else:  # not dash
+            self._resolution = g.itags[self.itag][0]
+            self._fsize = None
+            self._bitrate = self._rawbitrate = None
+            self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
+            self._dimensions = tuple([int(x) if x.isdigit() else x for x in
+                                     self._dimensions])
+            self._quality = self.resolution
+
         self._vidformat = sm['type'].split(';')[0]  # undocumented
-        self._quality = self.resolution
         self._extension = g.itags[self.itag][1]
         self._title = parent.title
         self.encrypted = 's' in sm
         self._parent = parent
         self._filename = self.generate_filename()
-        self._fsize = None
-        self._bitrate = self._rawbitrate = None
-        self._mediatype = g.itags[self.itag][2]
         self._notes = g.itags[self.itag][3]
         self._url = None
         self._rawurl = sm['url']
         self._sig = sm['s'] if self.encrypted else sm.get("sig")
         self._active = False
 
-        if self.mediatype == "audio":
+        if self.mediatype == "audio" and not is_dash:
             self._dimensions = (0, 0)
             self._bitrate = self.resolution
             self._quality = self.bitrate
@@ -933,6 +987,7 @@ class Pafy(object):
 
         self.sm = []
         self.asm = []
+        self.dash = []
         self.js_url = None  # if js_url is set then has new stream map
         self.age = False
         self._streams = []
@@ -1014,10 +1069,15 @@ class Pafy(object):
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
+            # TODO: implement enc sig separately
 
         # extract stream maps
         self.sm = _extract_smap(g.UEFSM, allinfo, not self.js_url)
         self.asm = _extract_smap(g.AF, allinfo, not self.js_url)
+        # get dash streams
+        dashurl = allinfo['dashmpd'][0]
+        self.dash = _extract_dash(dashurl)
+
 
         self._have_basic = 1
         self._process_streams()
@@ -1060,8 +1120,24 @@ class Pafy(object):
         streams = [x for x in streams if x.itag in g.itags]
         adpt_streams = [Stream(z, self) for z in self.asm]
         adpt_streams = [x for x in adpt_streams if x.itag in g.itags]
+        dash_streams = [Stream(z, self) for z in self.dash]
+        dash_streams = [x for x in dash_streams if x.itag in g.itags]
         audiostreams = [x for x in adpt_streams if x.bitrate]
         videostreams = [x for x in adpt_streams if not x.bitrate]
+
+        # delete streams that are also in dash_streams
+        dash_itags = [x.itag for x in dash_streams]
+        audiostreams = [x for x in audiostreams if not x.itag in dash_itags]
+        videostreams = [x for x in videostreams if not x.itag in dash_itags]
+
+        # insert dash_streams
+        audiostreams += [x for x in dash_streams if x.mediatype == "audio"]
+        videostreams += [x for x in dash_streams if x.mediatype != "audio"]
+
+        audiostreams = sorted(audiostreams, key=lambda x: x.rawbitrate,
+                              reverse=True)
+        videostreams = sorted(videostreams, key=lambda x: x.dimensions,
+                              reverse=True)
         m4astreams = [x for x in audiostreams if x.extension == "m4a"]
         oggstreams = [x for x in audiostreams if x.extension == "ogg"]
         self._streams = streams
