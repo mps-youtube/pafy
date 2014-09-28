@@ -111,7 +111,6 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     Optional arguments:
         basic - fetch basic metadata and streams
         gdata - fetch gdata info (upload date, description, category)
-        signature - fetch data required to decrypt urls, if encrypted
         size - fetch the size of each stream (slow)(decrypts urls if needed)
         callback - a callback function to receive status strings
 
@@ -134,6 +133,10 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     value set in the signature argument.
 
     """
+    if not signature:
+        # pylint: disable=W0104
+        logging.warn("Use of signature flag has been deprecated.")
+
     return Pafy(url, basic, gdata, signature, size, callback)
 
 
@@ -267,6 +270,7 @@ def _extract_smap(map_name, dic, zero_idx=True):
         return [dict((k, v[0]) for k, v in x.items()) for x in smap]
 
     return []
+
 
 def _extract_dash(dashurl):
     """ Download dash url and extract some data. """
@@ -553,7 +557,7 @@ def fetch_cached(url, encoding=None, dbg_ref=""):
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
 
-    url_md5 = hashlib.md5(url).hexdigest()
+    url_md5 = hashlib.md5(url.encode("utf8")).hexdigest()
     cached_filename = os.path.join(tmpdir, url_md5)
 
     if os.path.exists(cached_filename):
@@ -584,19 +588,20 @@ def get_js_sm(video_id):
 
     if re.search(r'player-age-gate-content">', watchinfo) is not None:
         # create a new Pafy object
-        dbg("creating new instance for age restrictved video")
-        doppleganger = new(video_id, False, False, False)
+        dbg("age restricted video")
+        # doppleganger = new(video_id, False, False, False)
         video_info_url = g.urls['age_vidinfo'] % (video_id, video_id)
-        doppleganger.fetch_basic(ageurl=video_info_url)
-        return "age", "age", doppleganger
+        # doppleganger.fetch_basic(ageurl=video_info_url)
+        return video_info_url
 
     dbg("Fetched watchv page")
     new.callback("Fetched watchv page")
     m = re.search(g.jsplayer, watchinfo)
     myjson = json.loads(m.group(1))
     stream_info = myjson['args']
-    smap = _extract_smap(g.UEFSM, stream_info, False)
-    smap += _extract_smap(g.AF, stream_info, False)
+    dash_url = stream_info['dashmpd']
+    sm = _extract_smap(g.UEFSM, stream_info, False)
+    asm = _extract_smap(g.AF, stream_info, False)
     js_url = myjson['assets']['js']
     js_url = "https:" + js_url if js_url.startswith("//") else js_url
     funcs = Pafy.funcmap.get(js_url)
@@ -613,7 +618,7 @@ def get_js_sm(video_id):
         dbg("Using functions in memory extracted from %s", js_url)
         dbg("Mem contains %s js func sets", len(Pafy.funcmap))
 
-    return smap, js_url, funcs
+    return (sm, asm), js_url, funcs, dash_url
 
 
 def _make_url(raw, sig, quick=True):
@@ -631,15 +636,12 @@ def _make_url(raw, sig, quick=True):
     return raw
 
 
-def gen_ageurl(dop, itag):
+def gen_ageurl(url, s):
     """ Decrypt signature for age-restricted item. Return url. """
-    for x in dop.sm + dop.asm:
 
-        if x['itag'] == itag and len(x['s']) == 86:
-            s = x['s']
-            s = s[2:63] + s[82] + s[64:82] + s[63]
-            dbg("decrypted agesig: %s%s", s[:22], "..")
-            return _make_url(x['url'], s)
+    print(url, s)
+            # s = s[2:63] + s[82] + s[64:82] + s[63]
+            # return _make_url(x['url'], s)
 
 
 def _get_matching_stream(smap, itag):
@@ -680,7 +682,8 @@ class Stream(object):
                 self._resolution = "0x0"
                 self._dimensions = (0, 0)
                 self._rawbitrate = int(sm['bitrate'])
-                self._bitrate = uni(int(sm['bitrate']) // 1024) + "k"
+                # self._bitrate = uni(int(sm['bitrate']) // 1024) + "k"
+                self._bitrate = g.itags[self.itag][0]
                 self._quality = self._bitrate
 
 
@@ -803,36 +806,51 @@ class Stream(object):
     @property
     def url(self):
         """ Return the url, decrypt if required. """
-        if self._url:
-            pass
+        if not self._url:
 
-        elif self._parent.age:
-            self._url = gen_ageurl(self._parent.doppleganger, self.itag)
+            if self._parent.age:
+                if self._sig:
+                    print("has _sig")
+                    s = self._sig
+                    self._sig = s[2:63] + s[82] + s[64:82] + s[63]
 
-        elif not self.encrypted:
-            self._url = _make_url(self._rawurl, self._sig)
+                self._url = _make_url(self._rawurl, self._sig)
 
-        else:
+            elif self.encrypted:
+                sig = _decodesig(self._sig, self._parent.js_url)
+                self._url = _make_url(self._rawurl, sig)
+
+            elif not self.encrypted:
+                self._url = _make_url(self._rawurl, self._sig)
+
+        # elif self._parent.age:
+            # self._url = gen_ageurl(self._parent.doppleganger, self.itag)
+
+        # elif not self.encrypted:
+            # self._url = _make_url(self._rawurl, self._sig)
+
+        # else:
             # encrypted url signatures
-            if self._parent.js_url:
+            # if self._parent.js_url:
                 # dbg("using cached js %s" % self._parent.js_url[-15:])
-                enc_streams = self._parent.enc_streams
+                # enc_streams = self._parent.enc_streams
+                # pass
 
-            else:
-                enc_streams, js_url, funcs = get_js_sm(self._parent.videoid)
-                self._parent.expiry = time.time() + g.lifespan
-                self._parent.js_url = js_url
+            # else:
+                # enc_streams, js_url, funcs = get_js_sm(self._parent.videoid)
+                # self._parent.expiry = time.time() + g.lifespan
+                # self._parent.js_url = js_url
 
                 # check for age
-                if type(enc_streams) == uni and enc_streams == "age":
-                    self._parent.age = True
-                    dop = self._parent.doppleganger = funcs
-                    self._url = gen_ageurl(dop, self.itag)
-                    return self._url
+                # if type(enc_streams) == uni and enc_streams == "age":
+                    # self._parent.age = True
+                    # dop = self._parent.doppleganger = funcs
+                    # self._url = gen_ageurl(dop, self.itag)
+                    # return self._url
 
                 # Create Pafy funcmap dict for this js_url
-                if not Pafy.funcmap.get(js_url):
-                    Pafy.funcmap[js_url] = funcs
+                # if not Pafy.funcmap.get(js_url):
+                    # Pafy.funcmap[js_url] = funcs
 
                 # else:
                     # Add javascript functions to Pafy funcmap dict
@@ -840,13 +858,13 @@ class Stream(object):
                     # Pafy.funcmap[js_url].update(funcs)
 
                 # Stash usable urls and encrypted sigs in parent Pafy object
-                self._parent.enc_streams = enc_streams
+                # self._parent.enc_streams = enc_streams
 
-            url, s = _get_matching_stream(enc_streams, self.itag)
-            sig = _decodesig(s, self._parent.js_url) if s else None
-            self._url = _make_url(url, sig)
-
+            # url, s = _get_matching_stream(enc_streams, self.itag)
+            # sig = _decodesig(s, self._parent.js_url) if s else None
+            # self._url = _make_url(url, sig)
         return self._url
+
 
     @property
     def url_https(self):
@@ -1019,30 +1037,63 @@ class Pafy(object):
         if gdata:
             self._fetch_gdata()
 
-        if signature:
-            # pylint: disable=W0104
-            s = self.streams
-
-            if self.ciphertag:
-                s[0].url  # forces signature decryption
-
         if size:
-
             for s in self.allstreams:
                 # pylint: disable=W0104
                 s.get_filesize()
 
-    def fetch_basic(self, ageurl=None):
-        """ Fetch info url page and set member vars. """
+    def fetch_basic(self):
+
         if self._have_basic:
             return
 
-        if ageurl:
-            allinfo = get_video_info("none", ageurl)
+        self._fetch_basic()
+        # Ensure ciphertag matches url type
+        assert self.ciphertag is ('s' in self.sm[0])
 
-        else:
-            allinfo = get_video_info(self.videoid)
+        if self.ciphertag:
+            dbg("Encrypted signature detected.")
+            stuff = get_js_sm(self.videoid)
 
+            if isinstance(stuff, tuple):
+                # smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
+                smaps, js_url, funcs, dashurl = stuff
+
+                # Add functions to funcmap
+                Pafy.funcmap[js_url] = funcs
+
+                # replace stream maps
+                self.sm, self.asm = smaps
+                self.js_url = js_url
+
+                # get sig for dash url
+                dashsig = re.search(r"/s/([\w\.]+)", dashurl).group(1)
+                dbg("decrypting dash sig")
+                goodsig = _decodesig(dashsig, js_url)
+                self._dashurl = re.sub("/s/[\w\.]+", "/signature/%s" % goodsig, dashurl)
+
+
+            # deal with age
+            else:
+                self.age = True
+                info_url = stuff
+                # refetch basic using other url
+                self._fetch_basic(info_url=info_url)
+                # get dashurl
+                s = re.search(r"/s/([\w\.]+)", self._dashurl).group(1)
+                s = s[2:63] + s[82] + s[64:82] + s[63]
+                self._dashurl = re.sub("/s/[\w\.]+",
+                                       "/signature/%s" % s, self._dashurl)
+
+        self.dash = _extract_dash(self._dashurl)
+        self._have_basic = 1
+        self._process_streams()
+        self.expiry = time.time() + g.lifespan
+
+    def _fetch_basic(self, info_url=None):
+        """ Fetch info url page and set member vars. """
+
+        allinfo = get_video_info(self.videoid, newurl=info_url)
         new.callback("Fetched video info")
 
         def _get_lst(key, default="unknown", dic=allinfo):
@@ -1051,6 +1102,7 @@ class Pafy(object):
             return retval[0] if retval != default else default
 
         self._title = _get_lst('title')
+        self._dashurl = _get_lst('dashmpd')
         self._author = _get_lst('author')
         self._videoid = _get_lst('video_id')
         self._rating = float(_get_lst('avg_rating', 0.0))
@@ -1063,25 +1115,11 @@ class Pafy(object):
         self._bigthumbhd = _get_lst('iurlsdmaxres', "")
         self.ciphertag = _get_lst("use_cipher_signature") == "True"
 
-        if ageurl:
-            self.ciphertag = False
-            dbg("Encrypted signature detected - age restricted")
-
-        if self.ciphertag:
-            dbg("Encrypted signature detected.")
-            # TODO: implement enc sig separately
-
         # extract stream maps
-        self.sm = _extract_smap(g.UEFSM, allinfo, not self.js_url)
-        self.asm = _extract_smap(g.AF, allinfo, not self.js_url)
-        # get dash streams
-        dashurl = allinfo['dashmpd'][0]
-        self.dash = _extract_dash(dashurl)
+        self.sm = _extract_smap(g.UEFSM, allinfo, True)
+        self.asm = _extract_smap(g.AF, allinfo, True)
+        dbg("extracted stream maps")
 
-
-        self._have_basic = 1
-        self._process_streams()
-        self.expiry = time.time() + g.lifespan
 
     def _fetch_gdata(self):
         """ Extract gdata values, fetch gdata if necessary. """
