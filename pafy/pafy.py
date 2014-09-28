@@ -108,34 +108,32 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
         callback=lambda x: None):
     """ Return a new pafy instance given a url or video id.
 
+    NOTE: The signature argument has been deprecated and now has no effect,
+        it will be removed in a forthcoming version.
+
     Optional arguments:
         basic - fetch basic metadata and streams
         gdata - fetch gdata info (upload date, description, category)
         size - fetch the size of each stream (slow)(decrypts urls if needed)
         callback - a callback function to receive status strings
 
-    If any of the first four above arguments are False, those data items will
+    If any of the first three above arguments are False, those data items will
     be fetched only when first called for.
 
     The defaults are recommended for most cases. If you wish to create
-    many video objects at once, you may want to set all to False, eg:
+    many video objects at once, you may want to set basic to False, eg:
 
-        video = pafy.new(basic=False, signature=False)
+        video = pafy.new(basic=False)
 
     This will be quick because no http requests will be made on initialisation.
 
-    Setting signature or size to True will override the basic argument
-    and force basic data to be fetched too (basic data is required to
-    obtain Stream objects and determine whether signatures are encrypted.
-
-    Similarly, setting size to true will force the signature data to be
-    fetched if the videos have encrypted signatures, so will override the
-    value set in the signature argument.
+    Setting size to True will override the basic argument and force basic data
+    to be fetched too (basic data is required to obtain Stream objects.
 
     """
     if not signature:
         # pylint: disable=W0104
-        logging.warn("Use of signature flag has been deprecated.")
+        logging.warning("Use of signature flag has been deprecated.")
 
     return Pafy(url, basic, gdata, signature, size, callback)
 
@@ -244,9 +242,9 @@ class g(object):
         '219': ('854x480', 'webm', 'video', 'VP8'),
         '242': ('360x240', 'webm', 'video', 'VP9'),
         '243': ('480x360', 'webm', 'video', 'VP9'),
-        '244': ('640x480', 'webm', 'video', 'VP9'),
-        '245': ('640x480', 'webm', 'video', 'VP9'),
-        '246': ('640x480', 'webm', 'video', 'VP9'),
+        '244': ('640x480', 'webm', 'video', 'VP9 low'),
+        '245': ('640x480', 'webm', 'video', 'VP9 med'),
+        '246': ('640x480', 'webm', 'video', 'VP9 high'),
         '247': ('720x480', 'webm', 'video', 'VP9'),
         '248': ('1920x1080', 'webm', 'video', 'VP9'),
         '249': ('48k', 'ogg', 'audio', 'Opus'),
@@ -256,7 +254,8 @@ class g(object):
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
         '271': ('1920x1280', 'webm', 'video', 'VP9'),
-        '272': ('3414x1080', 'webm', 'video', 'VP9')
+        '272': ('3414x1080', 'webm', 'video', 'VP9'),
+        '278': ('256x144', 'webm', 'video', 'VP9'),
     }
 
 
@@ -562,13 +561,17 @@ def fetch_cached(url, encoding=None, dbg_ref=""):
 
     if os.path.exists(cached_filename):
         dbg("fetched %s from cache", dbg_ref)
-        return open(cached_filename).read()
+        with open(cached_filename) as O:
+            return O.read()
 
     else:
         data = fetch_decode(url, "utf8")  # unicode
         dbg("Fetched %s", dbg_ref)
         new.callback("Fetched %s" % dbg_ref)
-        open(cached_filename, "w").write(data)
+
+        with open(cached_filename, "w") as W:
+            W.write(data)
+
         return data
 
 
@@ -628,22 +631,12 @@ def _make_url(raw, sig, quick=True):
 
     if "signature=" not in raw:
 
-        if not sig:
+        if sig is None:
             raise IOError("Error retrieving url")
 
         raw += "&signature=" + sig
 
     return raw
-
-
-def _get_matching_stream(smap, itag):
-    """ Return the url and signature for a stream matching itag in smap. """
-    for x in smap:
-
-        if x['itag'] == itag:
-            return x['url'], x.get('s')
-
-    raise IOError("Error fetching stream")
 
 
 class Stream(object):
