@@ -277,14 +277,14 @@ def _extract_dash(dashurl):
     dbg("Fetching dash page")
     dashdata = fetch_decode(dashurl)
     dbg("DASH list fetched")
-    ns = {"dash": "urn:mpeg:DASH:schema:MPD:2011",
-          "yt": "http://youtube.com/yt/2012/10/10"}
+    ns = "{urn:mpeg:DASH:schema:MPD:2011}"
+    # "yt": "http://youtube.com/yt/2012/10/10"}
     tree = ElementTree.fromstring(dashdata)
-    tlist = tree.findall(".//dash:Representation", namespaces=ns)
+    tlist = tree.findall(".//%sRepresentation" % ns)
     dashmap = []
 
     for x in tlist:
-        baseurl = x.find("dash:BaseURL", namespaces=ns)
+        baseurl = x.find("%sBaseURL" % ns)
         url = baseurl.text
         size = baseurl.items()[0][1]  # be more specific, don't rely on pos
         bitrate = x.get("bandwidth")
