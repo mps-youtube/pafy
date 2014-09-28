@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.62"
+__version__ = "0.3.63"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
