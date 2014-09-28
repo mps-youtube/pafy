@@ -107,7 +107,7 @@ class Test(unittest.TestCase):
                          ', Dizzee Rascal')
         self.assertEqual(a.notes, '')
         self.assertEqual(a.filename, 'Jessie J - WILD (Official) ft. Big Sean'
-                         ', Dizzee Rascal.ogg')
+                         ', Dizzee Rascal.m4a')
 
     @stdout_to_null
     def test_pafy_download(self):
@@ -121,7 +121,7 @@ class Test(unittest.TestCase):
     @stdout_to_null
     def test_pafy_download_resume(self):
         """ Test resuming a partial download. """
-        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-139.m4a.temp"
+        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-141.m4a.temp"
         with open(tempname, "w") as ladeeda:
             ladeeda.write("abc")
         vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False, signature=False)
