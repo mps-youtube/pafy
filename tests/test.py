@@ -58,6 +58,8 @@ class Test(unittest.TestCase):
                 del _
 
         for playlist in Test.playlists:
+
+
             playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
 
         Test.hasrun = True
@@ -86,11 +88,6 @@ class Test(unittest.TestCase):
         """ Test signature not in raw and no sig argument. """
         args = dict(raw="a=b&c=d", sig=None, quick=False)
         self.assertRaises(IOError, pafy._make_url, **args)
-
-    def test_no_matching_stream(self):
-        """ Test no matching stream found. """
-        smap = dict()
-        self.assertRaises(IOError, pafy._get_matching_stream, smap, None)
 
     def test_generate_filename_with_meta(self):
         """ Use meta argument to generate filename. """
@@ -341,9 +338,9 @@ VIDEOS = [
         'category': 'Education',
         'description': '1223db22b4a38d0a8ebfcafb549f40c39af26251',
         'bestsize': 54284129,
-        'all streams': 17,
+        'all streams': 18,
         'normal streams': 5,
-        'video streams': 7,
+        'video streams': 8,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
@@ -361,9 +358,9 @@ VIDEOS = [
         'category': 'Music',
         'description': 'fa34f2704be9c1b21949af515e813f644f14b89a',
         'bestsize': 101836539,
-        'all streams': 24,
+        'all streams': 25,
         'normal streams': 6,
-        'video streams': 13,
+        'video streams': 14,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
@@ -381,9 +378,9 @@ VIDEOS = [
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
         'bestsize': 79885533,
-        'all streams': 24,
+        'all streams': 25,
         'normal streams': 6,
-        'video streams': 13,
+        'video streams': 14,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
@@ -402,9 +399,9 @@ VIDEOS = [
         'category': 'People',
         'description': '3c884d9791be15646ddf351edffcb2dd22ec70f8',
         'bestsize': 101083389,
-        'all streams': 22,
+        'all streams': 23,
         'normal streams': 6,
-        'video streams': 11,
+        'video streams': 12,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
@@ -422,9 +419,9 @@ VIDEOS = [
         'category': 'Music',
         'description': '72bfd9472e59a8f48b83af36197ebcf5d2227609',
         'bestsize': 41334333,
-        'all streams': 30,
+        'all streams': 31,
         'normal streams': 6,
-        'video streams': 19,
+        'video streams': 20,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
