@@ -543,6 +543,35 @@ def _decodesig(sig, js_url):
     return solved
 
 
+def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
+    """ Remux audio. """
+    from subprocess import call, STDOUT
+    muxer = muxer if isinstance(muxer, str) else "ffmpeg"
+
+    for tool in set([muxer, "ffmpeg", "avconv"]):
+        cmd = [tool, "-y", "-i", infile, "-acodec", "copy", "-vn", outfile]
+
+        try:
+            with open(os.devnull, "w") as devnull:
+                call(cmd, stdout=devnull, stderr=STDOUT)
+
+        except OSError:
+            dbg("Failed to remux audio using %s", tool)
+
+        else:
+            os.unlink(infile)
+            dbg("remuxed audio file using %s" % tool)
+
+            if not quiet:
+                sys.stdout.write("\nAudio remuxed.\n")
+
+            break
+
+    else:
+        logging.warning("Failed to remux audio")
+        os.rename(infile, outfile)
+
+
 def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
     """ Fetch url - from tmpdir if already retrieved. """
     # TODO: prune cache dir
@@ -834,10 +863,11 @@ class Stream(object):
             return True
 
     def download(self, filepath="", quiet=False, callback=lambda *x: None,
-                 meta=False):
+                 meta=False, remux_audio=False):
         """ Download.  Use quiet=True to supress output. Return filename.
 
         Use meta=True to append video id and itag to generated filename
+        Use remax_audio=True to remux audio file downloads
 
         """
         # pylint: disable=R0912,R0914
@@ -909,13 +939,18 @@ class Stream(object):
                 callback(total, *progress_stats)
 
         if self._active:
-            os.rename(temp_filepath, filepath)
+
+            if remux_audio and self.mediatype == "audio":
+                remux(temp_filepath, filepath, quiet=quiet, muxer=remux_audio)
+
+            else:
+                os.rename(temp_filepath, filepath)
+
             return filepath
 
-        else:
+        else:  # download incomplete, return temp filepath
             outfh.close()
             return temp_filepath
-
 
 class Pafy(object):
 
