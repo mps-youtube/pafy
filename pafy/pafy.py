@@ -3,7 +3,7 @@
 """
 pafy.py.
 
-Python library to retrieve YouTube content and metadata
+Python library to download YouTube content and retrieve metadata
 
 https://github.com/np1/pafy
 
@@ -132,8 +132,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
 
     """
     if not signature:
-        # pylint: disable=W0104
-        logging.warning("Use of signature flag has been deprecated.")
+        logging.warning("signature argument has been deprecated.")
 
     return Pafy(url, basic, gdata, signature, size, callback)
 
@@ -213,10 +212,6 @@ class g(object):
         '44': ('854x480', 'webm', "normal", ''),
         '45': ('1280x720', 'webm', "normal", ''),
         '46': ('1920x1080', 'webm', "normal", ''),
-
-        # '59': ('1x1', 'mp4', 'normal', ''),
-        # '78': ('1x1', 'mp4', 'normal', ''),
-
         '82': ('640x360-3D', 'mp4', "normal", ''),
         '83': ('640x480-3D', 'mp4', 'normal', ''),
         '84': ('1280x720-3D', 'mp4', "normal", ''),
@@ -277,7 +272,7 @@ def _extract_dash(dashurl):
     dashdata = fetch_decode(dashurl)
     dbg("DASH list fetched")
     ns = "{urn:mpeg:DASH:schema:MPD:2011}"
-    # "yt": "http://youtube.com/yt/2012/10/10"}
+    ytns = "{http://youtube.com/yt/2012/10/10}"
     tree = ElementTree.fromstring(dashdata)
     tlist = tree.findall(".//%sRepresentation" % ns)
     dashmap = []
@@ -285,7 +280,7 @@ def _extract_dash(dashurl):
     for x in tlist:
         baseurl = x.find("%sBaseURL" % ns)
         url = baseurl.text
-        size = baseurl.items()[0][1]  # be more specific, don't rely on pos
+        size = baseurl.attrib["%scontentLength" % ytns]
         bitrate = x.get("bandwidth")
         itag = uni(x.get("id"))
         width = uni(x.get("width"))
@@ -548,7 +543,7 @@ def _decodesig(sig, js_url):
     return solved
 
 
-def fetch_cached(url, encoding=None, dbg_ref=""):
+def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
     """ Fetch url - from tmpdir if already retrieved. """
     # TODO: prune cache dir
     tmpdir = os.path.join(tempfile.gettempdir(), "pafy")
@@ -557,20 +552,21 @@ def fetch_cached(url, encoding=None, dbg_ref=""):
         os.makedirs(tmpdir)
 
     url_md5 = hashlib.md5(url.encode("utf8")).hexdigest()
-    cached_filename = os.path.join(tmpdir, url_md5)
+    cached_filename = os.path.join(tmpdir, file_prefix + url_md5)
 
     if os.path.exists(cached_filename):
         dbg("fetched %s from cache", dbg_ref)
-        with open(cached_filename) as O:
-            return O.read()
+
+        with open(cached_filename) as f:
+            return f.read()
 
     else:
         data = fetch_decode(url, "utf8")  # unicode
         dbg("Fetched %s", dbg_ref)
         new.callback("Fetched %s" % dbg_ref)
 
-        with open(cached_filename, "w") as W:
-            W.write(data)
+        with open(cached_filename, "w") as f:
+            f.write(data)
 
         return data
 
@@ -612,7 +608,8 @@ def get_js_sm(video_id):
     if not funcs:
         dbg("Fetching javascript")
         new.callback("Fetching javascript")
-        javascript = fetch_cached(js_url, encoding="utf8", dbg_ref="javascript")
+        javascript = fetch_cached(js_url, encoding="utf8",
+                                  dbg_ref="javascript", file_prefix="js-")
         mainfunc = _get_mainfunc_from_js(javascript)
         funcs = _get_other_funcs(mainfunc, javascript)
         funcs['mainfunction'] = mainfunc
@@ -793,19 +790,15 @@ class Stream(object):
         if not self._url:
 
             if self._parent.age:
-                if self._sig:
 
+                if self._sig:
                     s = self._sig
                     self._sig = s[2:63] + s[82] + s[64:82] + s[63]
 
-                self._url = _make_url(self._rawurl, self._sig)
-
             elif self.encrypted:
-                sig = _decodesig(self._sig, self._parent.js_url)
-                self._url = _make_url(self._rawurl, sig)
+                self._sig = _decodesig(self._sig, self._parent.js_url)
 
-            else:
-                self._url = _make_url(self._rawurl, self._sig)
+            self._url = _make_url(self._rawurl, self._sig)
 
         return self._url
 
@@ -1360,7 +1353,7 @@ class Pafy(object):
         self.playlist_meta = pl_data
 
 
-def get_playlist(playlist_url, basic=False, gdata=False, signature=False,
+def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
                  size=False, callback=lambda x: None):
     """ Return a dict containing Pafy objects from a YouTube Playlist.
 
