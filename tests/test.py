@@ -58,6 +58,8 @@ class Test(unittest.TestCase):
                 del _
 
         for playlist in Test.playlists:
+
+
             playlist['fetched'] = pafy.get_playlist(playlist['identifier'])
 
         Test.hasrun = True
@@ -87,11 +89,6 @@ class Test(unittest.TestCase):
         args = dict(raw="a=b&c=d", sig=None, quick=False)
         self.assertRaises(IOError, pafy._make_url, **args)
 
-    def test_no_matching_stream(self):
-        """ Test no matching stream found. """
-        smap = dict()
-        self.assertRaises(IOError, pafy._get_matching_stream, smap, None)
-
     def test_generate_filename_with_meta(self):
         """ Use meta argument to generate filename. """
         if Test.quick:
@@ -101,13 +98,13 @@ class Test(unittest.TestCase):
         a = p.getbestaudio()
         filename = a.generate_filename(meta=True)
         self.assertEqual(filename, 'Jessie J - WILD (Official) ft. Big Sean'
-                         ', Dizzee Rascal-jrNLsC_Y9Oo-171.ogg')
+                         ', Dizzee Rascal-jrNLsC_Y9Oo-141.m4a')
         self.assertEqual(a.threed, False)
         self.assertEqual(a.title, 'Jessie J - WILD (Official) ft. Big Sean'
                          ', Dizzee Rascal')
         self.assertEqual(a.notes, '')
         self.assertEqual(a.filename, 'Jessie J - WILD (Official) ft. Big Sean'
-                         ', Dizzee Rascal.ogg')
+                         ', Dizzee Rascal.m4a')
 
     @stdout_to_null
     def test_pafy_download(self):
@@ -121,13 +118,13 @@ class Test(unittest.TestCase):
     @stdout_to_null
     def test_pafy_download_resume(self):
         """ Test resuming a partial download. """
-        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-171.ogg.temp"
+        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-141.m4a.temp"
         with open(tempname, "w") as ladeeda:
             ladeeda.write("abc")
         vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False, signature=False)
-        vstream = vid.audiostreams[-1].download(meta=True)
-        name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
-        self.assertEqual(22675, os.stat(name).st_size)
+        vstream = vid.audiostreams[-1].download(meta=True, remux_audio=True)
+        name = "WASTE  2 SECONDS OF YOUR LIFE.m4a"
+        self.assertEqual(12880, os.stat(name).st_size)
 
         # test fetching attributes
         vid._title = None
@@ -167,8 +164,8 @@ class Test(unittest.TestCase):
         """ Test user specified path. """
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1].download("/tmp", meta=True)
-        name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.ogg"
-        self.assertEqual(22675, os.stat(name).st_size)
+        name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.m4a"
+        self.assertEqual(12880, os.stat(name).st_size)
 
     def test_lazy_pafy(self):
         """ Test create pafy object without fetching data. """
@@ -341,12 +338,12 @@ VIDEOS = [
         'category': 'Education',
         'description': '1223db22b4a38d0a8ebfcafb549f40c39af26251',
         'bestsize': 54284129,
-        'all streams': 10,
+        'all streams': 18,
         'normal streams': 5,
-        'video streams': 4,
-        'audio streams': 1,
-        'ogg streams': 0,
-        'm4a streams': 1,
+        'video streams': 8,
+        'audio streams': 5,
+        'ogg streams': 2,
+        'm4a streams': 3,
     },
     {
         'identifier': 'www.youtube.com/watch?v=SeIJmciN8mo',
@@ -361,12 +358,12 @@ VIDEOS = [
         'category': 'Music',
         'description': 'fa34f2704be9c1b21949af515e813f644f14b89a',
         'bestsize': 101836539,
-        'all streams': 21,
+        'all streams': 23,
         'normal streams': 6,
-        'video streams': 13,
-        'audio streams': 2,
-        'ogg streams': 1,
-        'm4a streams': 1,
+        'video streams': 12,
+        'audio streams': 5,
+        'ogg streams': 2,
+        'm4a streams': 3,
     },
     {
         'identifier': 'https://youtu.be/watch?v=07FYdnEawAQ',
@@ -381,12 +378,12 @@ VIDEOS = [
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
         'bestsize': 79885533,
-        'all streams': 21,
+        'all streams': 23,
         'normal streams': 6,
-        'video streams': 13,
-        'audio streams': 2,
-        'ogg streams': 1,
-        'm4a streams': 1,
+        'video streams': 12,
+        'audio streams': 5,
+        'ogg streams': 2,
+        'm4a streams': 3,
     },
     {
         'identifier': 'EnHp24CVORc',
@@ -402,12 +399,12 @@ VIDEOS = [
         'category': 'People',
         'description': '3c884d9791be15646ddf351edffcb2dd22ec70f8',
         'bestsize': 101083389,
-        'all streams': 19,
+        'all streams': 23,
         'normal streams': 6,
-        'video streams': 11,
-        'audio streams': 2,
-        'ogg streams': 1,
-        'm4a streams': 1,
+        'video streams': 12,
+        'audio streams': 5,
+        'ogg streams': 2,
+        'm4a streams': 3,
     },
     {
         'identifier': 'http://youtube.com/watch?v=rYEDA3JcQqw',
@@ -422,12 +419,12 @@ VIDEOS = [
         'category': 'Music',
         'description': '72bfd9472e59a8f48b83af36197ebcf5d2227609',
         'bestsize': 41334333,
-        'all streams': 27,
+        'all streams': 29,
         'normal streams': 6,
-        'video streams': 19,
-        'audio streams': 2,
-        'ogg streams': 1,
-        'm4a streams': 1,
+        'video streams': 18,
+        'audio streams': 5,
+        'ogg streams': 2,
+        'm4a streams': 3,
     }
 ]
 
