@@ -1,9 +1,21 @@
+Development version - not yet released
+Version 0.3.63
+
+[Update] - Cache javascript file locally
+[Update] - Added itag 278 (low-res VP9)
+[Feature] - Retrieve DASH streams (more streams, higher quality audio)
+[Feature] - added remux_audio parameter to download function to remux audio
+            files if ffmpeg or avconv is installed (better compatibility)
+
+-------------------------------------------------------------------------------
+
 27 August 2014
 Version 0.3.62
 
 [Feature] - Added url_https property to return https url
 
 -------------------------------------------------------------------------------
+
 15 August 2014
 Version 0.3.60
 
