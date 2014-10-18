@@ -109,7 +109,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     """ Return a new pafy instance given a url or video id.
 
     NOTE: The signature argument has been deprecated and now has no effect,
-        it will be removed in a forthcoming version.
+        it will be removed in a future version.
 
     Optional arguments:
         basic - fetch basic metadata and streams
@@ -132,7 +132,8 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
 
     """
     if not signature:
-        logging.warning("signature argument has been deprecated.")
+        logging.warning("signature argument has no effect and will be removed"
+                        " in a future version.")
 
     return Pafy(url, basic, gdata, signature, size, callback)
 
@@ -268,6 +269,7 @@ def _extract_smap(map_name, dic, zero_idx=True):
 
 def _extract_dash(dashurl):
     """ Download dash url and extract some data. """
+    # pylint: disable = R0914
     dbg("Fetching dash page")
     dashdata = fetch_decode(dashurl)
     dbg("DASH list fetched")
@@ -568,13 +570,12 @@ def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
             break
 
     else:
-        logging.warning("Failed to remux audio")
+        logging.warning("audio remux failed")
         os.rename(infile, outfile)
 
 
 def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
     """ Fetch url - from tmpdir if already retrieved. """
-    # TODO: prune cache dir
     tmpdir = os.path.join(tempfile.gettempdir(), "pafy")
 
     if not os.path.exists(tmpdir):
@@ -587,7 +588,9 @@ def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
         dbg("fetched %s from cache", dbg_ref)
 
         with open(cached_filename) as f:
-            return f.read()
+            retval = f.read()
+
+        return retval
 
     else:
         data = fetch_decode(url, "utf8")  # unicode
@@ -597,7 +600,37 @@ def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
         with open(cached_filename, "w") as f:
             f.write(data)
 
+        # prune files after write
+        prune_files(tmpdir, file_prefix)
         return data
+
+
+def prune_files(path, prefix="", age_max=3600 * 24 * 14, count_max=4):
+    """ Remove oldest files from path that start with prefix.
+
+    remove files older than age_max, leave maximum of count_max files.
+    """
+    tempfiles = []
+
+    if not os.path.isdir(path):
+        return
+
+    for f in os.listdir(path):
+        filepath = os.path.join(path, f)
+
+        if os.path.isfile(filepath) and f.startswith(prefix):
+            age = time.time() - os.path.getmtime(filepath)
+
+            if age > age_max:
+                os.unlink(filepath)
+
+            else:
+                tempfiles.append((filepath, age))
+
+    tempfiles = sorted(tempfiles, key=lambda x: x[1], reverse=True)
+
+    for f in tempfiles[:-count_max]:
+        os.unlink(f[0])
 
 
 def get_js_sm(video_id):
@@ -952,6 +985,7 @@ class Stream(object):
             outfh.close()
             return temp_filepath
 
+
 class Pafy(object):
 
     """ Class to represent a YouTube video. """
@@ -1020,8 +1054,10 @@ class Pafy(object):
             return
 
         self._fetch_basic()
-        # Ensure ciphertag matches url type
-        assert self.ciphertag is ('s' in self.sm[0])
+
+        if not self.ciphertag is ('s' in self.sm[0]):
+            logging.warning("ciphertag doesn't match signature type")
+            logging.warning(self.videoid)
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
