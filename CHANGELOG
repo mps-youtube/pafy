@@ -1,7 +1,7 @@
-Development version - not yet released
-Version 0.3.63
+19 October 2014
+Version 0.3.64
 
-[Update] - Cache javascript file locally
+[Update] - Cache javascript file locally to temp dir (less fetching)
 [Update] - Added itag 278 (low-res VP9)
 [Feature] - Retrieve DASH streams (more streams, higher quality audio)
 [Feature] - added remux_audio parameter to download function to remux audio
