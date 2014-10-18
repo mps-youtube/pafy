@@ -122,7 +122,7 @@ class Test(unittest.TestCase):
         with open(tempname, "w") as ladeeda:
             ladeeda.write("abc")
         vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False, signature=False)
-        vstream = vid.audiostreams[-1].download(meta=True)
+        vstream = vid.audiostreams[-1].download(meta=True, remux_audio=True)
         name = "WASTE  2 SECONDS OF YOUR LIFE.m4a"
         self.assertEqual(12880, os.stat(name).st_size)
 
@@ -358,9 +358,9 @@ VIDEOS = [
         'category': 'Music',
         'description': 'fa34f2704be9c1b21949af515e813f644f14b89a',
         'bestsize': 101836539,
-        'all streams': 25,
+        'all streams': 23,
         'normal streams': 6,
-        'video streams': 14,
+        'video streams': 12,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
@@ -378,9 +378,9 @@ VIDEOS = [
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
         'bestsize': 79885533,
-        'all streams': 25,
+        'all streams': 23,
         'normal streams': 6,
-        'video streams': 14,
+        'video streams': 12,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
@@ -419,9 +419,9 @@ VIDEOS = [
         'category': 'Music',
         'description': '72bfd9472e59a8f48b83af36197ebcf5d2227609',
         'bestsize': 41334333,
-        'all streams': 31,
+        'all streams': 29,
         'normal streams': 6,
-        'video streams': 20,
+        'video streams': 18,
         'audio streams': 5,
         'ogg streams': 2,
         'm4a streams': 3,
