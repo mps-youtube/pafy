@@ -1055,9 +1055,8 @@ class Pafy(object):
 
         self._fetch_basic()
 
-        if not self.ciphertag is ('s' in self.sm[0]):
-            logging.warning("ciphertag doesn't match signature type")
-            logging.warning(self.videoid)
+        if self.ciphertag is not ('s' in self.sm[0]):
+            self.ciphertag = not self.ciphertag
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
