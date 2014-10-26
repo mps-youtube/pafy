@@ -390,7 +390,7 @@ Download using *callback* example::
 
     p = pafy.new("cyMHZVT91Dw")
     ba = p.getbestaudio()
-    ba.download(quiet=True, callback=mycb)
+    filename = ba.download(quiet=True, callback=mycb)
 
 The output of this will appear as follows, while the file is downloading::
 
