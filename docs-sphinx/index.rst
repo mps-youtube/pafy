@@ -2,7 +2,7 @@ Pafy Documentation
 ******************
 .. module:: Pafy
 
-This is the documentation for Pafy - a Python library for retrieving content and metadata from YouTube
+This is the documentation for Pafy - a Python library to download YouTube content and retrieve metadata
 
 A quick start intro with usage examples is available in the `README <http://github.com/np1/pafy/blob/master/README.rst>`_
 
@@ -39,13 +39,13 @@ Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video
     :type basic: bool
     :param gdata: fetch gdata info (upload date, description, category, username, likes, dislikes)
     :type gdata: bool
-    :param signature: fetch data required to decrypt urls, if encrypted
+    :param signature: Note: The signature argument now has no effect and will be removed in a future version
     :type signature: bool
     :param size: fetch the size of each stream (slow)(decrypts urls if needed) 
     :type size: bool
     :param callback: a callback function to receive status strings
     :type callback: function
-    :rtype: Pafy object
+    :rtype: :class:`pafy.Pafy`
 
 If any of **basic**, **gdata**, **signature** or **size** are *False*, those data items will be fetched only when first called for.
 
@@ -206,7 +206,7 @@ A Pafy object provides multiple stream lists.  These are:
 
 .. attribute:: Pafy.audiostreams
 
-    A list of audio-only streams (aac streams (.m4a) and ogg vorbis streams (.ogg))
+    A list of audio-only streams; aac streams (.m4a) and ogg vorbis streams (.ogg) if available
 
 .. attribute:: Pafy.videostreams
 
@@ -214,7 +214,7 @@ A Pafy object provides multiple stream lists.  These are:
 
 .. attribute:: Pafy.oggstreams
 
-    A list of ogg vorbis encoded audio streams
+    A list of ogg vorbis encoded audio streams (Note: may be empty for some videos)
 
 .. attribute:: Pafy.m4astreams
 
@@ -302,7 +302,7 @@ Stream Attributes
 
 .. attribute:: Stream.threed
 
-    Whether the stream is a 3D video (*boolean*)
+    True if the stream is a 3D video (*boolean*)
 
 .. attribute:: Stream.title
 
@@ -331,24 +331,30 @@ An example of accessing Stream attributes::
 Stream Methods
 --------------
 
+
+
+
 .. function:: Stream.get_filesize()     
 
     Returns the filesize of a stream
 
-.. function:: Stream.download([filepath=""][, quiet=False][, callback=None])
+.. function:: Stream.download([filepath=""][, quiet=False][, callback=None][, meta=False][, remux_audio=False])
 
-    Downloads the stream object
+    Downloads the stream object, returns the path of the downloaded file.
 
-    :param filepath: The filepath to use to save the stream, defaults to *title.extension* if ommitted
+    :param filepath: The filepath to use to save the stream, defaults to (sanitised) *title.extension* if ommitted
     :type filepath: string
-    :param quiet: Whether to supress output of the download progress
+    :param quiet: If True, supress output of the download progress
     :type quiet: boolean
     :param callback: Call back function to use for receiving download progress
     :type callback: function or None
+    :param meta: If True, video id and itag are appended to filename
+    :type meta: bool
+    :param remux_audio: If True, remux audio file downloads (fixes some compatibility issues with file format, requires ffmpeg/avconv)
+    :type remux_audio: bool
+    :rtype: str
     
-    If a callback function is provided, it will be called repeatedly for each
-    chunk downloaded.  It must be a function that takes five arguments. These
-    are:
+    If a callback function is provided, it will be called repeatedly for each chunk downloaded.  It must be a function that takes the following five arguments;
 
     - total bytes in stream, *int*
     - total bytes downloaded, *int*
@@ -366,10 +372,9 @@ Example of using stream.download()::
     v = pafy.new("cyMHZVT91Dw")
     s = v.getbest()
     print("Size is %s" % s.get_filesize())
-    s.download()
+    filename = s.download()  # starts download
 
-Will download the file to the current working directory with the filename
-*title.extension* (eg. "cute kittens.mp4") and output the following progress statistics::
+Will download to the current working directory and output the following progress statistics::
 
     Size is 34775366
     1,015,808 Bytes [2.92%] received. Rate: [ 640 kbps].  ETA: [51 secs] 
@@ -385,7 +390,7 @@ Download using *callback* example::
 
     p = pafy.new("cyMHZVT91Dw")
     ba = p.getbestaudio()
-    ba.download(quiet=True, callback=mycb)
+    filename = ba.download(quiet=True, callback=mycb)
 
 The output of this will appear as follows, while the file is downloading::
 
