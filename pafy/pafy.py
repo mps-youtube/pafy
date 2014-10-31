@@ -1460,6 +1460,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             author=v.get('author'),
             user_id=v.get('user_id'),
             privacy=v.get('privacy'),
+            start=v.get('start', 0.0),
             dislikes=v.get('dislikes'),
             duration=v.get('duration'),
             comments=v.get('comments'),
@@ -1471,7 +1472,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             encrypted_id=v.get('encrypted_id'),
             time_created=v.get('time_created'),
             time_updated=v.get('time_updated'),
-            length_seconds=v.get('length_seconds')
+            length_seconds=v.get('length_seconds'),
+            end=v.get('end', v.get('length_seconds'))
         )
 
         try:
