@@ -110,13 +110,12 @@ get url, for download or streaming in mplayer / vlc etc:
 
 Download video and show progress:
 
-    >>> best.download(quiet=False)
+    >>> filename = best.download(quiet=False)
     3,734,976 Bytes [0.20%] received. Rate: [ 719 KB/s].  ETA: [3284 secs]
 
 Download video, use specific filepath:
 
-    >>> myfilename = "/tmp/" + best.title + "." + best.extension
-    >>> best.download(filepath=myfilename)
+    >>> filename = best.download(filepath="/tmp/")
 
 
 Get audio-only streams (m4a and/or ogg vorbis):
