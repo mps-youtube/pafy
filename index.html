@@ -4,18 +4,18 @@
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
 
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <title>Pafy by np1</title>
+    <title>pafy by np1</title>
   </head>
 
   <body>
 
     <header>
       <div class="container">
-        <h1>Pafy</h1>
+        <h1>pafy</h1>
         <h2>Python library to retrieve YouTube content and metadata</h2>
 
         <section id="downloads">
@@ -35,7 +35,7 @@
 <a href="http://pythonwheels.com/"><img src="https://pypip.in/wheel/Pafy/badge.png" alt="Wheen Status"></a></p>
 
 <h2>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
 
 <ul>
 <li>Retreive metadata such as viewcount, duration, rating, author, thumbnail, keywords</li>
@@ -50,13 +50,15 @@
 <li>Retreive playlists and playlist metadata</li>
 <li>Works with Python 2.6+ and 3.3+</li>
 <li>No dependencies</li>
-</ul><h2>
-<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
+</ul>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
 
 <p>Full documentation is available at <a href="http://pythonhosted.org/Pafy">http://pythonhosted.org/Pafy</a></p>
 
 <h2>
-<a name="usage-examples" class="anchor" href="#usage-examples"><span class="octicon octicon-link"></span></a>Usage Examples</h2>
+<a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage Examples</h2>
 
 <p>Here is how to use the module in your own python code.  For command line tool
 (ytdl) instructions, see further below:</p>
@@ -142,14 +144,13 @@ normal:3gp@176x144
 
 <p>Download video and show progress:</p>
 
-<pre><code>&gt;&gt;&gt; best.download(quiet=False)
+<pre><code>&gt;&gt;&gt; filename = best.download(quiet=False)
 3,734,976 Bytes [0.20%] received. Rate: [ 719 KB/s].  ETA: [3284 secs]
 </code></pre>
 
 <p>Download video, use specific filepath:</p>
 
-<pre><code>&gt;&gt;&gt; myfilename = "/tmp/" + best.title + "." + best.extension
-&gt;&gt;&gt; best.download(filepath=myfilename)
+<pre><code>&gt;&gt;&gt; filename = best.download(filepath="/tmp/")
 </code></pre>
 
 <p>Get audio-only streams (m4a and/or ogg vorbis):</p>
@@ -205,7 +206,7 @@ audio ogg 128k
 </code></pre>
 
 <h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <p>Pafy can be installed using <a href="http://www.pip-installer.org">pip</a>:</p>
 
@@ -225,7 +226,7 @@ $ pip install pafy
 </code></pre>
 
 <h2>
-<a name="command-line-tool-ytdl-usage" class="anchor" href="#command-line-tool-ytdl-usage"><span class="octicon octicon-link"></span></a>Command Line Tool (ytdl) Usage</h2>
+<a id="command-line-tool-ytdl-usage" class="anchor" href="#command-line-tool-ytdl-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Command Line Tool (ytdl) Usage</h2>
 
 <pre><code>usage: ytdl [-h] [-i] [-s]
             [-t {audio,video,normal,all} [{audio,video,normal,all} ...]]
@@ -250,7 +251,7 @@ optional arguments:
 </code></pre>
 
 <h2>
-<a name="ytdl-examples" class="anchor" href="#ytdl-examples"><span class="octicon octicon-link"></span></a>ytdl Examples</h2>
+<a id="ytdl-examples" class="anchor" href="#ytdl-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>ytdl Examples</h2>
 
 <p>Download best available resolution (-b):</p>
 
