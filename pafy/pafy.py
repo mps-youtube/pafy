@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.64"
+__version__ = "0.3.66"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -249,9 +249,14 @@ class g(object):
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
+        '266': ('3840x2160', 'm4v', 'video', 'AVC'),
         '271': ('1920x1280', 'webm', 'video', 'VP9'),
         '272': ('3414x1080', 'webm', 'video', 'VP9'),
         '278': ('256x144', 'webm', 'video', 'VP9'),
+        '298': ('1280x720', 'm4v', 'video', '60fps'),
+        '299': ('1920x1080', 'm4v', 'video', '60fps'),
+        '302': ('1280x720', 'webm', 'video', 'VP9'),
+        '303': ('1920x1080', 'webm', 'video', 'VP9'),
     }
 
 
@@ -1055,9 +1060,8 @@ class Pafy(object):
 
         self._fetch_basic()
 
-        if not self.ciphertag is ('s' in self.sm[0]):
-            logging.warning("ciphertag doesn't match signature type")
-            logging.warning(self.videoid)
+        if self.ciphertag is not ('s' in self.sm[0]):
+            self.ciphertag = not self.ciphertag
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
@@ -1461,6 +1465,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             author=v.get('author'),
             user_id=v.get('user_id'),
             privacy=v.get('privacy'),
+            start=v.get('start', 0.0),
             dislikes=v.get('dislikes'),
             duration=v.get('duration'),
             comments=v.get('comments'),
@@ -1472,7 +1477,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             encrypted_id=v.get('encrypted_id'),
             time_created=v.get('time_created'),
             time_updated=v.get('time_updated'),
-            length_seconds=v.get('length_seconds')
+            length_seconds=v.get('length_seconds'),
+            end=v.get('end', v.get('length_seconds'))
         )
 
         try:

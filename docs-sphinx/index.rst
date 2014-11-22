@@ -206,7 +206,7 @@ A Pafy object provides multiple stream lists.  These are:
 
 .. attribute:: Pafy.audiostreams
 
-    A list of audio-only streams (aac streams (.m4a) and ogg vorbis streams (.ogg))
+    A list of audio-only streams; aac streams (.m4a) and ogg vorbis streams (.ogg) if available
 
 .. attribute:: Pafy.videostreams
 
@@ -214,7 +214,7 @@ A Pafy object provides multiple stream lists.  These are:
 
 .. attribute:: Pafy.oggstreams
 
-    A list of ogg vorbis encoded audio streams
+    A list of ogg vorbis encoded audio streams (Note: may be empty for some videos)
 
 .. attribute:: Pafy.m4astreams
 
@@ -390,7 +390,7 @@ Download using *callback* example::
 
     p = pafy.new("cyMHZVT91Dw")
     ba = p.getbestaudio()
-    ba.download(quiet=True, callback=mycb)
+    filename = ba.download(quiet=True, callback=mycb)
 
 The output of this will appear as follows, while the file is downloading::
 

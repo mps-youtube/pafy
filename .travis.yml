@@ -18,7 +18,7 @@ before_script:
     - python setup.py install
 
 script:
-    coverage run --omit="/home/travis/virtualenv/python2.6.9/lib/python2.6/site-packages/unittest2/*" tests/test.py
+    coverage run --omit="/home/travis/virtualenv/python2.6.9/lib/python2.6/site-packages/unittest2/*,/home/travis/virtualenv/python2.6.9/lib/python2.6/site-packages/six.py,/home/travis/virtualenv/python2.6.9/lib/python2.6/site-packages/argparse.py" tests/test.py
 
 after_success:
     - coverage report
