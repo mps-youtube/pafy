@@ -249,6 +249,7 @@ class g(object):
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
+        '266': ('3840x2160', 'm4v', 'video', 'AVC'),
         '271': ('1920x1280', 'webm', 'video', 'VP9'),
         '272': ('3414x1080', 'webm', 'video', 'VP9'),
         '278': ('256x144', 'webm', 'video', 'VP9'),
