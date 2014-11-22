@@ -39,7 +39,7 @@ except ImportError:
         raise
 
 
-__version__ = "0.3.46"
+__version__ = "0.3.66"
 __author__ = "nagev"
 __license__ = "GPLv3"
 
@@ -54,12 +54,13 @@ def download(video, audio=False, stream=None):
         stream = video.getbestaudio()
 
     size = stream.get_filesize()
+    fname = stream.filename.encode(sys.stdout.encoding, errors="replace")
     dl_str = "-Downloading '{0}' [{1:,} Bytes]"
 
     if early_py_version:
         dl_str = "-Downloading '{0}' [{1} Bytes]"
 
-    print(dl_str.format(stream.filename, size))
+    print(dl_str.format(fname, size))
     print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
     stream.download(quiet=False)
     print("\nDone")
