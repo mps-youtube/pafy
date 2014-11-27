@@ -34,7 +34,7 @@ SOFTWARE.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.67"
+__version__ = "0.3.66"
 __author__ = "nagev"
 __license__ = "MIT"
 
