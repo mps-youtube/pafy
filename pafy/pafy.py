@@ -1352,14 +1352,15 @@ class Pafy(object):
         self._fetch_gdata()
         return self._dislikes
 
-    def getbest(self, preftype="any", ftypestrict=True):
+    def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
         """
-        Return the best resolution available.
+        Return the highest resolution video available.
 
-        set ftypestrict to False to use a non preferred format if that
-        has a higher resolution
+        Select from video-only streams if vidonly is True
         """
-        if not self.streams:
+        streams = self.videostreams if vidonly else self.streams
+
+        if not streams:
             return None
 
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
@@ -1371,13 +1372,31 @@ class Pafy(object):
             nonstrict = (key3d, keyres, keyftype)
             return strict if ftypestrict else nonstrict
 
-        r = max(self.streams, key=_sortkey)
+        r = max(streams, key=_sortkey)
 
         if ftypestrict and preftype != "any" and r.extension != preftype:
             return None
 
         else:
             return r
+
+    def getbestvideo(self, preftype="any", ftypestrict=True):
+        """
+        Return the best resolution video-only stream.
+
+        set ftypestrict to False to return a non-preferred format if that
+        has a higher resolution
+        """
+        return self._getbest(preftype, ftypestrict, vidonly=True)
+
+    def getbest(self, preftype="any", ftypestrict=True):
+        """
+        Return the highest resolution video+audio stream.
+
+        set ftypestrict to False to return a non-preferred format if that
+        has a higher resolution
+        """
+        return self._getbest(preftype, ftypestrict, vidonly=False)
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
         """ Return the highest bitrate audio Stream object."""
