@@ -28,7 +28,8 @@ setup(
     download_url="https://github.com/np1/pafy/tarball/master",
     package_data={"": ["LICENSE", "README.rst", "CHANGELOG"]},
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: GNU Lesser General Public License v3 "
+        "(LGPLv3)",
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS",
         "Operating System :: MacOS :: MacOS 9",
