@@ -50,6 +50,7 @@ class Test(unittest.TestCase):
             video['streams'] = video['pafy'].streams
             video['best'] = video['pafy'].getbest()
             video['bestaudio'] = video['pafy'].getbestaudio()
+            video['bestvideo'] = video['pafy'].getbestvideo()
 
             # get urls for age restricted vids
             if video['pafy'].videoid == "07FYdnEawAQ":
@@ -121,7 +122,7 @@ class Test(unittest.TestCase):
         tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-141.m4a.temp"
         with open(tempname, "w") as ladeeda:
             ladeeda.write("abc")
-        vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False, signature=False)
+        vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False)
         vstream = vid.audiostreams[-1].download(meta=True, remux_audio=True)
         name = "WASTE  2 SECONDS OF YOUR LIFE.m4a"
         self.assertEqual(12880, os.stat(name).st_size)
@@ -153,10 +154,11 @@ class Test(unittest.TestCase):
     def test_pafy__invalid_win_filename(self):
         """ Test Windows and colon character in video name. """
         os.name = "nt"
-        youtube_title = "#$&#@)($&)(*_)&@#()&#@$_*#(&@"
-        vid = pafy.new("http://www.youtube.com/watch?v=6vaX2P5R3VI")
+        # youtube_title = "abcdef"
+        vid = pafy.new("http://www.youtube.com/watch?v=K-TNJSBrFEk")
         audio = vid.getbestaudio()
-        expected = "#$&#@)($&)(__)&@#()&#@$__#(&@.m4a"
+        expected = ("Jon Meacham, _Thomas Jefferson_ the Art of Power__ Autho"
+                    "rs at Google.m4a")
         self.assertEqual(expected, audio.generate_filename())
 
     @stdout_to_null
@@ -377,7 +379,7 @@ VIDEOS = [
         'thumb': 'http://i1.ytimg.com/vi/07FYdnEawAQ/default.jpg',
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
-        'bestsize': 79885533,
+        'bestsize': 79952724,
         'all streams': 23,
         'normal streams': 6,
         'video streams': 12,
