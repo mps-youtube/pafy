@@ -421,7 +421,7 @@ VIDEOS = [
         'category': 'Music',
         'description': '72bfd9472e59a8f48b83af36197ebcf5d2227609',
         'bestsize': 41334333,
-        'all streams': 29,
+        'all streams': 21,
         'normal streams': 6,
         'video streams': 18,
         'audio streams': 5,
