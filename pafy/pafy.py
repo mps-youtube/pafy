@@ -94,8 +94,8 @@ def fetch_decode(url, encoding=None):
         return req.read().decode(encoding)
 
     elif "charset=" in ct:
+        dbg("charset: %s", ct)
         encoding = re.search(r"charset=([\w-]+)\s*(:?;|$)", ct).group(1)
-        dbg("encoding detected: %s", ct)
         return req.read().decode(encoding)
 
     else:
