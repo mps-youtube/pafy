@@ -9,27 +9,26 @@ https://github.com/np1/pafy
 
 Copyright (C)  2013-2014 nagev
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License along
+with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.65"
+__version__ = "0.3.67"
 __author__ = "nagev"
-__license__ = "GPLv3"
+__license__ = "LGPLv3"
 
 
 import re
@@ -249,9 +248,14 @@ class g(object):
         '256': ('192k', 'm4a', 'audio', '6-channel'),
         '258': ('320k', 'm4a', 'audio', '6-channel'),
         '264': ('2560x1440', 'm4v', 'video', ''),
+        '266': ('3840x2160', 'm4v', 'video', 'AVC'),
         '271': ('1920x1280', 'webm', 'video', 'VP9'),
         '272': ('3414x1080', 'webm', 'video', 'VP9'),
         '278': ('256x144', 'webm', 'video', 'VP9'),
+        '298': ('1280x720', 'm4v', 'video', '60fps'),
+        '299': ('1920x1080', 'm4v', 'video', '60fps'),
+        '302': ('1280x720', 'webm', 'video', 'VP9'),
+        '303': ('1920x1080', 'webm', 'video', 'VP9'),
     }
 
 
@@ -1354,14 +1358,15 @@ class Pafy(object):
         self._fetch_gdata()
         return self._dislikes
 
-    def getbest(self, preftype="any", ftypestrict=True):
+    def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
         """
-        Return the best resolution available.
+        Return the highest resolution video available.
 
-        set ftypestrict to False to use a non preferred format if that
-        has a higher resolution
+        Select from video-only streams if vidonly is True
         """
-        if not self.streams:
+        streams = self.videostreams if vidonly else self.streams
+
+        if not streams:
             return None
 
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
@@ -1373,13 +1378,31 @@ class Pafy(object):
             nonstrict = (key3d, keyres, keyftype)
             return strict if ftypestrict else nonstrict
 
-        r = max(self.streams, key=_sortkey)
+        r = max(streams, key=_sortkey)
 
         if ftypestrict and preftype != "any" and r.extension != preftype:
             return None
 
         else:
             return r
+
+    def getbestvideo(self, preftype="any", ftypestrict=True):
+        """
+        Return the best resolution video-only stream.
+
+        set ftypestrict to False to return a non-preferred format if that
+        has a higher resolution
+        """
+        return self._getbest(preftype, ftypestrict, vidonly=True)
+
+    def getbest(self, preftype="any", ftypestrict=True):
+        """
+        Return the highest resolution video+audio stream.
+
+        set ftypestrict to False to return a non-preferred format if that
+        has a higher resolution
+        """
+        return self._getbest(preftype, ftypestrict, vidonly=False)
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
         """ Return the highest bitrate audio Stream object."""
@@ -1467,6 +1490,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             author=v.get('author'),
             user_id=v.get('user_id'),
             privacy=v.get('privacy'),
+            start=v.get('start', 0.0),
             dislikes=v.get('dislikes'),
             duration=v.get('duration'),
             comments=v.get('comments'),
@@ -1478,7 +1502,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             encrypted_id=v.get('encrypted_id'),
             time_created=v.get('time_created'),
             time_updated=v.get('time_updated'),
-            length_seconds=v.get('length_seconds')
+            length_seconds=v.get('length_seconds'),
+            end=v.get('end', v.get('length_seconds'))
         )
 
         try:

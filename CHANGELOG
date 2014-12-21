@@ -1,3 +1,20 @@
+Development version - not yet released
+version 0.3.67
+
+[Update] - changed to LGPL license (was GPL) (#68)
+[Update] - Added getbestvideo function (#70)
+
+-------------------------------------------------------------------------------
+
+23 November 2014
+Version 0.3.66
+
+[Update] - Added new itags for 60fps and VP9 streams (298, 299, 302, 303)
+[Bugfix] - Fixed failure on certain video items (#59)
+[Update] - Added start/end data for playlist items (Dav1dde) (#62, #63)
+
+-------------------------------------------------------------------------------
+
 19 October 2014
 Version 0.3.64
 
