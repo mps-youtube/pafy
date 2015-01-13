@@ -7,7 +7,7 @@ Python library to download YouTube content and retrieve metadata
 
 https://github.com/np1/pafy
 
-Copyright (C)  2013-2014 nagev
+Copyright (C)  2013-2014 np1
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -26,8 +26,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.66"
-__author__ = "nagev"
+__version__ = "0.3.68"
+__author__ = "np1"
 __license__ = "LGPLv3"
 
 
@@ -94,8 +94,8 @@ def fetch_decode(url, encoding=None):
         return req.read().decode(encoding)
 
     elif "charset=" in ct:
+        dbg("charset: %s", ct)
         encoding = re.search(r"charset=([\w-]+)\s*(:?;|$)", ct).group(1)
-        dbg("encoding detected: %s", ct)
         return req.read().decode(encoding)
 
     else:
@@ -1351,14 +1351,15 @@ class Pafy(object):
         self._fetch_gdata()
         return self._dislikes
 
-    def getbest(self, preftype="any", ftypestrict=True):
+    def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
         """
-        Return the best resolution available.
+        Return the highest resolution video available.
 
-        set ftypestrict to False to use a non preferred format if that
-        has a higher resolution
+        Select from video-only streams if vidonly is True
         """
-        if not self.streams:
+        streams = self.videostreams if vidonly else self.streams
+
+        if not streams:
             return None
 
         def _sortkey(x, key3d=0, keyres=0, keyftype=0):
@@ -1370,13 +1371,31 @@ class Pafy(object):
             nonstrict = (key3d, keyres, keyftype)
             return strict if ftypestrict else nonstrict
 
-        r = max(self.streams, key=_sortkey)
+        r = max(streams, key=_sortkey)
 
         if ftypestrict and preftype != "any" and r.extension != preftype:
             return None
 
         else:
             return r
+
+    def getbestvideo(self, preftype="any", ftypestrict=True):
+        """
+        Return the best resolution video-only stream.
+
+        set ftypestrict to False to return a non-preferred format if that
+        has a higher resolution
+        """
+        return self._getbest(preftype, ftypestrict, vidonly=True)
+
+    def getbest(self, preftype="any", ftypestrict=True):
+        """
+        Return the highest resolution video+audio stream.
+
+        set ftypestrict to False to return a non-preferred format if that
+        has a higher resolution
+        """
+        return self._getbest(preftype, ftypestrict, vidonly=False)
 
     def getbestaudio(self, preftype="any", ftypestrict=True):
         """ Return the highest bitrate audio Stream object."""

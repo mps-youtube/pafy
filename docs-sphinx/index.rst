@@ -168,9 +168,7 @@ Which will result in this output::
 Pafy Methods
 ------------
 
-The :func:`Pafy.getbest` and :func:`Pafy.getbestaudio` methods are a quick
-way to access the highest quality streams for a particular video without
-needing to query the stream lists. 
+The :func:`Pafy.getbest`, :func:`Pafy.getbestaudio` and :func:`Pafy.getbestvideo` methods are a quick way to access the highest quality streams for a particular video without needing to query the stream lists.
 
 .. function:: Pafy.getbest([preftype="any"][, ftypestrict=True])
 
@@ -191,6 +189,18 @@ needing to query the stream lists.
     :param preftype: Preferred type, set to *ogg* or *m4a* or *any*
     :type preftype: str
     :param ftypestrict: Set to *False* to return a type other than that specified in preftype if that has the highest bitrate
+    :type ftypestrict: boolean
+    :rtype: :class:`pafy.Stream`
+
+
+.. function:: Pafy.getbestvideo([preftype="any"][, ftypestrict=True])
+
+    Selects the video-only stream with the highest resolution.  This will return a
+    "video" stream (ie. one with no audio)
+
+    :param preftype: Preferred type, set to *m4v*, *webm* or *any*
+    :type preftype: str
+    :param ftypestrict: Set to *False* to return a type other than that specified in preftype if it has a higher resolution
     :type ftypestrict: boolean
     :rtype: :class:`pafy.Stream`
 

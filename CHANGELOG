@@ -1,3 +1,11 @@
+13 January 2015
+Version 0.3.68
+
+[Update] - changed to LGPL license (was GPL) (#68)
+[Update] - Added getbestvideo function (#70)
+
+-------------------------------------------------------------------------------
+
 23 November 2014
 Version 0.3.66
 
@@ -175,7 +183,7 @@ Version 0.3.34
 
 7 February 2014
 Version 0.3.33
-Authors: leokewitz, nagev
+Authors: leokewitz, np1
 
 [Feature] - Store html5player js data in memory to reduce repeat fetches
 [Feature] - Removed redundant looping in js function extraction
@@ -185,7 +193,7 @@ Authors: leokewitz, nagev
 
 4 February 2014
 Version 0.3.31
-Authors: nagev
+Authors: np1
 
 [Bugfix] - Handle error getting stream map
 [Bugfix] - Handle dollar character in js function name
@@ -194,7 +202,7 @@ Authors: nagev
 
 3 February 2014
 Version 0.3.30
-Authors: nagev
+Authors: np1
 
 [Bugfix] - Fix regex for decrypting signatures
 [Feature] - Added callback function for status reporting
@@ -203,7 +211,7 @@ Authors: nagev
 
 14 January 2014
 Version 0.3.26
-Authors: nagev
+Authors: np1
 
 [Feature] - Change dimensions property from (str, str) to (int, int)
 [Bugfix] - Replace bad characters in filenames
@@ -212,7 +220,7 @@ Authors: nagev
 
 15 December 2013
 Version 0.3.25
-Authors: nagev
+Authors: np1
 
 [Feature] Get video category metadata.
 
@@ -220,7 +228,7 @@ Authors: nagev
 
 12 December 2013
 Version 0.3.24
-Authors: hugovk, nagev
+Authors: hugovk, np1
 
 [Feature] Download function to return the name of file saved
 [Feature] Get video description
@@ -230,7 +238,7 @@ Authors: hugovk, nagev
 
 14 November 2013
 Version 0.3.23
-Authors: davidfischer-ch, nagev
+Authors: davidfischer-ch, np1
 
 [Bugfix] Fixed issue when no keywords specified for YouTube video
 [Bugfix] added UTF8 encoding declaration
@@ -241,7 +249,7 @@ Authors: davidfischer-ch, nagev
 
 27 October 2013
 Version 0.3.22
-Authors: nagev
+Authors: np1
 
 [Feature] Added Pafy.oggstreams and Pafy.m4astreams codec specific stream lists
 [Feature] Added Pafy.dimensions attribute to return resolution as a 2-tuple
@@ -257,7 +265,7 @@ Authors: nagev
 
 19 October 2013
 Version 0.3.20
-Authors: nagev
+Authors: np1
 
 [Feature] Added support for audio-only stream download (m4a and ogg vorbis)
 [Feature] Added support for video-only stream download (m4v)
