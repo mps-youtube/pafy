@@ -11,6 +11,8 @@ is preferred.
 
 Please ensure your changes work in Python 2.6+, 3.3+ and Windows.
 
+Please add your github id to the AUTHORS file
+
 Code conventions:
 -----------------
 
