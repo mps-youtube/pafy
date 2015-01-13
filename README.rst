@@ -2,12 +2,12 @@
     :target: https://pypi.python.org/pypi/Pafy
 .. image:: https://pypip.in/d/Pafy/badge.png
     :target: https://pypi.python.org/pypi/Pafy
-.. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=master
-    :target: https://coveralls.io/r/np1/pafy?branch=master
-.. image:: https://landscape.io/github/np1/pafy/master/landscape.svg
-    :target: https://landscape.io/github/np1/pafy/master
+.. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=develop
+    :target: https://coveralls.io/r/np1/pafy?branch=develop
+.. image:: https://landscape.io/github/np1/pafy/develop/landscape.svg
+    :target: https://landscape.io/github/np1/pafy/develop
     :alt: Code Health
-.. image:: https://travis-ci.org/np1/pafy.svg?branch=master
+.. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
     :target: https://travis-ci.org/np1/pafy
 .. image:: https://pypip.in/wheel/Pafy/badge.png
     :target: http://pythonwheels.com/
