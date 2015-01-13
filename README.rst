@@ -23,8 +23,8 @@ Features
 - Works with age-restricted videos and non-embeddable videos
 - Small, standalone, single importable module file (pafy.py)
 - Select highest quality stream for download or streaming
+- Download video only (no audio) in m4v or webm format
 - Download audio only (no video) in ogg or m4a format
-- Download video only (no audio) in m4v format
 - Retreive playlists and playlist metadata
 - Works with Python 2.6+ and 3.3+
 - No dependencies
