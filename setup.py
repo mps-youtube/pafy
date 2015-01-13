@@ -26,7 +26,7 @@ setup(
     author_email="np1nagev@gmail.com",
     url="http://np1.github.io/pafy/",
     download_url="https://github.com/np1/pafy/tarball/master",
-    package_data={"": ["LICENSE", "README.rst", "CHANGELOG"]},
+    package_data={"": ["LICENSE", "README.rst", "CHANGELOG", "AUTHORS"]},
     classifiers=[
         "License :: OSI Approved :: GNU Lesser General Public License v3 "
         "(LGPLv3)",
