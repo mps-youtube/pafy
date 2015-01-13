@@ -22,7 +22,7 @@ setup(
     version='0.3.68',
     description="Retrieve YouTube content and metadata",
     keywords=["Pafy", "API", "YouTube", "youtube", "download", "video"],
-    author="nagev",
+    author="np1",
     author_email="np1nagev@gmail.com",
     url="http://np1.github.io/pafy/",
     download_url="https://github.com/np1/pafy/tarball/master",

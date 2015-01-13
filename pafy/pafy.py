@@ -7,7 +7,7 @@ Python library to download YouTube content and retrieve metadata
 
 https://github.com/np1/pafy
 
-Copyright (C)  2013-2014 nagev
+Copyright (C)  2013-2014 np1
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -26,8 +26,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.67"
-__author__ = "nagev"
+__version__ = "0.3.68"
+__author__ = "np1"
 __license__ = "LGPLv3"
 
 
