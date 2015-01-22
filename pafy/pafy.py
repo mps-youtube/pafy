@@ -186,8 +186,7 @@ class g(object):
         'watchv': "http://www.youtube.com/watch?v=%s",
         'vidinfo': ('http://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
-        'playlist': ('http://www.youtube.com/list_ajax?'
-                     'style=json&action_get_list=1&list=%s'),
+        'playlist': 'http://gdata.youtube.com/feeds/api/playlists/%s?v=2',
         'age_vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
                         'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
     }
@@ -1034,7 +1033,6 @@ class Pafy(object):
         self._videoid = None
         self.ciphertag = None  # used by Stream class in url property def
         self._duration = None
-        self._keywords = None
         self._bigthumb = None
         self._viewcount = None
         self._bigthumbhd = None
@@ -1111,7 +1109,6 @@ class Pafy(object):
         self._viewcount = int(_get_lst('view_count'), 0)
         self._thumb = unquote_plus(_get_lst('thumbnail_url', ""))
         self._formats = [x.split("/") for x in _get_lst('fmt_list').split(",")]
-        self._keywords = _get_lst('keywords', "").split(',')
         self._bigthumb = _get_lst('iurlsd', "")
         self._bigthumbhd = _get_lst('iurlsdmaxres', "")
         self.ciphertag = _get_lst("use_cipher_signature") == "True"
@@ -1182,15 +1179,13 @@ class Pafy(object):
         if self._have_basic:
             keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
             keys = keys.split(" ")
-            keywords = ", ".join(self.keywords)
             info = {"Title": self.title,
                     "Author": self.author,
                     "Views": self.viewcount,
                     "Rating": self.rating,
                     "Duration": self.duration,
                     "ID": self.videoid,
-                    "Thumbnail": self.thumb,
-                    "Keywords": keywords}
+                    "Thumbnail": self.thumb}
 
             nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
@@ -1308,12 +1303,6 @@ class Pafy(object):
         return self._duration
 
     @property
-    def keywords(self):
-        """ Return keywords as list of str. """
-        self.fetch_basic()
-        return self._keywords
-
-    @property
     def category(self):
         """ YouTube category of the video. Returns string. """
         self._fetch_gdata()
@@ -1421,10 +1410,9 @@ class Pafy(object):
         """ Populate Pafy object with items fetched from playlist data. """
         self._title = pl_data.get("title")
         self._author = pl_data.get("author")
-        self._length = int(pl_data.get("length_seconds", 0))
+        self._length = pl_data.get("length_seconds", 0)
         self._rating = pl_data.get("rating", 0.0)
-        self._viewcount = "".join(re.findall(r"\d", pl_data.get("views", "0")))
-        self._viewcount = int(self._viewcount)
+        self._viewcount = pl_data.get("views")
         self._thumb = pl_data.get("thumbnail")
         self._description = pl_data.get("description")
         self.playlist_meta = pl_data
@@ -1450,70 +1438,101 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
 
     playlist_id = m.group(1)
     url = g.urls["playlist"] % playlist_id
+    videos = []
 
-    try:
-        allinfo = fetch_decode(url)  # unicode
-        allinfo = json.loads(allinfo)
+    t0 = "{http://search.yahoo.com/mrss/}"
+    t1 = "{http://www.w3.org/2005/Atom}"
+    t2 = "{http://gdata.youtube.com/schemas/2007}"
+    t3 = "{http://schemas.google.com/g/2005}"
 
-    except:
-        raise IOError("Error fetching playlist %s" % m.groups(0))
-
-    # playlist specific metadata
     playlist = dict(
         playlist_id=playlist_id,
-        likes=allinfo.get('likes'),
-        title=allinfo.get('title'),
-        author=allinfo.get('author'),
-        dislikes=allinfo.get('dislikes'),
-        description=allinfo.get('description'),
         items=[]
     )
-
-    # playlist items specific metadata
-    for v in allinfo['video']:
-
-        vid_data = dict(
-            added=v.get('added'),
-            is_cc=v.get('is_cc'),
-            is_hd=v.get('is_hd'),
-            likes=v.get('likes'),
-            title=v.get('title'),
-            views=v.get('views'),
-            rating=v.get('rating'),
-            author=v.get('author'),
-            user_id=v.get('user_id'),
-            privacy=v.get('privacy'),
-            start=v.get('start', 0.0),
-            dislikes=v.get('dislikes'),
-            duration=v.get('duration'),
-            comments=v.get('comments'),
-            keywords=v.get('keywords'),
-            thumbnail=v.get('thumbnail'),
-            cc_license=v.get('cc_license'),
-            category_id=v.get('category_id'),
-            description=v.get('description'),
-            encrypted_id=v.get('encrypted_id'),
-            time_created=v.get('time_created'),
-            time_updated=v.get('time_updated'),
-            length_seconds=v.get('length_seconds'),
-            end=v.get('end', v.get('length_seconds'))
-        )
-
+    
+    while url:
         try:
-            pafy_obj = new(vid_data['encrypted_id'],
-                           basic=basic,
-                           gdata=gdata,
-                           signature=signature,
-                           size=size,
-                           callback=callback)
+            allinfo = fetch_decode(url)  # unicode
+            allinfo = ElementTree.fromstring(allinfo)
 
-        except IOError as e:
-            callback("%s: %s" % (v['title'], e.message))
-            continue
+        except:
+            raise IOError("Error fetching playlist %s" % m.groups(0))
 
-        pafy_obj.populate_from_playlist(vid_data)
-        playlist['items'].append(dict(pafy=pafy_obj,
-                                      playlist_meta=vid_data))
-        callback("Added video: %s" % v['title'])
+
+        # playlist items specific metadata
+        for v in allinfo.findall(t1 + 'entry'):
+
+            rating = v.find(t2 + "rating")
+            statistics = v.find(t2 + 'statistics')
+            comments = v.find(t3 + 'comments')
+            content = v.find(t1 + 'content')
+            if content is None: # No video id (deleted video)
+                continue
+
+            length_seconds = int(v.find(t0 + 'group').find(t2 + 'duration'
+                                                          ).get('seconds'))
+            s = length_seconds % 60
+            m = length_seconds // 60
+            h = m // 60
+            s = h % 60
+            duration = str(s)
+            if m or h:
+                duration = str(m) +':' + duration
+            if h:
+                duration = str(h) +':' + duration
+
+            vid_data = dict(
+                is_hd=bool(v.find(t2 + 'hd')),
+                likes=int(rating.get("numLikes") or 0\
+                        if rating is not None else 0),
+                title=v.find(t1 + 'title').text,
+                views=int(statistics.get('viewCount')) or 0\
+                        if statistics is not None else 0,
+                rating=round(float(rating.get('average') or 0), 1)\
+                        if rating is not None else 0,
+                author=v.find(t1 + 'author').find(t1 + 'name').text,
+                user_id=v.find(t1 + 'author').find(t2 + 'userId').text,
+                dislikes=int(rating.get("numDislikes") or 0\
+                        if rating is not None else 0),
+                duration=duration,
+                comments=int(comments.find(t3 + 'feedLink'
+                                          ).get('countHint')) or 0\
+                                          if comments else 0,
+                thumbnail=v.find(t0 + 'group').find(t0 + 'thumbnail'
+                    ).get('url'),
+                description=v.find(t0 + 'group').find(t0 + 'description').text,
+                encrypted_id=extract_video_id(next(i for i in
+                    v.iterfind(t1 + 'link') if i.get('rel') == 'related'
+                    ).get('href')),
+                time_created=int(time.mktime(time.strptime(
+                                                v.find(t1 + 'published').text,
+                                                "%Y-%m-%dT%H:%M:%S.000Z"))),
+                length_seconds=length_seconds,
+            )
+
+            try:
+                pafy_obj = new(vid_data['encrypted_id'],
+                               basic=basic,
+                               gdata=gdata,
+                               signature=signature,
+                               size=size,
+                               callback=callback)
+
+            except IOError as e:
+                callback("%s: %s" % (v['title'], e.message))
+                continue
+
+            pafy_obj.populate_from_playlist(vid_data)
+            playlist['items'].append(dict(pafy=pafy_obj,
+                                          playlist_meta=vid_data))
+            callback("Added video: %s" % vid_data['title'])
+
+        url = next((i.get('href') for i in allinfo.iterfind(t1 + 'link')
+                   if i.get('rel') == 'next'), None)
+
+    # playlist specific metadata
+    playlist['title']=allinfo.find(t1 + 'title').text
+    playlist['author']=allinfo.find(t1 + 'author').find(t1 + 'name').text
+
 
     return playlist
