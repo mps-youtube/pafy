@@ -1461,28 +1461,28 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
 
         # playlist items specific metadata
         for v in allinfo.findall(t1 + 'entry'):
+            if v.find(t1 + 'title').text in ('Deleted video', 'Private video'):
+                continue
 
             rating = v.find(t2 + "rating")
             statistics = v.find(t2 + 'statistics')
             comments = v.find(t3 + 'comments')
-            content = v.find(t1 + 'content')
-            if content is None: # No video id (deleted video)
-                continue
+            group = v.find(t0 + 'group')
+            duration = group.find(t2 + 'duration')
+            thumbnail = group.find(t0 + 'thumbnail')
+            description = group.find(t0 + 'description')
 
-            length_seconds = int(v.find(t0 + 'group').find(t2 + 'duration'
-                                                          ).get('seconds'))
-            s = length_seconds % 60
-            m = length_seconds // 60
-            h = m // 60
-            s = h % 60
-            duration = str(s)
-            if m or h:
-                duration = str(m) +':' + duration
+            length_seconds = int(duration.get('seconds'))\
+                    if duration is not None else 0
+            m, s = divmod(length_seconds, 60)
+            h, m = divmod(m, 60)
             if h:
-                duration = str(h) +':' + duration
+                duration = "%d:%02d:%02d" % (h, m, s)
+            else:
+                duration = "%d:%02d" % (m, s)
 
             vid_data = dict(
-                is_hd=bool(v.find(t2 + 'hd')),
+                is_hd=v.find(t2 + 'hd') is not None,
                 likes=int(rating.get("numLikes") or 0\
                         if rating is not None else 0),
                 title=v.find(t1 + 'title').text,
@@ -1490,20 +1490,18 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
                         if statistics is not None else 0,
                 rating=round(float(rating.get('average') or 0), 1)\
                         if rating is not None else 0,
-                author=v.find(t1 + 'author').find(t1 + 'name').text,
-                user_id=v.find(t1 + 'author').find(t2 + 'userId').text,
+                author=group.find(t0 + 'credit').text,
+                user_id=group.find(t2 + 'uploaderId').text,
                 dislikes=int(rating.get("numDislikes") or 0\
                         if rating is not None else 0),
                 duration=duration,
                 comments=int(comments.find(t3 + 'feedLink'
                                           ).get('countHint')) or 0\
                                           if comments else 0,
-                thumbnail=v.find(t0 + 'group').find(t0 + 'thumbnail'
-                    ).get('url'),
-                description=v.find(t0 + 'group').find(t0 + 'description').text,
-                encrypted_id=extract_video_id(next(i for i in
-                    v.iterfind(t1 + 'link') if i.get('rel') == 'related'
-                    ).get('href')),
+                thumbnail=thumbnail.get('url')\
+                        if thumbnail is not None else '',
+                description=description.text if description else '',
+                encrypted_id=group.find(t2 + 'videoid').text,
                 time_created=int(time.mktime(time.strptime(
                                                 v.find(t1 + 'published').text,
                                                 "%Y-%m-%dT%H:%M:%S.000Z"))),
