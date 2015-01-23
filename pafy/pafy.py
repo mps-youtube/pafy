@@ -1530,6 +1530,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
     # playlist specific metadata
     playlist['title']=allinfo.find(t1 + 'title').text
     playlist['author']=allinfo.find(t1 + 'author').find(t1 + 'name').text
+    description = allinfo.find(t0 + 'group').find(t0 + 'description')
+    playlist['description']=description.text if description is not None else ''
 
 
     return playlist
