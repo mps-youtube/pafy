@@ -1438,7 +1438,6 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
 
     playlist_id = m.group(1)
     url = g.urls["playlist"] % playlist_id
-    videos = []
 
     t0 = "{http://search.yahoo.com/mrss/}"
     t1 = "{http://www.w3.org/2005/Atom}"
