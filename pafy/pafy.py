@@ -652,11 +652,9 @@ def get_js_sm(video_id):
     watchinfo = fetch_decode(watch_url)  # unicode
 
     if re.search(r'player-age-gate-content">', watchinfo) is not None:
-        # create a new Pafy object
+        # return updated video info url if this is age protected
         dbg("age restricted video")
-        # doppleganger = new(video_id, False, False, False)
         video_info_url = g.urls['age_vidinfo'] % (video_id, video_id)
-        # doppleganger.fetch_basic(ageurl=video_info_url)
         return video_info_url
 
     dbg("Fetched watchv page")
