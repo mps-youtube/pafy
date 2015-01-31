@@ -47,18 +47,15 @@ Create a Pafy object using the :func:`pafy.new` function, giving a YouTube video
     :type callback: function
     :rtype: :class:`pafy.Pafy`
 
-If any of **basic**, **gdata**, **signature** or **size** are *False*, those data items will be fetched only when first called for.
+If any of **basic**, **gdata** or **size** are *False*, those data items will be fetched only when first called for.
 
 The defaults are recommended for most cases. If you wish to create many video objects at once, you may want to set all to *False*, eg::
 
-    vid = pafy.new(basic=False, signature=False)
+    vid = pafy.new(basic=False)
 
 This will be quick because no http requests will be made on initialisation.
 
-Setting **signature** or **size** to *True* will override the **basic** argument and force basic data to be fetched too (basic data is required to obtain Stream objects and determine whether signatures are encrypted).
-
-Similarly, setting **size** to *True* will force the signature data to be fetched if the videos have encrypted signatures, so will override the value set in the **signature** argument.
-
+Setting **size** to *True* will override the **basic** argument and force basic data to be fetched too (basic data is required to obtain Stream objects)
 
 Example::
 
