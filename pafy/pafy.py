@@ -127,7 +127,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     This will be quick because no http requests will be made on initialisation.
 
     Setting size to True will override the basic argument and force basic data
-    to be fetched too (basic data is required to obtain Stream objects.
+    to be fetched too (basic data is required to obtain Stream objects).
 
     """
     if not signature:
