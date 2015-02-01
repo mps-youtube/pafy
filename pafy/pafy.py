@@ -1521,7 +1521,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
                                           playlist_meta=vid_data))
             callback("Added video: %s" % vid_data['title'])
 
-        url = next((i.get('href') for i in allinfo.iterfind(t1 + 'link')
+        url = next((i.get('href') for i in allinfo.findall(t1 + 'link')
                    if i.get('rel') == 'next'), None)
 
     # playlist specific metadata
