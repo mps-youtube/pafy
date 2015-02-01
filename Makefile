@@ -29,7 +29,7 @@ uninstall:
 
 clean:
 	sudo rm -rf build/ dist/ *egg-info/ *.pyc __pycache__
-	rm -f WASTE*.m4a WASTE*.temp
+	rm -f WASTE*.ogg WASTE*.temp
 	rm -rf htmlcov
 	find ./.tox | grep \\.pyc | xargs sudo rm -f
 	find . | grep \\.pyc | xargs sudo rm -f
