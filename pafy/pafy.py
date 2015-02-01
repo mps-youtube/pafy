@@ -145,6 +145,13 @@ def get_video_info(video_id, newurl=None):
     info = parseqs(info)  # unicode dict
     dbg("Fetched video info")
 
+    if info['status'][0] == "fail" and info['errorcode'][0] == '150':
+        # Video requires age verification
+        dbg("Age verification video")
+        new.callback("Age verification video")
+        newurl = g.urls['age_vidinfo'] % (video_id, video_id)
+        return get_video_info(video_id, newurl)
+
     if info['status'][0] == "fail":
         reason = info['reason'][0] or "Bad video argument"
         raise IOError("Youtube says: %s [%s]" % (reason, video_id))
