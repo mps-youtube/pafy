@@ -19,7 +19,7 @@ setup(
     name='Pafy',
     packages=['pafy'],
     scripts=['scripts/ytdl'],
-    version='0.3.68',
+    version='0.3.70',
     description="Retrieve YouTube content and metadata",
     keywords=["Pafy", "API", "YouTube", "youtube", "download", "video"],
     author="np1",
@@ -27,6 +27,8 @@ setup(
     url="http://np1.github.io/pafy/",
     download_url="https://github.com/np1/pafy/tarball/master",
     package_data={"": ["LICENSE", "README.rst", "CHANGELOG", "AUTHORS"]},
+    include_package_data=True,
+    license='LGPLv3',
     classifiers=[
         "License :: OSI Approved :: GNU Lesser General Public License v3 "
         "(LGPLv3)",

@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.68"
+__version__ = "0.3.70"
 __author__ = "np1"
 __license__ = "LGPLv3"
 
@@ -127,7 +127,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     This will be quick because no http requests will be made on initialisation.
 
     Setting size to True will override the basic argument and force basic data
-    to be fetched too (basic data is required to obtain Stream objects.
+    to be fetched too (basic data is required to obtain Stream objects).
 
     """
     if not signature:
@@ -143,9 +143,17 @@ def get_video_info(video_id, newurl=None):
     url = newurl if newurl else url
     info = fetch_decode(url)  # bytes
     info = parseqs(info)  # unicode dict
-    dbg("Fetched video info")
+    dbg("Fetched video info%s", " (age ver)" if newurl else "")
 
-    if info['status'][0] == "fail":
+    if info['status'][0] == "fail" and info['errorcode'][0] == '150':
+        # Video requires age verification
+        dbg("Age verification video")
+        new.callback("Age verification video")
+        newurl = g.urls['age_vidinfo'] % (video_id, video_id)
+        info = get_video_info(video_id, newurl)
+        info.update({"age_ver": True})
+
+    elif info['status'][0] == "fail":
         reason = info['reason'][0] or "Bad video argument"
         raise IOError("Youtube says: %s [%s]" % (reason, video_id))
 
@@ -647,19 +655,10 @@ def get_js_sm(video_id):
 
     """
     watch_url = g.urls['watchv'] % video_id
-    new.callback("Fetching watchv page")
+    new.callback("Fetching watch page")
     watchinfo = fetch_decode(watch_url)  # unicode
-
-    if re.search(r'player-age-gate-content">', watchinfo) is not None:
-        # create a new Pafy object
-        dbg("age restricted video")
-        # doppleganger = new(video_id, False, False, False)
-        video_info_url = g.urls['age_vidinfo'] % (video_id, video_id)
-        # doppleganger.fetch_basic(ageurl=video_info_url)
-        return video_info_url
-
-    dbg("Fetched watchv page")
-    new.callback("Fetched watchv page")
+    dbg("Fetched watch page")
+    new.callback("Fetched watch page")
     m = re.search(g.jsplayer, watchinfo)
     myjson = json.loads(m.group(1))
     stream_info = myjson['args']
@@ -854,7 +853,7 @@ class Stream(object):
         """ Return the url, decrypt if required. """
         if not self._url:
 
-            if self._parent.age:
+            if self._parent.age_ver:
 
                 if self._sig:
                     s = self._sig
@@ -1007,6 +1006,8 @@ class Pafy(object):
         self._have_gdata = False
 
         self._description = None
+        self._likes = None
+        self._dislikes = None
         self._category = None
         self._published = None
         self._username = None
@@ -1016,7 +1017,7 @@ class Pafy(object):
         self.dash = []
         self.js_url = None  # if js_url is set then has new stream map
         self._dashurl = None
-        self.age = False
+        self.age_ver = False
         self._streams = []
         self._oggstreams = []
         self._m4astreams = []
@@ -1056,17 +1057,17 @@ class Pafy(object):
             return
 
         self._fetch_basic()
+        sm_ciphertag = "s" in self.sm[0]
 
-        if self.ciphertag is not ('s' in self.sm[0]):
+        if self.ciphertag != sm_ciphertag:
+            dbg("ciphertag mismatch")
             self.ciphertag = not self.ciphertag
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
-            stuff = get_js_sm(self.videoid)
 
-            if isinstance(stuff, tuple):
-                # smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
-                smaps, js_url, funcs, dashurl = stuff
+            if not self.age_ver:
+                smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
                 Pafy.funcmap[js_url] = funcs
                 self.sm, self.asm = smaps
                 self.js_url = js_url
@@ -1077,9 +1078,6 @@ class Pafy(object):
                                        "/signature/%s" % goodsig, dashurl)
 
             else:
-                self.age = True
-                info_url = stuff
-                self._fetch_basic(info_url=info_url)
                 s = re.search(r"/s/([\w\.]+)", self._dashurl).group(1)
                 s = s[2:63] + s[82] + s[64:82] + s[63]
                 self._dashurl = re.sub(r"/s/[\w\.]+",
@@ -1093,6 +1091,10 @@ class Pafy(object):
     def _fetch_basic(self, info_url=None):
         """ Fetch info url page and set member vars. """
         allinfo = get_video_info(self.videoid, newurl=info_url)
+
+        if allinfo.get("age_ver"):
+            self.age_ver = True
+
         new.callback("Fetched video info")
 
         def _get_lst(key, default="unknown", dic=allinfo):
@@ -1128,20 +1130,15 @@ class Pafy(object):
         gdata = gdata.encode("utf8")
         tree = ElementTree.fromstring(gdata)
         groups = tree.find(t0 + "group")
-        published = uni(tree.find(t1 + "published").text)
+        self._published = uni(tree.find(t1 + "published").text)
         rating = tree.find(t2 + "rating")  # already exists in basic data
-        likes = int(rating.get("numLikes") if rating is not None else 0)
+        self._likes = int(rating.get("numLikes") if rating is not None else 0)
         dislikes = int(rating.get("numDislikes") if rating is not None else 0)
-        description = uni(groups.find(t0 + "description").text)
-        category = uni(groups.find(t0 + "category").text)
+        self._dislikes = dislikes
+        self._description = uni(groups.find(t0 + "description").text)
+        self._category = uni(groups.find(t0 + "category").text)
         username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
-        setattr(self, "_username", username)
-        setattr(self, "_published", published)
-        setattr(self, "_description", description)
-        setattr(self, "_category", category)
-        setattr(self, "_likes", likes)
-        setattr(self, "_dislikes", dislikes)
-
+        self._username = username
         self._have_gdata = 1
 
     def _process_streams(self):

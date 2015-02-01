@@ -119,13 +119,13 @@ class Test(unittest.TestCase):
     @stdout_to_null
     def test_pafy_download_resume(self):
         """ Test resuming a partial download. """
-        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-141.m4a.temp"
+        tempname = "WASTE  2 SECONDS OF YOUR LIFE-DsAn_n6O5Ns-171.ogg.temp"
         with open(tempname, "w") as ladeeda:
             ladeeda.write("abc")
         vid = pafy.new("DsAn_n6O5Ns", gdata=True, basic=False)
         vstream = vid.audiostreams[-1].download(meta=True, remux_audio=True)
-        name = "WASTE  2 SECONDS OF YOUR LIFE.m4a"
-        self.assertEqual(12880, os.stat(name).st_size)
+        name = "WASTE  2 SECONDS OF YOUR LIFE.ogg"
+        self.assertEqual(22675, os.stat(name).st_size)
 
         # test fetching attributes
         vid._title = None
@@ -166,8 +166,8 @@ class Test(unittest.TestCase):
         """ Test user specified path. """
         vid = pafy.new("DsAn_n6O5Ns", gdata=True)
         vstream = vid.audiostreams[-1].download("/tmp", meta=True)
-        name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.m4a"
-        self.assertEqual(12880, os.stat(name).st_size)
+        name = "/tmp/WASTE  2 SECONDS OF YOUR LIFE.ogg"
+        self.assertEqual(22675, os.stat(name).st_size)
 
     def test_lazy_pafy(self):
         """ Test create pafy object without fetching data. """
@@ -340,12 +340,12 @@ VIDEOS = [
         'category': 'Education',
         'description': '1223db22b4a38d0a8ebfcafb549f40c39af26251',
         'bestsize': 54284129,
-        'all streams': 18,
+        'all streams': 16,
         'normal streams': 5,
         'video streams': 8,
-        'audio streams': 5,
-        'ogg streams': 2,
-        'm4a streams': 3,
+        'audio streams': 3,
+        'ogg streams': 1,
+        'm4a streams': 2,
     },
     {
         'identifier': 'www.youtube.com/watch?v=SeIJmciN8mo',
@@ -360,12 +360,12 @@ VIDEOS = [
         'category': 'Music',
         'description': 'fa34f2704be9c1b21949af515e813f644f14b89a',
         'bestsize': 101836539,
-        'all streams': 23,
+        'all streams': 21,
         'normal streams': 6,
         'video streams': 12,
-        'audio streams': 5,
-        'ogg streams': 2,
-        'm4a streams': 3,
+        'audio streams': 3,
+        'ogg streams': 1,
+        'm4a streams': 2,
     },
     {
         'identifier': 'https://youtu.be/watch?v=07FYdnEawAQ',
@@ -380,12 +380,12 @@ VIDEOS = [
         'category': 'Music',
         'description': '55e8e6e2b219712bf94d67c2434530474a503265',
         'bestsize': 79952724,
-        'all streams': 23,
+        'all streams': 21,
         'normal streams': 6,
         'video streams': 12,
-        'audio streams': 5,
-        'ogg streams': 2,
-        'm4a streams': 3,
+        'audio streams': 3,
+        'ogg streams': 1,
+        'm4a streams': 2,
     },
     {
         'identifier': 'EnHp24CVORc',
@@ -400,12 +400,12 @@ VIDEOS = [
         'category': 'People',
         'description': '3c884d9791be15646ddf351edffcb2dd22ec70f8',
         'bestsize': 101083389,
-        'all streams': 23,
+        'all streams': 21,
         'normal streams': 6,
         'video streams': 12,
-        'audio streams': 5,
-        'ogg streams': 2,
-        'm4a streams': 3,
+        'audio streams': 3,
+        'ogg streams': 1,
+        'm4a streams': 2,
     },
     {
         'identifier': 'http://youtube.com/watch?v=rYEDA3JcQqw',
@@ -420,12 +420,12 @@ VIDEOS = [
         'category': 'Music',
         'description': '72bfd9472e59a8f48b83af36197ebcf5d2227609',
         'bestsize': 41334333,
-        'all streams': 21,
+        'all streams': 20,
         'normal streams': 6,
         'video streams': 12,
-        'audio streams': 3,
+        'audio streams': 2,
         'ogg streams': 0,
-        'm4a streams': 3,
+        'm4a streams': 2,
     }
 ]
 
