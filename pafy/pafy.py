@@ -143,16 +143,17 @@ def get_video_info(video_id, newurl=None):
     url = newurl if newurl else url
     info = fetch_decode(url)  # bytes
     info = parseqs(info)  # unicode dict
-    dbg("Fetched video info")
+    dbg("Fetched video info%s", " (age ver)" if newurl else "")
 
     if info['status'][0] == "fail" and info['errorcode'][0] == '150':
         # Video requires age verification
         dbg("Age verification video")
         new.callback("Age verification video")
         newurl = g.urls['age_vidinfo'] % (video_id, video_id)
-        return get_video_info(video_id, newurl)
+        info = get_video_info(video_id, newurl)
+        info.update({"age_ver": True})
 
-    if info['status'][0] == "fail":
+    elif info['status'][0] == "fail":
         reason = info['reason'][0] or "Bad video argument"
         raise IOError("Youtube says: %s [%s]" % (reason, video_id))
 
@@ -655,17 +656,10 @@ def get_js_sm(video_id):
 
     """
     watch_url = g.urls['watchv'] % video_id
-    new.callback("Fetching watchv page")
+    new.callback("Fetching watch page")
     watchinfo = fetch_decode(watch_url)  # unicode
-
-    if re.search(r'player-age-gate-content">', watchinfo) is not None:
-        # return updated video info url if this is age protected
-        dbg("age restricted video")
-        video_info_url = g.urls['age_vidinfo'] % (video_id, video_id)
-        return video_info_url
-
-    dbg("Fetched watchv page")
-    new.callback("Fetched watchv page")
+    dbg("Fetched watch page")
+    new.callback("Fetched watch page")
     m = re.search(g.jsplayer, watchinfo)
     myjson = json.loads(m.group(1))
     stream_info = myjson['args']
@@ -860,7 +854,7 @@ class Stream(object):
         """ Return the url, decrypt if required. """
         if not self._url:
 
-            if self._parent.age:
+            if self._parent.age_ver:
 
                 if self._sig:
                     s = self._sig
@@ -1022,7 +1016,7 @@ class Pafy(object):
         self.dash = []
         self.js_url = None  # if js_url is set then has new stream map
         self._dashurl = None
-        self.age = False
+        self.age_ver = False
         self._streams = []
         self._oggstreams = []
         self._m4astreams = []
@@ -1063,17 +1057,17 @@ class Pafy(object):
             return
 
         self._fetch_basic()
+        sm_ciphertag = "s" in self.sm[0]
 
-        if self.ciphertag is not ('s' in self.sm[0]):
+        if self.ciphertag != sm_ciphertag:
+            dbg("ciphertag mismatch")
             self.ciphertag = not self.ciphertag
 
         if self.ciphertag:
             dbg("Encrypted signature detected.")
-            stuff = get_js_sm(self.videoid)
 
-            if isinstance(stuff, tuple):
-                # smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
-                smaps, js_url, funcs, dashurl = stuff
+            if not self.age_ver:
+                smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
                 Pafy.funcmap[js_url] = funcs
                 self.sm, self.asm = smaps
                 self.js_url = js_url
@@ -1084,9 +1078,6 @@ class Pafy(object):
                                        "/signature/%s" % goodsig, dashurl)
 
             else:
-                self.age = True
-                info_url = stuff
-                self._fetch_basic(info_url=info_url)
                 s = re.search(r"/s/([\w\.]+)", self._dashurl).group(1)
                 s = s[2:63] + s[82] + s[64:82] + s[63]
                 self._dashurl = re.sub(r"/s/[\w\.]+",
@@ -1100,6 +1091,10 @@ class Pafy(object):
     def _fetch_basic(self, info_url=None):
         """ Fetch info url page and set member vars. """
         allinfo = get_video_info(self.videoid, newurl=info_url)
+
+        if allinfo.get("age_ver"):
+            self.age_ver = True
+
         new.callback("Fetched video info")
 
         def _get_lst(key, default="unknown", dic=allinfo):
