@@ -4,23 +4,23 @@ build:
 	python setup.py sdist bdist_wheel
 
 version:
-	# prints version number
+	@# prints version number
 	@(python -c 'import pafy; print(pafy.__version__)')
 
 upload:
-	# requires cheeseshop auth
+	@# requires pypi auth
 	python setup.py sdist bdist_wheel upload
 
 register:
-	# requires cheeseshop auth
+	@# requires pypi auth
 	python setup.py register
 
 install:
-	# system wide install
+	@# system wide install
 	sudo python setup.py install --record pafy_installed_filelist
 
 vinstall:
-	# install from within virtualenv (no sudo)
+	@# install from within virtualenv (no sudo)
 	python setup.py install --record pafy_installed_filelist
 
 uninstall:

@@ -39,7 +39,7 @@ except ImportError:
 
 
 __version__ = "0.3.67"
-__author__ = "nagev"
+__author__ = "np1"
 __license__ = "LGPLv3"
 
 
