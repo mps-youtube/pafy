@@ -1467,6 +1467,13 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             duration = group.find(t2 + 'duration')
             thumbnail = group.find(t0 + 'thumbnail')
             description = group.find(t0 + 'description')
+            license = group.find(t0 + 'license')
+
+            keywords = group.find(t0 + 'keywords')
+            if keywords is not None and keywords.text is not None:
+                keywords = keywords.text.split(',')
+            else:
+                keywords = []
 
             length_seconds = int(duration.get('seconds'))\
                     if duration is not None else 0
@@ -1478,6 +1485,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
                 duration = "%d:%02d" % (m, s)
 
             vid_data = dict(
+                is_cc=(license.text == 'cc') if license is not None else False,
                 is_hd=v.find(t2 + 'hd') is not None,
                 likes=int(rating.get("numLikes") or 0\
                         if rating is not None else 0),
@@ -1494,6 +1502,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
                 comments=int(comments.find(t3 + 'feedLink'
                                           ).get('countHint')) or 0\
                                           if comments else 0,
+                keywords=keywords.split(',') if keywords else [],
                 thumbnail=thumbnail.get('url')\
                         if thumbnail is not None else '',
                 description=description.text if description else '',
