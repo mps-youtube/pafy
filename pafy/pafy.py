@@ -1007,6 +1007,8 @@ class Pafy(object):
         self._have_gdata = False
 
         self._description = None
+        self._likes = None
+        self._dislikes = None
         self._category = None
         self._published = None
         self._username = None
@@ -1131,20 +1133,15 @@ class Pafy(object):
         gdata = gdata.encode("utf8")
         tree = ElementTree.fromstring(gdata)
         groups = tree.find(t0 + "group")
-        published = uni(tree.find(t1 + "published").text)
+        self._published = uni(tree.find(t1 + "published").text)
         rating = tree.find(t2 + "rating")  # already exists in basic data
-        likes = int(rating.get("numLikes") if rating is not None else 0)
+        self._likes = int(rating.get("numLikes") if rating is not None else 0)
         dislikes = int(rating.get("numDislikes") if rating is not None else 0)
-        description = uni(groups.find(t0 + "description").text)
-        category = uni(groups.find(t0 + "category").text)
+        self._dislikes = dislikes
+        self._description = uni(groups.find(t0 + "description").text)
+        self._category = uni(groups.find(t0 + "category").text)
         username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
-        setattr(self, "_username", username)
-        setattr(self, "_published", published)
-        setattr(self, "_description", description)
-        setattr(self, "_category", category)
-        setattr(self, "_likes", likes)
-        setattr(self, "_dislikes", dislikes)
-
+        self._username = username
         self._have_gdata = 1
 
     def _process_streams(self):
