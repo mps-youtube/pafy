@@ -145,7 +145,8 @@ def get_video_info(video_id, newurl=None):
     info = parseqs(info)  # unicode dict
     dbg("Fetched video info%s", " (age ver)" if newurl else "")
 
-    if info['status'][0] == "fail" and info['errorcode'][0] == '150':
+    if info['status'][0] == "fail" and info['errorcode'][0] == '150' and \
+            "confirm your age" in info['reason'][0]:
         # Video requires age verification
         dbg("Age verification video")
         new.callback("Age verification video")
