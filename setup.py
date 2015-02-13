@@ -16,12 +16,12 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name='Pafy',
+    name='pafy',
     packages=['pafy'],
     scripts=['scripts/ytdl'],
     version='0.3.72',
     description="Retrieve YouTube content and metadata",
-    keywords=["Pafy", "API", "YouTube", "youtube", "download", "video"],
+    keywords=["pafy", "API", "YouTube", "youtube", "download", "video"],
     author="np1",
     author_email="np1nagev@gmail.com",
     url="http://np1.github.io/pafy/",
