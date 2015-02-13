@@ -205,7 +205,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'pafy.tex', u'Pafy Documentation', u'np1', 'manual'),
+    ('index', 'pafy.tex', u'pafy Documentation', u'np1', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -234,7 +234,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pafy', u'Pafy Documentation',
+    ('index', 'pafy', u'pafy Documentation',
      [u'np1'], 1)
 ]
 
@@ -248,7 +248,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'pafy', u'Pafy Documentation',
+    ('index', 'pafy', u'pafy Documentation',
      u'np1', 'pafy', 'One line description of project.',
      'Miscellaneous'),
 ]
