@@ -1,7 +1,7 @@
-.. image:: http://badge.fury.io/py/Pafy.png
-    :target: https://pypi.python.org/pypi/Pafy
-.. image:: https://pypip.in/d/Pafy/badge.png
-    :target: https://pypi.python.org/pypi/Pafy
+.. image:: http://badge.fury.io/py/pafy.png
+    :target: https://pypi.python.org/pypi/pafy
+.. image:: https://pypip.in/d/pafy/badge.png
+    :target: https://pypi.python.org/pypi/pafy
 .. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=develop
     :target: https://coveralls.io/r/np1/pafy?branch=develop
 .. image:: https://landscape.io/github/np1/pafy/develop/landscape.svg
@@ -9,7 +9,7 @@
     :alt: Code Health
 .. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
     :target: https://travis-ci.org/np1/pafy
-.. image:: https://pypip.in/wheel/Pafy/badge.png
+.. image:: https://pypip.in/wheel/pafy/badge.png
     :target: http://pythonwheels.com/
     :alt: Wheel Status
 
@@ -33,7 +33,7 @@ Features
 Documentation
 -------------
 
-Full documentation is available at http://pythonhosted.org/Pafy
+Full documentation is available at http://pythonhosted.org/pafy
 
 Usage Examples
 --------------
@@ -217,7 +217,7 @@ show all media types for a video (video+audio, video-only and audio-only):
 Installation
 ------------
 
-Pafy can be installed using `pip <http://www.pip-installer.org>`_:
+pafy can be installed using `pip <http://www.pip-installer.org>`_:
 
 .. code-block:: bash
 
