@@ -1,0 +1,4 @@
+version=3
+
+opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/pafy-$1\.tar\.gz/ \
+  https://github.com/np1/pafy/tags .*/v?(\d\S*)\.tar\.gz
