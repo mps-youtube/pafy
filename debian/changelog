@@ -1,0 +1,71 @@
+pafy (0.3.72-1) experimental; urgency=low
+
+  * New upstream release 
+  * Upstream license changed from GPLv3 to LGPLv3
+
+ -- Zlatan Todoric <zlatan@riseup.net>  Thu, 26 Feb 2015 01:26:46 +0100
+
+pafy (0.3.66-1) unstable; urgency=low
+
+  * New upstream release
+  * Added Recommends: ffmpeg|libav-tools as it fixes some audio file
+    downloading issues
+  * Standards-Version: updated to 3.9.6
+  * Change in maintainers email address
+
+ -- Zlatan Todoric <zlatan@riseup.net>  Tue, 25 Nov 2014 15:31:17 +0100
+
+pafy (0.3.62-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Tue, 26 Aug 2014 21:35:45 +0200
+
+pafy (0.3.60-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Mon, 25 Aug 2014 00:24:27 +0200
+
+pafy (0.3.58-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Sat, 09 Aug 2014 12:57:21 +0200
+
+pafy (0.3.52-1) unstable; urgency=low
+
+  * New upstream release (Closes: #750832)
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Sun, 06 Jul 2014 13:48:34 +0200
+
+pafy (0.3.44-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Tue, 27 May 2014 20:31:16 +0200
+
+pafy (0.3.42-2) unstable; urgency=low
+
+  * debian/control: Updated package description
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Sat, 10 May 2014 17:30:42 +0200
+
+pafy (0.3.42-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Sat, 10 May 2014 11:39:23 +0200
+
+pafy (0.3.41-2) unstable; urgency=low
+
+  * debian/copyright: Updated years
+  * Updated manpages 
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Thu, 01 May 2014 23:55:05 +0200
+
+pafy (0.3.41-1) unstable; urgency=low
+
+  * Initial release (Closes: #738796) 
+
+ -- Zlatan Todoric <zlatan.todoric@gmail.com>  Wed, 12 Feb 2014 23:42:14 +0100
