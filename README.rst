@@ -1,8 +1,8 @@
-.. image:: http://badge.fury.io/py/pafy.png
+.. image:: https://img.shields.io/pypi/v/Pafy.svg
     :target: https://pypi.python.org/pypi/pafy
 .. image:: https://pypip.in/d/pafy/badge.png
     :target: https://pypi.python.org/pypi/pafy
-.. image:: https://coveralls.io/repos/np1/pafy/badge.png?branch=develop
+.. image:: https://img.shields.io/coveralls/np1/pafy/develop.svg
     :target: https://coveralls.io/r/np1/pafy?branch=develop
 .. image:: https://landscape.io/github/np1/pafy/develop/landscape.svg
     :target: https://landscape.io/github/np1/pafy/develop
