@@ -959,8 +959,12 @@ class Stream(object):
             outfh.write(chunk)
             elapsed = time.time() - t0
             bytesdone += len(chunk)
-            rate = ((bytesdone - offset) / 1024) / elapsed
-            eta = (total - bytesdone) / (rate * 1024)
+            if elapsed:
+                rate = ((bytesdone - offset) / 1024) / elapsed
+                eta = (total - bytesdone) / (rate * 1024)
+            else: # Avoid ZeroDivisionError
+                rate = 0
+                eta = 0
             progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
 
             if not chunk:
