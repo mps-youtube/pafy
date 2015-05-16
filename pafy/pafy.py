@@ -40,6 +40,7 @@ import logging
 import hashlib
 import tempfile
 from xml.etree import ElementTree
+from urllib.parse import urlencode
 
 
 early_py_version = sys.version_info[:2] < (2, 7)
@@ -162,9 +163,13 @@ def get_video_info(video_id, newurl=None):
 
 
 def get_video_gdata(video_id):
-    """ Return xml string containing video metadata from gdata api. """
+    """ Return json string containing video metadata from gdata api. """
     new.callback("Fetching video gdata")
-    url = g.urls['gdata'] % video_id
+    query = {'part': 'id,snippet,statistics',
+             'maxResults': 1,
+             'id': video_id,
+             'key': g.api_key}
+    url = g.urls['gdata'] + '?' + urlencode(query)
     gdata = fetch_decode(url)  # unicode
     dbg("Fetched video gdata")
     new.callback("Fetched video gdata")
@@ -191,7 +196,7 @@ class g(object):
     """ Class for holding constants needed throughout the module. """
 
     urls = {
-        'gdata': "http://gdata.youtube.com/feeds/api/videos/%s?v=2",
+        'gdata': "https://www.googleapis.com/youtube/v3/videos",
         'watchv': "http://www.youtube.com/watch?v=%s",
         'vidinfo': ('http://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
@@ -200,6 +205,7 @@ class g(object):
         'age_vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
                         'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
     }
+    api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
     user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
@@ -1132,21 +1138,15 @@ class Pafy(object):
             return
 
         gdata = get_video_gdata(self.videoid)
-        t0 = "{http://search.yahoo.com/mrss/}"
-        t1 = "{http://www.w3.org/2005/Atom}"
-        t2 = "{http://gdata.youtube.com/schemas/2007}"
-        gdata = gdata.encode("utf8")
-        tree = ElementTree.fromstring(gdata)
-        groups = tree.find(t0 + "group")
-        self._published = uni(tree.find(t1 + "published").text)
-        rating = tree.find(t2 + "rating")  # already exists in basic data
-        self._likes = int(rating.get("numLikes") if rating is not None else 0)
-        dislikes = int(rating.get("numDislikes") if rating is not None else 0)
-        self._dislikes = dislikes
-        self._description = uni(groups.find(t0 + "description").text)
-        self._category = uni(groups.find(t0 + "category").text)
-        username = tree.find(t1 + "author/" + t1 + "uri").text.split("/")[-1]
-        self._username = username
+        item = json.loads(gdata)['items'][0]
+        snippet = item['snippet']
+        self._published = uni(snippet['publishedAt'])
+        self._description = uni(snippet["description"])
+        self._category = uni(snippet['categoryId'])
+        self._username = uni(snippet['channelTitle'])
+        statistics = item["statistics"]
+        self._likes = int(statistics["likeCount"])
+        self._dislikes = int(statistics["dislikeCount"])
         self._have_gdata = 1
 
     def _process_streams(self):
@@ -1519,3 +1519,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
         callback("Added video: %s" % v['title'])
 
     return playlist
+
+
+def set_api_key(key):
+    """Sets the api key to be used with youtube."""
+    g.api_key = key
