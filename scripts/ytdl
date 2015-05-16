@@ -42,6 +42,28 @@ __version__ = "0.3.67"
 __author__ = "np1"
 __license__ = "LGPLv3"
 
+not_utf8_environment = mswin or "UTF-8" not in os.environ.get("LANG", "")
+
+def utf8_replace(txt):
+    """ Replace unsupported characters in unicode string, returns unicode. """
+    sse = sys.stdout.encoding
+    txt = txt.encode(sse, "replace").decode("utf8", "ignore")
+    return txt
+
+
+def xenc(stuff):
+    """ Replace unsupported characters. """
+    if sys.stdout.isatty():
+        return utf8_replace(stuff) if not_utf8_environment else stuff
+
+    else:
+        return stuff.encode("utf8", errors="replace")
+
+
+def xprint(stuff, end=None):
+    """ Compatible print. """
+    xprint(xenc(stuff), end=end)
+
 
 def download(video, audio=False, stream=None):
     """ Download a video. """
@@ -58,10 +80,10 @@ def download(video, audio=False, stream=None):
     if early_py_version:
         dl_str = "-Downloading '{0}' [{1} Bytes]"
 
-    print(dl_str.format(stream.filename, size))
-    print("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
+    xprint(dl_str.format(stream.filename, size))
+    xprint("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
     stream.download(quiet=False)
-    print("\nDone")
+    xprint("\nDone")
 
 
 def printstreams(streams):
@@ -80,11 +102,11 @@ def printstreams(streams):
         out.append(fstring.format(n + 1, s.mediatype, s.extension, q, megs))
 
     sys.stdout.write("\r")
-    print(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
-    print(fstring.format("------", "----", "------", "-------", " ----"))
+    xprint(fstring.format("Stream", "Type", "Format", "Quality", " Size"))
+    xprint(fstring.format("------", "----", "------", "-------", " ----"))
 
     for x in out:
-        print(x)
+        xprint(x)
 
 
 def main():
@@ -130,7 +152,7 @@ def main():
 
     # if requested print vid info and list streams
     if args.i:
-        print(vid)
+        xprint(vid)
 
     if args.s:
         printstreams(streams)
@@ -138,7 +160,7 @@ def main():
     if args.b or args.a:
 
         if args.a and args.b:
-            print("-a and -b cannot be used together! Use only one.")
+            xprint("-a and -b cannot be used together! Use only one.")
 
         else:
             download(vid, audio=args.a)
@@ -153,7 +175,7 @@ def main():
         except IndexError:
             em = "Sorry, %s is not a valid option, use 1-%s"
             em = em % (int(args.n), len(streams))
-            print(em)
+            xprint(em)
 
     if not any([args.i, args.s, args.b, args.n, args.t, args.a]):
         streams = vid.streams + vid.audiostreams[::-1]
