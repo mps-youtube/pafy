@@ -1,5 +1,6 @@
 from .pafy import get_playlist
 from .pafy import new
+from .pafy import set_api_key
 from .pafy import __version__
 from .pafy import __author__
 from .pafy import __license__
