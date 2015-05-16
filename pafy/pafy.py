@@ -40,7 +40,6 @@ import logging
 import hashlib
 import tempfile
 from xml.etree import ElementTree
-from urllib.parse import urlencode
 
 
 early_py_version = sys.version_info[:2] < (2, 7)
@@ -49,12 +48,12 @@ if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
     from urllib.error import HTTPError, URLError
-    from urllib.parse import parse_qs, unquote_plus
+    from urllib.parse import parse_qs, unquote_plus, urlencode
     uni, pyver = str, 3
 
 else:
     from urllib2 import build_opener, HTTPError, URLError
-    from urllib import unquote_plus
+    from urllib import unquote_plus, urlencode
     from urlparse import parse_qs
     uni, pyver = unicode, 2
 
