@@ -1360,12 +1360,8 @@ class Pafy(object):
     def mix(self):
         """ The playlist ID for the related YouTube mix (if available). Returns string. """
         if self._mix_id is None:
-            self._fetch_mix()
+            self._mix_id = get_mix_playlist_id(self._videoid)
         return self._mix_id
-
-    def _fetch_mix(self):
-        """ Fetches the mix playlist ID and sets it for future use. """
-        self._mix_id = get_mix_playlist_id(self._videoid)
 
     def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
         """
