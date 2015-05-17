@@ -1042,7 +1042,6 @@ class Pafy(object):
         self._length = None
         self._author = None
         self._formats = None
-        self._videoid = None
         self.ciphertag = None  # used by Stream class in url property def
         self._duration = None
         self._keywords = None
@@ -1119,7 +1118,6 @@ class Pafy(object):
         self._title = _get_lst('title')
         self._dashurl = _get_lst('dashmpd')
         self._author = _get_lst('author')
-        self._videoid = _get_lst('video_id')
         self._rating = float(_get_lst('avg_rating', 0.0))
         self._length = int(_get_lst('length_seconds', 0))
         self._viewcount = int(_get_lst('view_count'), 0)
