@@ -1360,7 +1360,7 @@ class Pafy(object):
     def mix(self):
         """ The playlist for the related YouTube mix. Returns a dict containing Pafy objects. """
         if self._mix_pl is None:
-            self._mix_pl = get_playlist("RD" + self._videoid)
+            self._mix_pl = get_playlist("RD" + self.videoid)
         return self._mix_pl
 
     def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
