@@ -126,6 +126,10 @@ attributes are available
 
     The upload date of the video (e.g., 2012-10-02 17:17:24) (*str*)
 
+.. attribute:: Pafy.mix
+
+    The mix playlist provided by youtube for this video (*dict*)
+
 .. attribute:: Pafy.rating
 
     The rating of the video (0-5), (*float*)
