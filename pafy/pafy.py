@@ -1095,7 +1095,8 @@ class Pafy(object):
                 self._dashurl = re.sub(r"/s/[\w\.]+",
                                        "/signature/%s" % s, self._dashurl)
 
-        self.dash = _extract_dash(self._dashurl)
+        if self._dashurl != 'unknown':
+            self.dash = _extract_dash(self._dashurl)
         self._have_basic = 1
         self._process_streams()
         self.expiry = time.time() + g.lifespan
