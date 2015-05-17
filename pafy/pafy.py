@@ -48,13 +48,15 @@ if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
     from urllib.error import HTTPError, URLError
-    from urllib.parse import parse_qs, unquote_plus, urlencode
+    from urllib.parse import parse_qs, unquote_plus, urlencode, urlparse
+    from html.parser import HTMLParser
     uni, pyver = str, 3
 
 else:
     from urllib2 import build_opener, HTTPError, URLError
     from urllib import unquote_plus, urlencode
-    from urlparse import parse_qs
+    from urlparse import parse_qs, urlparse
+    from HTMLParser import HTMLParser
     uni, pyver = unicode, 2
 
 
@@ -1049,6 +1051,7 @@ class Pafy(object):
         self._bigthumb = None
         self._viewcount = None
         self._bigthumbhd = None
+        self._mix_id = None
         self.expiry = None
         self.playlist_meta = None
 
@@ -1353,6 +1356,17 @@ class Pafy(object):
         self._fetch_gdata()
         return self._dislikes
 
+    @property
+    def mix(self):
+        """ The playlist ID for the related YouTube mix (if available). Returns string. """
+        if self._mix_id is None:
+            self._fetch_mix()
+        return self._mix_id
+
+    def _fetch_mix(self):
+        """ Fetches the mix playlist ID and sets it for future use. """
+        self._mix_id = get_mix_playlist_id(self._videoid)
+
     def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
         """
         Return the highest resolution video available.
@@ -1524,3 +1538,25 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
 def set_api_key(key):
     """Sets the api key to be used with youtube."""
     g.api_key = key
+
+class MixParser(HTMLParser):
+    """Parses a video page to find the mix playlist ID."""
+    final_link = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "a" and self.final_link is None:
+            dkeys = dict((x, y) for x, y in attrs)
+            if "class" in dkeys and "mix-playlist" in dkeys['class'] and "href" in dkeys:
+                self.final_link = dkeys['href']
+
+
+def get_mix_playlist_id(video_id):
+    """Retrieves the playlist ID for the mix playlist related to a given video ID"""
+    response = fetch_decode(g.urls['watchv'] % video_id)
+    parser = MixParser()
+    parser.feed(response)
+    if parser.final_link is None:
+        return None
+    else:
+        url = parse_qs(urlparse(parser.final_link).query)
+        return url['list'][0]
