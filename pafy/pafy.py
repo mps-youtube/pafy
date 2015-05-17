@@ -1051,6 +1051,7 @@ class Pafy(object):
         self._bigthumb = None
         self._viewcount = None
         self._bigthumbhd = None
+        self._mix_id = None
         self.expiry = None
         self.playlist_meta = None
 
@@ -1355,6 +1356,17 @@ class Pafy(object):
         self._fetch_gdata()
         return self._dislikes
 
+    @property
+    def mix(self):
+        """ The playlist ID for the related YouTube mix (if available). Returns string. """
+        if self._mix_id is None:
+            self._fetch_mix()
+        return self._mix_id
+
+    def _fetch_mix(self):
+        """ Fetches the mix playlist ID and sets it for future use. """
+        self._mix_id = get_mix_playlist_id(self._videoid)
+
     def _getbest(self, preftype="any", ftypestrict=True, vidonly=False):
         """
         Return the highest resolution video available.
@@ -1528,7 +1540,9 @@ def set_api_key(key):
     g.api_key = key
 
 class MixParser(HTMLParser):
+    """Parses a video page to find the mix playlist ID."""
     final_link = None
+
     def handle_starttag(self, tag, attrs):
         if tag == "a" and self.final_link is None:
             dkeys = dict((x, y) for x, y in attrs)
@@ -1537,6 +1551,7 @@ class MixParser(HTMLParser):
 
 
 def get_mix_playlist_id(video_id):
+    """Retrieves the playlist ID for the mix playlist related to a given video ID"""
     response = fetch_decode(g.urls['watchv'] % video_id)
     parser = MixParser()
     parser.feed(response)
