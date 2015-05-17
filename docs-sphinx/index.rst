@@ -11,6 +11,20 @@ Development / Source code / Bug reporting: `github.com/np1/pafy
 
 Homepage: `np1.github.io/pafy <http://np1.github.io/pafy/>`_
 
+API Keys
+========
+
+Specifying an API key is optional, as pafy includes one.  However, it is prefered that software calling pafy provides it's own API key, and the default may be removed in the future.
+
+`Information from Google about obtaining an API key <https://developers.google.com/youtube/registering_an_application>`_
+
+.. function:: pafy.set_api_key(key)
+
+    "Sets the API key for pafy to use."
+
+    :param key: API key to use
+
+
 Pafy Objects and Stream Objects
 ===============================
 
