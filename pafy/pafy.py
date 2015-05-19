@@ -197,6 +197,7 @@ class g(object):
     urls = {
         'gdata': "https://www.googleapis.com/youtube/v3/videos",
         'watchv': "http://www.youtube.com/watch?v=%s",
+        'vidcat': "https://www.googleapis.com/youtube/v3/videoCategories",
         'vidinfo': ('http://www.youtube.com/get_video_info?'
                     'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?'
@@ -212,6 +213,7 @@ class g(object):
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
+    cache = {}
     itags = {
         '5': ('320x240', 'flv', "normal", ''),
         '17': ('176x144', '3gp', "normal", ''),
@@ -590,6 +592,16 @@ def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
     else:
         logging.warning("audio remux failed")
         os.rename(infile, outfile)
+
+
+def cache(name):
+    """ Returns a sub-cache dictionary under which global key, value pairs
+    can be stored. Regardless of whether a dictionary already exists for
+    the given name, the sub-cache is returned by reference.
+    """
+    if name not in g.cache:
+        g.cache[name] = {}
+    return g.cache[name]
 
 
 def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
@@ -1439,6 +1451,57 @@ class Pafy(object):
         self._thumb = pl_data.get("thumbnail")
         self._description = pl_data.get("description")
         self.playlist_meta = pl_data
+
+
+def get_category(cat_id):
+    """ Returns a list of video category names for one category ID. """
+    timestamp = time.time()
+    cat_cache = cache('categories')
+    cached = cat_cache.get(cat_id, {})
+    if cached.get('updated', 0) > timestamp - g.lifespan:
+        return cached.get('title', 'unknown')
+    # call videoCategories API endpoint to retrieve title
+    url = g.urls['vidcat']
+    query = {'id': cat_id,
+             'part': 'snippet',
+             'key': g.api_key}
+    url += "?" + urlencode(query)
+    catinfo = json.loads(fetch_decode(url))
+    try:
+        for item in catinfo.get('items', []):
+            title = item.get('snippet', {}).get('title', 'unknown')
+            cat_cache[cat_id] = {'title':title, 'updated':timestamp}
+            return title
+        cat_cache[cat_id] = {'updated':timestamp}
+        return 'unknown'
+    except Exception:
+        raise IOError("Error fetching category name for ID %s" % cat_id)
+
+
+def set_categories(categories):
+    """ Take a dictionary mapping video category IDs to name and retrieval
+    time. All items are stored into cache node 'videoCategories', but
+    for the ones with a retrieval time too long ago, the v3 API is queried
+    before.
+    """
+    timestamp = time.time()
+    idlist = [cid for cid, item in categories.items()
+              if item.get('updated', 0) < timestamp - g.lifespan]
+    if len(idlist) > 0:
+        url = g.urls['vidcat']
+        query = {'id': ','.join(idlist),
+                 'part': 'snippet',
+                 'key': g.api_key}
+        url += "?" + urlencode(query)
+        catinfo = json.loads(fetch_decode(url))
+        try:
+            for item in catinfo.get('items', []):
+                cid = item['id']
+                title = item.get('snippet', {}).get('title', 'unknown')
+                categories[cid] = {'title':title, 'updated':timestamp}
+        except Exception:
+            raise IOError("Error fetching category name for IDs %s" % idlist)
+    cache('categories').update(categories)
 
 
 def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
