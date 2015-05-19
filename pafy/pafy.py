@@ -213,7 +213,7 @@ class g(object):
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
-    _cache = {}
+    cache = {}
     itags = {
         '5': ('320x240', 'flv', "normal", ''),
         '17': ('176x144', '3gp', "normal", ''),
@@ -599,9 +599,9 @@ def cache(name):
     can be stored. Regardless of whether a dictionary already exists for
     the given name, the sub-cache is returned by reference.
     """
-    if not name in g._cache:
-        g._cache[name] = {}
-    return g._cache[name]
+    if name not in g.cache:
+        g.cache[name] = {}
+    return g.cache[name]
 
 
 def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
