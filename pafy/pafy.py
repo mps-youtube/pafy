@@ -1153,7 +1153,7 @@ class Pafy(object):
         snippet = item['snippet']
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
-        self._category = get_category(uni(snippet['categoryId']))
+        self._category = get_categoryname(snippet['categoryId'])
         self._username = uni(snippet['channelTitle'])
         statistics = item["statistics"]
         self._likes = int(statistics["likeCount"])
@@ -1453,7 +1453,7 @@ class Pafy(object):
         self.playlist_meta = pl_data
 
 
-def get_category(cat_id):
+def get_categoryname(cat_id):
     """ Returns a list of video category names for one category ID. """
     timestamp = time.time()
     cat_cache = cache('categories')
@@ -1502,6 +1502,16 @@ def set_categories(categories):
         except Exception:
             raise IOError("Error fetching category name for IDs %s" % idlist)
     cache('categories').update(categories)
+
+
+def load_cache(newcache):
+    """Loads a dict into pafy's internal cache."""
+    set_categories(newcache.get('categories', {}))
+
+
+def dump_cache():
+    """Returns pafy's cache for storing by program."""
+    return g.cache
 
 
 def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
