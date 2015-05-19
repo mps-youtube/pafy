@@ -1154,6 +1154,7 @@ class Pafy(object):
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
         self._category = get_categoryname(snippet['categoryId'])
+        # TODO: Make sure actual usename is not available through the api
         self._username = uni(snippet['channelTitle'])
         statistics = item["statistics"]
         self._likes = int(statistics["likeCount"])

@@ -186,7 +186,7 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, pafy.new, too_short)
         self.assertRaises(ValueError, pafy.get_playlist, badid)
         self.assertRaises(IOError, pafy.new, badid)
-        self.assertRaises(IOError, pafy.get_playlist, "a" * 18)
+        self.assertRaises(IOError, pafy.get_playlist, 'PL' + "a" * 16)
 
         for video in Test.videos:
             self.assertIsInstance(video['pafy'], pafy.Pafy)
@@ -374,10 +374,10 @@ VIDEOS = [
         'length': 313,
         'duration': '00:05:13',
         'author': 'Theme Park Review',
-        'username': 'themeparkreviewTPR',
+        'username': 'Theme Park Review',
         'published': '2014-05-05 19:58:07',
         'thumb': 'http://i.ytimg.com/vi/EnHp24CVORc/default.jpg',
-        'category': 'People',
+        'category': 'People & Blogs',
         'description': '3c884d9791be15646ddf351edffcb2dd22ec70f8',
         'bestsize': 101083389,
         'all streams': 21,
