@@ -1153,7 +1153,7 @@ class Pafy(object):
         snippet = item['snippet']
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
-        self._category = uni(snippet['categoryId'])
+        self._category = get_category(uni(snippet['categoryId']))
         self._username = uni(snippet['channelTitle'])
         statistics = item["statistics"]
         self._likes = int(statistics["likeCount"])
