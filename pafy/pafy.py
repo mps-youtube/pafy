@@ -275,18 +275,6 @@ class g(object):
     }
 
 
-    @staticmethod
-    def cache(name):
-        """ Returns a sub-cache dictionary under which global key, value pairs
-        can be stored. Regardless of whether a dictionary already exists for
-        the given name, the sub-cache is returned by reference.
-        """
-        if not name in g._cache:
-            g._cache[name] = {}
-        return g._cache[name]
-
-
-
 def _extract_smap(map_name, dic, zero_idx=True):
     """ Extract stream map, returns list of dicts. """
     if map_name in dic:
@@ -604,6 +592,16 @@ def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
     else:
         logging.warning("audio remux failed")
         os.rename(infile, outfile)
+
+
+def cache(name):
+    """ Returns a sub-cache dictionary under which global key, value pairs
+    can be stored. Regardless of whether a dictionary already exists for
+    the given name, the sub-cache is returned by reference.
+    """
+    if not name in g._cache:
+        g._cache[name] = {}
+    return g._cache[name]
 
 
 def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
@@ -1458,7 +1456,7 @@ class Pafy(object):
 def get_category(cat_id):
     """ Returns a list of video category names for one category ID. """
     timestamp = time.time()
-    cat_cache = g.cache('categories')
+    cat_cache = cache('categories')
     cached = cat_cache.get(cat_id, {})
     if cached.get('updated', 0) > timestamp - g.lifespan:
         return cached.get('title', 'unknown')
@@ -1474,6 +1472,8 @@ def get_category(cat_id):
             title = item.get('snippet', {}).get('title', 'unknown')
             cat_cache[cat_id] = {'title':title, 'updated':timestamp}
             return title
+        cat_cache[cat_id] = {'updated':timestamp}
+        return 'unknown'
     except Exception:
         raise IOError("Error fetching category name for ID %s" % cat_id)
 
@@ -1501,7 +1501,7 @@ def set_categories(categories):
                 categories[cid] = {'title':title, 'updated':timestamp}
         except Exception:
             raise IOError("Error fetching category name for IDs %s" % idlist)
-    g.cache('categories').update(categories)
+    cache('categories').update(categories)
 
 
 def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
