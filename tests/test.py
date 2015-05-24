@@ -154,7 +154,6 @@ class Test(unittest.TestCase):
     def test_pafy__invalid_win_filename(self):
         """ Test Windows and colon character in video name. """
         os.name = "nt"
-        # youtube_title = "abcdef"
         vid = pafy.new("http://www.youtube.com/watch?v=K-TNJSBrFEk")
         audio = vid.getbestaudio()
         expected = ("Jon Meacham, _Thomas Jefferson_ the Art of Power__ Autho"
@@ -190,7 +189,6 @@ class Test(unittest.TestCase):
 
         for video in Test.videos:
             self.assertIsInstance(video['pafy'], pafy.Pafy)
-            #self.assertTrue(isinstance(video['pafy'], pafy.Pafy))
 
     def test_video_properties(self):
         """ Test video properties. """
