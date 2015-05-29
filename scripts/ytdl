@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function, unicode_literals
 import pafy
 import sys
+import os
 
 early_py_version = sys.version_info[:2] < (2, 7)
 
@@ -41,6 +42,8 @@ except ImportError:
 __version__ = "0.3.67"
 __author__ = "np1"
 __license__ = "LGPLv3"
+
+mswin = os.name == "nt"
 
 not_utf8_environment = mswin or "UTF-8" not in os.environ.get("LANG", "")
 
