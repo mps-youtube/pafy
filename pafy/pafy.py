@@ -209,7 +209,7 @@ class g(object):
     user_agent = "pafy " + __version__
     UEFSM = 'url_encoded_fmt_stream_map'
     AF = 'adaptive_fmts'
-    jsplayer = r';\s*ytplayer\.config\s*=\s*(\s*{.*?}\s*)\s*;'
+    jsplayer = r';ytplayer\.config\s*=\s*({.*?});'
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
