@@ -933,7 +933,7 @@ class Stream(object):
             else:
                 path_dir = os.path.split(filepath)[0]
                 if path_dir and not os.path.exists(path_dir):
-                    raise Exception('No such file or directory: ' + filepath)
+                    raise IOError('No such file or directory: ' + filepath)
         else:
             filepath = self.generate_filename(meta=meta)
             
