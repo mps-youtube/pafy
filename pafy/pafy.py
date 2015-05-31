@@ -87,7 +87,15 @@ def parseqs(data):
 
 def fetch_decode(url, encoding=None):
     """ Fetch url and decode. """
-    req = g.opener.open(url)
+    try:
+        req = g.opener.open(url)
+    except HTTPError as e:
+        if e.getcode() == 503:
+            time.sleep(.5)
+            return fetch_decode(url, encoding)
+        else:
+            raise e
+
     ct = req.headers['content-type']
 
     if encoding:
