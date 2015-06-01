@@ -6,6 +6,7 @@ pafy (0.3.74-1) unstable; urgency=medium
   * debian/control: Standards-Version updated to 3.9.6
   * debian/control: Change in maintainers email address
   * pafy has made transition to python3
+  * debian/rules: using pybuild
 
  -- Zlatan Todoric <zlatan@riseup.net>  Mon, 01 Jun 2015 14:05:31 +0200
 
