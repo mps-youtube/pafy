@@ -56,7 +56,7 @@ copyright = u'2013-2014 np1'
 # built documents.
 #
 # The short X.Y version.
-version = '0.3.72'
+version = '0.3.74'
 # The full version, including alpha/beta/rc tags.
 release = '0.3.72'
 
