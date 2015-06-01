@@ -2,13 +2,14 @@ Source: pafy
 Section: python
 Priority: extra
 Maintainer: Zlatan Todoric <zlatan@riseup.net>
-Build-Depends: debhelper (>= 9), dh-python, python (>=2.7)
+Build-Depends: debhelper (>= 9), dh-python, python3-setuptools, python3-all
 Standards-Version: 3.9.6
 Homepage: https://github.com/np1/pafy
+X-Python3-Version: >= 3.4
 
-Package: python-pafy
+Package: python3-pafy
 Architecture: any
-Depends: python, ${misc:Depends}
+Depends: python3, ${misc:Depends}, ${python3:Depends}
 Recommends: ffmpeg | libav-tools
 Description: Download videos and retrieve metadata from YouTube
  Pafy is a Python library for interacting with YouTube from within your
