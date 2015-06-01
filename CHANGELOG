@@ -1,3 +1,14 @@
+1 June 2015
+Version 0.3.74
+
+[Bugfix] - Update to use gdata 3 instead of broken gdata 2 (#78)
+[Bugfix] - Fix ZeroDivisionError (#80)
+[Bugfix] - Fix ytdl with non-unicode terminal (#67)
+[Bugfix] - Fix 503 errors by retrying
+[Update] - Added mix method
+
+-------------------------------------------------------------------------------
+
 3 February 2015
 Version 0.3.72
 
