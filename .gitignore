@@ -1,5 +1,5 @@
 MANIFEST
-docs-sphinx/_build/
+doc/_build/
 *.help
 .tox
 .coverage
