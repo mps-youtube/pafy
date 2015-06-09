@@ -15,11 +15,13 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from pafy import __version__
+
 setup(
     name='pafy',
     packages=['pafy'],
     scripts=['scripts/ytdl'],
-    version='0.3.74',
+    version=__version__,
     description="Retrieve YouTube content and metadata",
     keywords=["pafy", "API", "YouTube", "youtube", "download", "video"],
     author="np1",
