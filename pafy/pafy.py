@@ -112,7 +112,7 @@ def fetch_decode(url, encoding=None):
 
 
 def new(url, basic=True, gdata=False, signature=True, size=False,
-        callback=lambda x: None):
+        callback=None):
     """ Return a new pafy instance given a url or video id.
 
     NOTE: The signature argument has been deprecated and now has no effect,
@@ -1026,13 +1026,13 @@ class Pafy(object):
     funcmap = {}  # keep functions as a class variable
 
     def __init__(self, video_url, basic=True, gdata=False,
-                 signature=True, size=False, callback=lambda x: None):
+                 signature=True, size=False, callback=None):
         """ Set initial values. """
         self.version = __version__
         self.videoid = extract_video_id(video_url)
         self.watchv_url = g.urls['watchv'] % self.videoid
 
-        new.callback = callback
+        new.callback = callback or (lambda x: None)
         self._have_basic = False
         self._have_gdata = False
 
