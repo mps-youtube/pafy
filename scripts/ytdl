@@ -65,7 +65,7 @@ def xenc(stuff):
 
 def xprint(stuff, end=None):
     """ Compatible print. """
-    xprint(xenc(stuff), end=end)
+    print(xenc(stuff), end=end)
 
 
 def download(video, audio=False, stream=None):
