@@ -48,13 +48,13 @@ if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
     from urllib.error import HTTPError, URLError
-    from urllib.parse import parse_qs, unquote_plus, urlencode
+    from urllib.parse import parse_qs, unquote_plus, urlencode, urlparse
     uni, pyver = str, 3
 
 else:
     from urllib2 import build_opener, HTTPError, URLError
     from urllib import unquote_plus, urlencode
-    from urlparse import parse_qs
+    from urlparse import parse_qs, urlparse
     uni, pyver = unicode, 2
 
 
@@ -185,17 +185,24 @@ def get_video_gdata(video_id):
 
 def extract_video_id(url):
     """ Extract the video id from a url, return video id as str. """
-    ok = (r"\w-",) * 3
-    regx = re.compile(r'(?:^|[^%s]+)([%s]{11})(?:[^%s]+|$)' % ok)
+    idregx = re.compile(r'[\w-]{11}$')
     url = str(url)
-    m = regx.search(url)
 
-    if not m:
-        err = "Need 11 character video id or the URL of the video. Got %s"
-        raise ValueError(err % url)
+    if idregx.match(url):
+        return url # ID of video
 
-    vidid = m.group(1)
-    return vidid
+    parsedurl = urlparse(url)
+    if "youtube.com" in parsedurl.netloc:
+        query = parse_qs(parsedurl.query)
+        if 'v' in query and idregx.match(query['v'][0]):
+            return query['v'][0]
+    elif "youtu.be" in parsedurl.netloc:
+        vidid = parsedurl.path.split('/')[-1] if parsedurl.path else ''
+        if idregx.match(vidid):
+            return vidid
+
+    err = "Need 11 character video id or the URL of the video. Got %s"
+    raise ValueError(err % url)
 
 
 class g(object):
