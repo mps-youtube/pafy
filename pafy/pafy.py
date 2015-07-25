@@ -341,13 +341,13 @@ class Stream(object):
     @property
     def rawbitrate(self):
         """ Return raw bitrate value. """
-        return self._info.get('abr', 0) * 1000
+        return self._info.get('abr', 0) * 1024
 
     @property
     def threed(self):
         """ Return bool, True if stream is 3D. """
         #TODO Figure out how to implement this with youtube-dl
-        return None
+        return False
 
     @property
     def itag(self):
