@@ -37,9 +37,6 @@ import sys
 import time
 import json
 import logging
-import hashlib
-import tempfile
-from xml.etree import ElementTree
 
 
 early_py_version = sys.version_info[:2] < (2, 7)
