@@ -190,6 +190,8 @@ def extract_video_id(url):
     if idregx.match(url):
         return url # ID of video
 
+    if '://' not in url:
+        url = '//' + url
     parsedurl = urlparse(url)
     if "youtube.com" in parsedurl.netloc:
         query = parse_qs(parsedurl.query)
