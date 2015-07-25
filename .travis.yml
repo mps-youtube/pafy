@@ -24,3 +24,5 @@ script:
 after_success:
     - coverage report
     - coveralls
+
+sudo: false
