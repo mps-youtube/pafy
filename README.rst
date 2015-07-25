@@ -4,11 +4,11 @@
     :target: https://pypi.python.org/pypi/pafy
 .. image:: https://img.shields.io/coveralls/np1/pafy/develop.svg
     :target: https://coveralls.io/r/np1/pafy?branch=develop
-.. image:: https://landscape.io/github/np1/pafy/develop/landscape.svg
-    :target: https://landscape.io/github/np1/pafy/develop
+.. image:: https://landscape.io/github/mps-youtube/pafy/develop/landscape.svg
+    :target: https://landscape.io/github/mps-youtube/pafy/develop
     :alt: Code Health
-.. image:: https://travis-ci.org/np1/pafy.svg?branch=develop
-    :target: https://travis-ci.org/np1/pafy
+.. image:: https://travis-ci.org/mps-youtube/pafy.svg?branch=develop
+    :target: https://travis-ci.org/mps-youtube/pafy
 .. image:: https://pypip.in/wheel/pafy/badge.png
     :target: http://pythonwheels.com/
     :alt: Wheel Status
