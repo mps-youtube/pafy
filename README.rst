@@ -1,6 +1,6 @@
 .. image:: https://img.shields.io/pypi/v/Pafy.svg
     :target: https://pypi.python.org/pypi/pafy
-.. image:: https://pypip.in/d/pafy/badge.png
+.. image:: https://img.shields.io/pypi/dm/Pafy.svg
     :target: https://pypi.python.org/pypi/pafy
 .. image:: https://img.shields.io/coveralls/np1/pafy/develop.svg
     :target: https://coveralls.io/r/np1/pafy?branch=develop
@@ -9,7 +9,7 @@
     :alt: Code Health
 .. image:: https://travis-ci.org/mps-youtube/pafy.svg?branch=develop
     :target: https://travis-ci.org/mps-youtube/pafy
-.. image:: https://pypip.in/wheel/pafy/badge.png
+.. image:: https://img.shields.io/pypi/wheel/Pafy.svg
     :target: http://pythonwheels.com/
     :alt: Wheel Status
 
