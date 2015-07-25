@@ -57,6 +57,8 @@ else:
     from urlparse import parse_qs, urlparse
     uni, pyver = unicode, 2
 
+import youtube_dl
+
 
 if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
@@ -222,196 +224,11 @@ class g(object):
     }
     api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
     user_agent = "pafy " + __version__
-    UEFSM = 'url_encoded_fmt_stream_map'
-    AF = 'adaptive_fmts'
-    jsplayer = r';ytplayer\.config\s*=\s*({.*?});'
     lifespan = 60 * 60 * 5  # 5 hours
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
     cache = {}
-    itags = {
-        '5': ('320x240', 'flv', "normal", ''),
-        '17': ('176x144', '3gp', "normal", ''),
-        '18': ('640x360', 'mp4', "normal", ''),
-        '22': ('1280x720', 'mp4', "normal", ''),
-        '34': ('640x360', 'flv', "normal", ''),
-        '35': ('854x480', 'flv', "normal", ''),
-        '36': ('320x240', '3gp', "normal", ''),
-        '37': ('1920x1080', 'mp4', "normal", ''),
-        '38': ('4096x3072', 'mp4', "normal", '4:3 hi-res'),
-        '43': ('640x360', 'webm', "normal", ''),
-        '44': ('854x480', 'webm', "normal", ''),
-        '45': ('1280x720', 'webm', "normal", ''),
-        '46': ('1920x1080', 'webm', "normal", ''),
-        '82': ('640x360-3D', 'mp4', "normal", ''),
-        '83': ('640x480-3D', 'mp4', 'normal', ''),
-        '84': ('1280x720-3D', 'mp4', "normal", ''),
-        '100': ('640x360-3D', 'webm', "normal", ''),
-        '102': ('1280x720-3D', 'webm', "normal", ''),
-        '133': ('426x240', 'm4v', 'video', ''),
-        '134': ('640x360', 'm4v', 'video', ''),
-        '135': ('854x480', 'm4v', 'video', ''),
-        '136': ('1280x720', 'm4v', 'video', ''),
-        '137': ('1920x1080', 'm4v', 'video', ''),
-        '138': ('4096x3072', 'm4v', 'video', ''),
-        '139': ('48k', 'm4a', 'audio', ''),
-        '140': ('128k', 'm4a', 'audio', ''),
-        '141': ('256k', 'm4a', 'audio', ''),
-        '160': ('256x144', 'm4v', 'video', ''),
-        '167': ('640x480', 'webm', 'video', ''),
-        '168': ('854x480', 'webm', 'video', ''),
-        '169': ('1280x720', 'webm', 'video', ''),
-        '170': ('1920x1080', 'webm', 'video', ''),
-        '171': ('128k', 'ogg', 'audio', ''),
-        '172': ('192k', 'ogg', 'audio', ''),
-        '218': ('854x480', 'webm', 'video', 'VP8'),
-        '219': ('854x480', 'webm', 'video', 'VP8'),
-        '242': ('360x240', 'webm', 'video', 'VP9'),
-        '243': ('480x360', 'webm', 'video', 'VP9'),
-        '244': ('640x480', 'webm', 'video', 'VP9 low'),
-        '245': ('640x480', 'webm', 'video', 'VP9 med'),
-        '246': ('640x480', 'webm', 'video', 'VP9 high'),
-        '247': ('720x480', 'webm', 'video', 'VP9'),
-        '248': ('1920x1080', 'webm', 'video', 'VP9'),
-        '249': ('48k', 'opus', 'audio', 'Opus'),
-        '250': ('56k', 'opus', 'audio', 'Opus'),
-        '251': ('128k', 'opus', 'audio', 'Opus'),
-        '256': ('192k', 'm4a', 'audio', '6-channel'),
-        '258': ('320k', 'm4a', 'audio', '6-channel'),
-        '264': ('2560x1440', 'm4v', 'video', ''),
-        '266': ('3840x2160', 'm4v', 'video', 'AVC'),
-        '271': ('1920x1280', 'webm', 'video', 'VP9'),
-        '272': ('3414x1080', 'webm', 'video', 'VP9'),
-        '278': ('256x144', 'webm', 'video', 'VP9'),
-        '298': ('1280x720', 'm4v', 'video', '60fps'),
-        '299': ('1920x1080', 'm4v', 'video', '60fps'),
-        '302': ('1280x720', 'webm', 'video', 'VP9'),
-        '303': ('1920x1080', 'webm', 'video', 'VP9'),
-    }
-
-
-def _extract_smap(map_name, dic, zero_idx=True):
-    """ Extract stream map, returns list of dicts. """
-    if map_name in dic:
-        smap = dic.get(map_name)
-        smap = smap[0] if zero_idx else smap
-        smap = smap.split(",")
-        smap = [parseqs(x) for x in smap]
-        return [dict((k, v[0]) for k, v in x.items()) for x in smap]
-
-    return []
-
-
-def _extract_dash(dashurl):
-    """ Download dash url and extract some data. """
-    # pylint: disable = R0914
-    dbg("Fetching dash page")
-    dashdata = fetch_decode(dashurl)
-    dbg("DASH list fetched")
-    ns = "{urn:mpeg:DASH:schema:MPD:2011}"
-    ytns = "{http://youtube.com/yt/2012/10/10}"
-    tree = ElementTree.fromstring(dashdata)
-    tlist = tree.findall(".//%sRepresentation" % ns)
-    dashmap = []
-
-    for x in tlist:
-        baseurl = x.find("%sBaseURL" % ns)
-        url = baseurl.text
-        size = baseurl.attrib["%scontentLength" % ytns]
-        bitrate = x.get("bandwidth")
-        itag = uni(x.get("id"))
-        width = uni(x.get("width"))
-        height = uni(x.get("height"))
-        type_ = re.search(r"(?:\?|&)mime=([\w\d\/]+)", url).group(1)
-        dashmap.append(dict(bitrate=bitrate,
-                            dash=True,
-                            itag=itag,
-                            width=width,
-                            height=height,
-                            url=url,
-                            size=size,
-                            type=type_))
-    return dashmap
-
-
-def _extract_function_from_js(name, js):
-    """ Find a function definition called `name` and extract components.
-
-    Return a dict representation of the function.
-
-    """
-    dbg("Extracting function '%s' from javascript", name)
-    fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
-    m = re.search(fpattern % re.escape(name), js)
-    args, body = m.groups()
-    dbg("extracted function %s(%s){%s};", name, args, body)
-    func = {'name': name, 'parameters': args.split(","), 'body': body}
-    return func
-
-
-def _extract_dictfunc_from_js(name, js):
-    """ Find anonymous function from within a dict. """
-    dbg("Extracting function '%s' from javascript", name)
-    var, _, fname = name.partition(".")
-    fpattern = (r'var\s+%s\s*\=\s*\{.{,2000}?%s'
-                r'\:function\(((?:\w+,?)+)\)\{([^}]+)\}')
-    m = re.search(fpattern % (re.escape(var), re.escape(fname)), js)
-    args, body = m.groups()
-    dbg("extracted dict function %s(%s){%s};", name, args, body)
-    func = {'name': name, 'parameters': args.split(","), 'body': body}
-    return func
-
-
-def _get_mainfunc_from_js(js):
-    """ Return main signature decryption function from javascript as dict. """
-    dbg("Scanning js for main function.")
-    m = re.search(r'\w\.sig\|\|([$\w]+)\(\w+\.\w+\)', js)
-    funcname = m.group(1)
-    dbg("Found main function: %s", funcname)
-    function = _extract_function_from_js(funcname, js)
-    return function
-
-
-def _get_other_funcs(primary_func, js):
-    """ Return all secondary functions used in primary_func. """
-    dbg("scanning javascript for secondary functions.")
-    body = primary_func['body']
-    body = body.split(";")
-    # standard function call; X=F(A,B,C...)
-    call = re.compile(r'(?:[$\w+])=([$\w]+)\(((?:\w+,?)+)\)$')
-
-    # dot notation function call; X=O.F(A,B,C..)
-    dotcall = re.compile(r'(?:[$\w+]=)?([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
-
-    functions = {}
-
-    for part in body:
-
-        # is this a function?
-        if call.match(part):
-            match = call.match(part)
-            name = match.group(1)
-            # dbg("found secondary function '%s'", name)
-
-            if name not in functions:
-                # extract from javascript if not previously done
-                functions[name] = _extract_function_from_js(name, js)
-
-            # else:
-                # dbg("function '%s' is already in map.", name)
-        elif dotcall.match(part):
-
-            match = dotcall.match(part)
-            name = "%s.%s" % (match.group(1), match.group(2))
-
-            # don't treat X=A.slice(B) as X=O.F(B)
-            if match.group(2) in ["slice", "splice"]:
-                continue
-
-            if name not in functions:
-                functions[name] = _extract_dictfunc_from_js(name, js)
-
-    return functions
+    ydl_opts = {'quiet': True, 'prefer_insecure': True}
 
 
 def _getval(val, argsdict):
@@ -426,158 +243,6 @@ def _getval(val, argsdict):
 
     else:
         raise IOError("Error val %s from dict %s" % (val, argsdict))
-
-
-def _get_func_from_call(caller, name, arguments, js_url):
-    """
-    Return called function complete with called args given a caller function .
-
-    This function requires that Pafy.funcmap contains the function `name`.
-    It retrieves the function and fills in the parameter values as called in
-    the caller, returning them in the returned newfunction `args` dict
-
-    """
-    newfunction = Pafy.funcmap[js_url][name]
-    newfunction['args'] = {}
-
-    for n, arg in enumerate(arguments):
-        value = _getval(arg, caller['args'])
-
-        # function may not use all arguments
-        if n < len(newfunction['parameters']):
-            param = newfunction['parameters'][n]
-            newfunction['args'][param] = value
-
-    return newfunction
-
-
-def _solve(f, js_url, returns=True):
-    """Solve basic javascript function. Return solution value (str). """
-    # pylint: disable=R0914,R0912
-    resv = "slice|splice|reverse"
-    patterns = {
-        'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)$',
-        'func_call': r'(\w+)=([$\w]+)\(((?:\w+,?)+)\)$',
-        'x1': r'var\s(\w+)=(\w+)\[(\w+)\]$',
-        'x2': r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]$',
-        'x3': r'(\w+)\[(\w+)\]=(\w+)$',
-        'return': r'return (\w+)(\.join\(""\))?$',
-        'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
-        'reverse_noass': r'(\w+)\.reverse\(\)$',
-        'return_reverse': r'return (\w+)\.reverse\(\)$',
-        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
-        'splice_noass': r'([$\w]+)\.splice\(([$\w]+)\,([$\w]+)\)$',
-        'return_slice': r'return (\w+)\.slice\((\w+)\)$',
-        'func_call_dict': r'(\w)=([$\w]+)\.(?!%s)([$\w]+)\(((?:\w+,?)+)\)$'
-                          % resv,
-        'func_call_dict_noret': r'([$\w]+)\.(?!%s)([$\w]+)\(((?:\w+,?)+)\)$'
-                                % resv
-    }
-
-    parts = f['body'].split(";")
-
-    for part in parts:
-        # dbg("Working on part: " + part)
-
-        name = ""
-
-        for n, p in patterns.items():
-            m, name = re.match(p, part), n
-
-            if m:
-                break
-        else:
-            raise IOError("no match for %s" % part)
-
-        if name == "split_or_join":
-            pass
-
-        elif name == "func_call_dict":
-            lhs, dic, key, args = m.group(1, 2, 3, 4)
-            funcname = "%s.%s" % (dic, key)
-            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            f['args'][lhs] = _solve(newfunc, js_url)
-
-        elif name == "func_call_dict_noret":
-            dic, key, args = m.group(1, 2, 3)
-            funcname = "%s.%s" % (dic, key)
-            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            changed_args = _solve(newfunc, js_url, returns=False)
-
-            for arg in f['args']:
-
-                if arg in changed_args:
-                    f['args'][arg] = changed_args[arg]
-
-        elif name == "func_call":
-            lhs, funcname, args = m.group(1, 2, 3)
-            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            f['args'][lhs] = _solve(newfunc, js_url)  # recursive call
-
-        # new var is an index of another var; eg: var a = b[c]
-        elif name == "x1":
-            b, c = [_getval(x, f['args']) for x in m.group(2, 3)]
-            f['args'][m.group(1)] = b[c]
-
-        # a[b]=c[d%e.length]
-        elif name == "x2":
-            vals = m.group(*range(1, 6))
-            a, b, c, d, e = [_getval(x, f['args']) for x in vals]
-            f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:]
-
-        # a[b]=c
-        elif name == "x3":
-            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
-            f['args'][m.group(1)] = a[:b] + c + a[b + 1:]  # a[b] = c
-
-        elif name == "return":
-            return f['args'][m.group(1)]
-
-        elif name == "reverse":
-            f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
-
-        elif name == "reverse_noass":
-            f['args'][m.group(1)] = _getval(m.group(1), f['args'])[::-1]
-
-        elif name == "splice_noass":
-            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
-            f['args'][m.group(1)] = a[:b] + a[b + c:]
-
-        elif name == "return_reverse":
-            return f['args'][m.group(1)][::-1]
-
-        elif name == "return_slice":
-            a, b = [_getval(x, f['args']) for x in m.group(1, 2)]
-            return a[b:]
-
-        elif name == "slice":
-            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
-            f['args'][m.group(1)] = b[c:]
-
-    if not returns:
-        # Return the args dict if no return statement in function
-        return f['args']
-
-    else:
-        raise IOError("Processed js funtion parts without finding return")
-
-
-def _decodesig(sig, js_url):
-    """  Return decrypted sig given an encrypted sig and js_url key. """
-    # lookup main function in Pafy.funcmap dict
-    mainfunction = Pafy.funcmap[js_url]['mainfunction']
-    param = mainfunction['parameters']
-
-    if not len(param) == 1:
-        raise IOError("Main sig js function has more than one arg: %s" % param)
-
-    # fill in function argument with signature
-    mainfunction['args'] = {param[0]: sig}
-    new.callback("Decrypting signature")
-    solved = _solve(mainfunction, js_url)
-    dbg("Decrypted sig = %s...", solved[:30])
-    new.callback("Decrypted signature")
-    return solved
 
 
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
@@ -619,37 +284,6 @@ def cache(name):
     return g.cache[name]
 
 
-def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
-    """ Fetch url - from tmpdir if already retrieved. """
-    tmpdir = os.path.join(tempfile.gettempdir(), "pafy")
-
-    if not os.path.exists(tmpdir):
-        os.makedirs(tmpdir)
-
-    url_md5 = hashlib.md5(url.encode("utf8")).hexdigest()
-    cached_filename = os.path.join(tmpdir, file_prefix + url_md5)
-
-    if os.path.exists(cached_filename):
-        dbg("fetched %s from cache", dbg_ref)
-
-        with open(cached_filename) as f:
-            retval = f.read()
-
-        return retval
-
-    else:
-        data = fetch_decode(url, "utf8")  # unicode
-        dbg("Fetched %s", dbg_ref)
-        new.callback("Fetched %s" % dbg_ref)
-
-        with open(cached_filename, "w") as f:
-            f.write(data)
-
-        # prune files after write
-        prune_files(tmpdir, file_prefix)
-        return data
-
-
 def prune_files(path, prefix="", age_max=3600 * 24 * 14, count_max=4):
     """ Remove oldest files from path that start with prefix.
 
@@ -678,125 +312,15 @@ def prune_files(path, prefix="", age_max=3600 * 24 * 14, count_max=4):
         os.unlink(f[0])
 
 
-def get_js_sm(video_id):
-    """ Fetch watchinfo page and extract stream map and js funcs if not known.
-
-    This function is needed by videos with encrypted signatures.
-    If the js url referred to in the watchv page is not a key in Pafy.funcmap,
-    the javascript is fetched and functions extracted.
-
-    Returns streammap (list of dicts), js url (str)  and funcs (dict)
-
-    """
-    watch_url = g.urls['watchv'] % video_id
-    new.callback("Fetching watch page")
-    watchinfo = fetch_decode(watch_url)  # unicode
-    dbg("Fetched watch page")
-    new.callback("Fetched watch page")
-    m = re.search(g.jsplayer, watchinfo)
-    myjson = json.loads(m.group(1))
-    stream_info = myjson['args']
-    dash_url = stream_info['dashmpd']
-    sm = _extract_smap(g.UEFSM, stream_info, False)
-    asm = _extract_smap(g.AF, stream_info, False)
-    js_url = myjson['assets']['js']
-    js_url = "https:" + js_url if js_url.startswith("//") else js_url
-    funcs = Pafy.funcmap.get(js_url)
-
-    if not funcs:
-        dbg("Fetching javascript")
-        new.callback("Fetching javascript")
-        javascript = fetch_cached(js_url, encoding="utf8",
-                                  dbg_ref="javascript", file_prefix="js-")
-        mainfunc = _get_mainfunc_from_js(javascript)
-        funcs = _get_other_funcs(mainfunc, javascript)
-        funcs['mainfunction'] = mainfunc
-
-    elif funcs:
-        dbg("Using functions in memory extracted from %s", js_url)
-        dbg("Mem contains %s js func sets", len(Pafy.funcmap))
-
-    return (sm, asm), js_url, funcs, dash_url
-
-
-def _make_url(raw, sig, quick=True):
-    """ Return usable url. Set quick=False to disable ratebypass override. """
-    if quick and "ratebypass=" not in raw:
-        raw += "&ratebypass=yes"
-
-    if "signature=" not in raw:
-
-        if sig is None:
-            raise IOError("Error retrieving url")
-
-        raw += "&signature=" + sig
-
-    return raw
-
-
 class Stream(object):
 
     """ YouTube video stream class. """
 
-    def __init__(self, sm, parent):
+    def __init__(self, info, parent):
         """ Set initial values. """
-        self._itag = sm['itag']
-        # is_dash = "width" in sm and "height" in sm
-        is_dash = "dash" in sm
-
-        if self._itag not in g.itags:
-            logging.warning("Unknown itag: %s", self._itag)
-            return None
-
-        self._mediatype = g.itags[self.itag][2]
-        self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
-
-        if is_dash:
-
-            if sm['width'] != "None":  # dash video
-                self._resolution = "%sx%s" % (sm['width'], sm['height'])
-                self._quality = self._resolution
-                self._dimensions = (int(sm['width']), int(sm['height']))
-
-            else:  # dash audio
-                self._resolution = "0x0"
-                self._dimensions = (0, 0)
-                self._rawbitrate = int(sm['bitrate'])
-                # self._bitrate = uni(int(sm['bitrate']) // 1024) + "k"
-                self._bitrate = g.itags[self.itag][0]
-                self._quality = self._bitrate
-
-            self._fsize = int(sm['size'])
-            # self._bitrate = sm['bitrate']
-            # self._rawbitrate = uni(int(self._bitrate) // 1024) + "k"
-
-        else:  # not dash
-            self._resolution = g.itags[self.itag][0]
-            self._fsize = None
-            self._bitrate = self._rawbitrate = None
-            self._dimensions = tuple(self.resolution.split("-")[0].split("x"))
-            self._dimensions = tuple([int(x) if x.isdigit() else x for x in
-                                      self._dimensions])
-            self._quality = self.resolution
-
-        self._vidformat = sm['type'].split(';')[0]  # undocumented
-        self._extension = g.itags[self.itag][1]
-        self._title = parent.title
-        self.encrypted = 's' in sm
+        self._info = info
         self._parent = parent
         self._filename = self.generate_filename()
-        self._notes = g.itags[self.itag][3]
-        self._url = None
-        self._rawurl = sm['url']
-        self._sig = sm['s'] if self.encrypted else sm.get("sig")
-        self._active = False
-
-        if self.mediatype == "audio" and not is_dash:
-            self._dimensions = (0, 0)
-            self._bitrate = self.resolution
-            self._quality = self.bitrate
-            self._resolution = "0x0"
-            self._rawbitrate = int(sm["bitrate"])
 
     def generate_filename(self, meta=False):
         """ Generate filename. """
@@ -805,38 +329,43 @@ class Stream(object):
         if os.name == "nt":
             ok = re.compile(r'[^\\/:*?"<>|]')
 
-        filename = "".join(x if ok.match(x) else "_" for x in self._title)
+        filename = "".join(x if ok.match(x) else "_" for x in self.title)
 
         if meta:
-            filename += "-%s-%s" % (self._parent.videoid, self._itag)
+            filename += "-%s-%s" % (self._parent.videoid, self.itag)
 
-        filename += "." + self._extension
+        filename += "." + self.extension
         return filename
 
     @property
     def rawbitrate(self):
         """ Return raw bitrate value. """
-        return self._rawbitrate
+        return self._info.get('abr', 0) * 1000
 
     @property
     def threed(self):
         """ Return bool, True if stream is 3D. """
-        return self._threed
+        #TODO Figure out how to implement this with youtube-dl
+        return None
 
     @property
     def itag(self):
         """ Return itag value of stream. """
-        return self._itag
+        return self._info['format_id']
 
     @property
     def resolution(self):
         """ Return resolution of stream as str. 0x0 if audio. """
-        return self._resolution
+        height = self._info.get('height') or 0
+        width = self._info.get('width') or 0
+        return str(width) + 'x' + str(height)
 
     @property
     def dimensions(self):
         """ Return dimensions of stream as tuple.  (0, 0) if audio. """
-        return self._dimensions
+        height = self._info.get('height') or 0
+        width = self._info.get('width') or 0
+        return width, height
 
     @property
     def quality(self):
@@ -844,12 +373,16 @@ class Stream(object):
 
         eg, 128k or 640x480 (str)
         """
-        return self._quality
+        if self.rawbitrate:
+            quality = self.bitrate
+        else:
+            quality = self.resolution
+        return quality
 
     @property
     def title(self):
         """ Return YouTube video title as a string. """
-        return self._title
+        return self._parent.title
 
     @property
     def extension(self):
@@ -857,12 +390,12 @@ class Stream(object):
 
         Possible values are: 3gp, m4a, m4v, mp4, webm, ogg
         """
-        return self._extension
+        return self._info['ext']
 
     @property
     def bitrate(self):
         """ Return bitrate of an audio stream. """
-        return self._bitrate
+        return str(self._info.get('abr', 0)) + 'k'
 
     @property
     def mediatype(self):
@@ -870,12 +403,19 @@ class Stream(object):
 
         (normal means a stream containing both video and audio.)
         """
-        return self._mediatype
+        if (self._info.get('acodec') != 'none' and
+                self._info.get('vcodec') == 'none'):
+            return 'audio'
+        elif (self._info.get('acodec') == 'none' and
+                self._info.get('vcodec') != 'none'):
+            return 'video'
+        else:
+            return 'normal'
 
     @property
     def notes(self):
         """ Return additional notes regarding the stream format. """
-        return self._notes
+        return self._info.get('format_note') or ''
 
     @property
     def filename(self):
@@ -885,20 +425,7 @@ class Stream(object):
     @property
     def url(self):
         """ Return the url, decrypt if required. """
-        if not self._url:
-
-            if self._parent.age_ver:
-
-                if self._sig:
-                    s = self._sig
-                    self._sig = s[2:63] + s[82] + s[64:82] + s[63]
-
-            elif self.encrypted:
-                self._sig = _decodesig(self._sig, self._parent.js_url)
-
-            self._url = _make_url(self._rawurl, self._sig)
-
-        return self._url
+        return self._info.get('url')
 
     @property
     def url_https(self):
@@ -912,18 +439,7 @@ class Stream(object):
 
     def get_filesize(self):
         """ Return filesize of the stream in bytes.  Set member variable. """
-        if not self._fsize:
-
-            try:
-                dbg("Getting stream size")
-                cl = "content-length"
-                self._fsize = int(g.opener.open(self.url).headers[cl])
-                dbg("Got stream size")
-
-            except (AttributeError, HTTPError, URLError):
-                self._fsize = 0
-
-        return self._fsize
+        return self._info['filesize']
 
     def cancel(self):
         """ Cancel an active download. """
@@ -1050,12 +566,7 @@ class Pafy(object):
         self._published = None
         self._username = None
 
-        self.sm = []
-        self.asm = []
-        self.dash = []
-        self.js_url = None  # if js_url is set then has new stream map
-        self._dashurl = None
-        self.age_ver = False
+        self._ydl_info = None
         self._streams = []
         self._oggstreams = []
         self._m4astreams = []
@@ -1068,8 +579,6 @@ class Pafy(object):
         self._rating = None
         self._length = None
         self._author = None
-        self._formats = None
-        self.ciphertag = None  # used by Stream class in url property def
         self._duration = None
         self._keywords = None
         self._bigthumb = None
@@ -1096,35 +605,9 @@ class Pafy(object):
             return
 
         self._fetch_basic()
-        sm_ciphertag = "s" in self.sm[0]
-
-        if self.ciphertag != sm_ciphertag:
-            dbg("ciphertag mismatch")
-            self.ciphertag = not self.ciphertag
-
-        if self.ciphertag:
-            dbg("Encrypted signature detected.")
-
-            if not self.age_ver:
-                smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
-                Pafy.funcmap[js_url] = funcs
-                self.sm, self.asm = smaps
-                self.js_url = js_url
-                dashsig = re.search(r"/s/([\w\.]+)", dashurl).group(1)
-                dbg("decrypting dash sig")
-                goodsig = _decodesig(dashsig, js_url)
-                self._dashurl = re.sub(r"/s/[\w\.]+",
-                                       "/signature/%s" % goodsig, dashurl)
-
-            else:
-                s = re.search(r"/s/([\w\.]+)", self._dashurl).group(1)
-                s = s[2:63] + s[82] + s[64:82] + s[63]
-                self._dashurl = re.sub(r"/s/[\w\.]+",
-                                       "/signature/%s" % s, self._dashurl)
-
-        if self._dashurl != 'unknown':
-            self.dash = _extract_dash(self._dashurl)
         self._have_basic = 1
+        with youtube_dl.YoutubeDL(g.ydl_opts) as ydl:
+            self._ydl_info = ydl.extract_info(self.videoid, download=False)
         self._process_streams()
         self.expiry = time.time() + g.lifespan
 
@@ -1149,14 +632,9 @@ class Pafy(object):
         self._length = int(_get_lst('length_seconds', 0))
         self._viewcount = int(_get_lst('view_count'), 0)
         self._thumb = unquote_plus(_get_lst('thumbnail_url', ""))
-        self._formats = [x.split("/") for x in _get_lst('fmt_list').split(",")]
         self._keywords = _get_lst('keywords', "").split(',')
         self._bigthumb = _get_lst('iurlsd', "")
         self._bigthumbhd = _get_lst('iurlsdmaxres', "")
-        self.ciphertag = _get_lst("use_cipher_signature") == "True"
-        self.sm = _extract_smap(g.UEFSM, allinfo, True)
-        self.asm = _extract_smap(g.AF, allinfo, True)
-        dbg("extracted stream maps")
 
     def _fetch_gdata(self):
         """ Extract gdata values, fetch gdata if necessary. """
@@ -1181,30 +659,13 @@ class Pafy(object):
         if not self._have_basic:
             self.fetch_basic()
 
-        streams = [Stream(z, self) for z in self.sm]
-        streams = [x for x in streams if x.itag in g.itags]
-        adpt_streams = [Stream(z, self) for z in self.asm]
-        adpt_streams = [x for x in adpt_streams if x.itag in g.itags]
-        dash_streams = [Stream(z, self) for z in self.dash]
-        dash_streams = [x for x in dash_streams if x.itag in g.itags]
-        audiostreams = [x for x in adpt_streams if x.bitrate]
-        videostreams = [x for x in adpt_streams if not x.bitrate]
-        dash_itags = [x.itag for x in dash_streams]
-        audiostreams = [x for x in audiostreams if x.itag not in dash_itags]
-        videostreams = [x for x in videostreams if x.itag not in dash_itags]
-        audiostreams += [x for x in dash_streams if x.mediatype == "audio"]
-        videostreams += [x for x in dash_streams if x.mediatype != "audio"]
-        audiostreams = sorted(audiostreams, key=lambda x: x.rawbitrate,
-                              reverse=True)
-        videostreams = sorted(videostreams, key=lambda x: x.dimensions,
-                              reverse=True)
-        m4astreams = [x for x in audiostreams if x.extension == "m4a"]
-        oggstreams = [x for x in audiostreams if x.extension == "ogg"]
-        self._streams = streams
-        self._audiostreams = audiostreams
-        self._videostreams = videostreams
-        self._m4astreams, self._oggstreams = m4astreams, oggstreams
-        self._allstreams = streams + videostreams + audiostreams
+        allstreams = [Stream(z, self) for z in self._ydl_info['formats']]
+        self._streams = [i for i in allstreams if i.mediatype == 'normal']
+        self._audiostreams = [i for i in allstreams if i.mediatype == 'audio']
+        self._videostreams = [i for i in allstreams if i.mediatype == 'video']
+        self._m4astreams = [i for i in allstreams if i.extension == 'm4a']
+        self._oggstreams = [i for i in allstreams if i.extension == 'ogg']
+        self._allstreams = allstreams
 
     def __repr__(self):
         """ Print video metadata. Return utf8 string. """
