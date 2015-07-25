@@ -28,6 +28,7 @@ setup(
     author_email="np1nagev@gmail.com",
     url="http://np1.github.io/pafy/",
     download_url="https://github.com/np1/pafy/tarball/master",
+    install_requires=['youtube-dl'],
     package_data={"": ["LICENSE", "README.rst", "CHANGELOG", "AUTHORS"]},
     include_package_data=True,
     license='LGPLv3',
