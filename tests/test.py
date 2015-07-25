@@ -396,13 +396,13 @@ VIDEOS = [
         'published': '2010-11-30 23:16:19',
         'thumb': 'http://i.ytimg.com/vi/rYEDA3JcQqw/default.jpg',
         'category': 'Music',
-        'description': '72bfd9472e59a8f48b83af36197ebcf5d2227609',
+        'description': 'a91a57add910e97becb43710855422c5128dcfd8',
         'bestsize': 41334333,
-        'all streams': 27,
+        'all streams': 30,
         'normal streams': 6,
         'video streams': 18,
-        'audio streams': 3,
-        'ogg streams': 1,
+        'audio streams': 6,
+        'ogg streams': 4,
         'm4a streams': 2,
     }
 ]
