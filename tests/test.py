@@ -72,24 +72,6 @@ class Test(unittest.TestCase):
                            "username category thumb published").split()
         self.runOnce()
 
-    def get_all_funcs(self):
-        """ Populate pafy funcmap for use in tests. """
-        mainfunc = pafy._get_mainfunc_from_js(JAVASCRIPT)
-        otherfuncs = pafy._get_other_funcs(mainfunc, JAVASCRIPT)
-
-        # store all functions in Pafy.funcmap
-        pafy.Pafy.funcmap = {"jsurl": {mainfunc['name']: mainfunc}}
-        pafy.Pafy.funcmap["jsurl"]["mainfunction"] = mainfunc
-        for funcname, func in otherfuncs.items():
-            pafy.Pafy.funcmap['jsurl'][funcname] = func
-
-        return mainfunc, otherfuncs
-
-    def test_make_url_no_sig(self):
-        """ Test signature not in raw and no sig argument. """
-        args = dict(raw="a=b&c=d", sig=None, quick=False)
-        self.assertRaises(IOError, pafy._make_url, **args)
-
     def test_generate_filename_with_meta(self):
         """ Use meta argument to generate filename. """
         if Test.quick:
@@ -224,59 +206,6 @@ class Test(unittest.TestCase):
             size = video['best'].get_filesize()
             self.assertEqual(video['bestsize'], size)
 
-    def test_get_other_funcs(self):
-        """ Test extracting javascript functions. """
-        js = "function  f$(x,y){var X=x[1];var Y=y[1];return X;}"
-        primary_func = dict(body="a=f$(12,34);b=f$(56,67)")
-        otherfuncs = pafy._get_other_funcs(primary_func, js)
-        # otherfuncs should be:
-        #{'f$': {'body': var X=x[1];var Y=y[1];return X;",
-        #        'name': 'f$', 'parameters': ['x', 'y']}}
-        expected_body = 'var X=x[1];var Y=y[1];return X;'
-        self.assertEqual(otherfuncs['f$']['body'], expected_body)
-        self.assertEqual(otherfuncs['f$']['name'], 'f$')
-        self.assertEqual(otherfuncs['f$']['parameters'], ['x', 'y'])
-
-    def test_solve(self):
-        """ Test solve js function. """
-        mainfunc, otherfuncs = self.get_all_funcs()
-        self.assertEqual(mainfunc['name'], "mthr")
-        self.assertEqual(mainfunc["parameters"], ["a"])
-        self.assertGreater(len(mainfunc['body']), 3)
-        self.assertIn("return", mainfunc['body'])
-        self.assertEqual(otherfuncs['fkr']['parameters'], ['a', 'b'])
-        # test pafy._solve
-        mainfunc['args'] = {'a': "1234567890"}
-        solved = pafy._solve(mainfunc, "jsurl")
-        self.assertEqual(solved, "2109876752")
-
-    def test_solve_errors(self):
-        """ Test solve function exceptions. """
-
-        mainfunc, otherfuncs = self.get_all_funcs()
-
-        # test unknown javascript
-        mainfunc['body'] = mainfunc['body'].replace("a=a.reverse()", "a=a.peverse()")
-        mainfunc['args'] = dict(a="1234567890")
-        self.assertRaises(IOError, pafy._solve, mainfunc, "jsurl")
-
-        # test return statement not found
-        mainfunc, otherfuncs = self.get_all_funcs()
-        mainfunc['body'] = mainfunc['body'].replace("return ", "a=")
-        mainfunc['args'] = dict(a="1234567890")
-        self.assertRaises(IOError, pafy._solve, mainfunc, "jsurl")
-
-    def test_decodesig(self):
-        """ Test signature decryption function. """
-        # populate functions in pafy funcmap
-        _, __ = self.get_all_funcs()
-        pafy.new.callback = lambda x: None
-        self.assertEqual('2109876752', pafy._decodesig('1234567890', 'jsurl'))
-        # repopulate functions in pafy funcmap
-        _, __ = self.get_all_funcs()
-        pafy.Pafy.funcmap["jsurl"]['mainfunction']['parameters'] = ["a", "b"]
-        self.assertRaises(IOError, pafy._decodesig, '1234567890', 'jsurl')
-
     def test_get_playlist(self):
         """ Test get_playlist function. """
         for pl in Test.playlists:
@@ -288,29 +217,7 @@ class Test(unittest.TestCase):
 
     def test_misc_tests(self):
         """ Test extract_smap and _getval. """
-        self.assertEqual(pafy._extract_smap("a", "bcd"), [])
         self.assertRaises(IOError, pafy._getval, "no_digits_here", "88")
-
-        # _get_func_from_call
-        xcaller = {"args": [1, 2, 3]}
-        xname = {'parameters': [1, 2, 3]}
-        xarguments = ["1", "2", "3"]
-        pafy.Pafy.funcmap["js_url"] = {"hello": xname}
-        pafy._get_func_from_call(xcaller, "hello", xarguments, "js_url")
-
-
-JAVASCRIPT = """\
-function mthr(a){a=a.split("");a=fkr(a,59);a=a.slice(1);a=fkr(a,66);\
-a=a.slice(3);a=fkr(a,10);a=a.reverse();a=fkr(a,55);a=fkr(a,70);\
-a=a.slice(1);a=np1.apple(2,a);return a.join("")};
-
-function fkr(a,b){var c=a[0];a[0]=a[b%a.length];a[b]=c;return a};
-
-var np1={apple:function(llama,zebra){zebra=zebra.reverse();\
-return zebra.reverse()}};
-
-z.sig||mthr(aaa.bbb)
-"""
 
 
 PLAYLISTS = [
