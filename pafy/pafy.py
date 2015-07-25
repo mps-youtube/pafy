@@ -315,6 +315,8 @@ class Stream(object):
 
     """ YouTube video stream class. """
 
+    _fsize = None
+
     def __init__(self, info, parent):
         """ Set initial values. """
         self._info = info
@@ -438,7 +440,23 @@ class Stream(object):
 
     def get_filesize(self):
         """ Return filesize of the stream in bytes.  Set member variable. """
-        return self._info['filesize']
+
+        # Faster method
+        if 'filesize' in self._info:
+            return self._info['filesize']
+
+        # Fallback
+        if not self._fsize:
+            try:
+                dbg("Getting stream size")
+                cl = "content-length"
+                self._fsize = int(g.opener.open(self.url).headers[cl])
+                dbg("Got stream size")
+
+            except (AttributeError, HTTPError, URLError):
+                self._fsize = 0
+
+        return self._fsize
 
     def cancel(self):
         """ Cancel an active download. """
