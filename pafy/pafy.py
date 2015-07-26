@@ -1544,14 +1544,24 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
     # too many local vars
 
     # Normal playlists start with PL, Mixes start with RD + first video ID
-    regx = re.compile(r'((?:RD|PL)[-_0-9a-zA-Z]+)')
-    m = regx.search(playlist_url)
+    idregx = re.compile(r'((?:RD|PL)[-_0-9a-zA-Z]+)$')
 
-    if not m:
+    playlist_id = None
+    if idregx.match(playlist_url):
+        playlist_id = playlist_url # ID of video
+
+    if '://' not in playlist_url:
+        playlist_url = '//' + playlist_url
+    parsedurl = urlparse(playlist_url)
+    if "youtube.com" in parsedurl.netloc:
+        query = parse_qs(parsedurl.query)
+        if 'list' in query and idregx.match(query['list'][0]):
+            playlist_id = query['list'][0]
+
+    if not playlist_id:
         err = "Unrecognized playlist url: %s"
         raise ValueError(err % playlist_url)
 
-    playlist_id = m.group(1)
     url = g.urls["playlist"] % playlist_id
 
     try:
@@ -1559,7 +1569,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
         allinfo = json.loads(allinfo)
 
     except:
-        raise IOError("Error fetching playlist %s" % m.groups(0))
+        raise IOError("Error fetching playlist %s" % playlist_url)
 
     # playlist specific metadata
     playlist = dict(
