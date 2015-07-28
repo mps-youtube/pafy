@@ -227,7 +227,7 @@ class g(object):
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
     cache = {}
-    ydl_opts = {'quiet': True, 'prefer_insecure': True}
+    ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings':True}
 
 
 def _getval(val, argsdict):
