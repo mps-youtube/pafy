@@ -144,30 +144,6 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     return Pafy(url, basic, gdata, signature, size, callback)
 
 
-def get_video_info(video_id, newurl=None):
-    """ Return info for video_id.  Returns dict. """
-    url = g.urls['vidinfo'] % video_id
-    url = newurl if newurl else url
-    info = fetch_decode(url)  # bytes
-    info = parseqs(info)  # unicode dict
-    dbg("Fetched video info%s", " (age ver)" if newurl else "")
-
-    if info['status'][0] == "fail" and info['errorcode'][0] == '150' and \
-            "confirm your age" in info['reason'][0]:
-        # Video requires age verification
-        dbg("Age verification video")
-        new.callback("Age verification video")
-        newurl = g.urls['age_vidinfo'] % (video_id, video_id)
-        info = get_video_info(video_id, newurl)
-        info.update({"age_ver": True})
-
-    elif info['status'][0] == "fail":
-        reason = info['reason'][0] or "Bad video argument"
-        raise IOError("Youtube says: %s [%s]" % (reason, video_id))
-
-    return info
-
-
 def get_video_gdata(video_id):
     """ Return json string containing video metadata from gdata api. """
     new.callback("Fetching video gdata")
@@ -214,12 +190,11 @@ class g(object):
         'gdata': "https://www.googleapis.com/youtube/v3/videos",
         'watchv': "http://www.youtube.com/watch?v=%s",
         'vidcat': "https://www.googleapis.com/youtube/v3/videoCategories",
-        'vidinfo': ('http://www.youtube.com/get_video_info?'
-                    'video_id=%s&asv=3&el=detailpage&hl=en_US'),
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
-        'age_vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
-                        'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
+        'thumb': "http://i.ytimg.com/vi/%s/default.jpg",
+        'bigthumb': "http://i.ytimg.com/vi/%s/sddefault.jpg",
+        'bigthumbhd': "http://i.ytimg.com/vi/%s/hddefault.jpg",
     }
     api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
     user_agent = "pafy " + __version__
@@ -228,20 +203,6 @@ class g(object):
     opener.addheaders = [('User-Agent', user_agent)]
     cache = {}
     ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings':True}
-
-
-def _getval(val, argsdict):
-    """ resolve variable values, preserve int literals. Return dict."""
-    m = re.match(r'(\d+)', val)
-
-    if m:
-        return int(m.group(1))
-
-    elif val in argsdict:
-        return argsdict[val]
-
-    else:
-        raise IOError("Error val %s from dict %s" % (val, argsdict))
 
 
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
@@ -592,7 +553,6 @@ class Pafy(object):
         self._audiostreams = []
 
         self._title = None
-        self._thumb = None
         self._rating = None
         self._length = None
         self._author = None
@@ -606,7 +566,7 @@ class Pafy(object):
         self.playlist_meta = None
 
         if basic:
-            self.fetch_basic()
+            self._fetch_basic()
 
         if gdata:
             self._fetch_gdata()
@@ -616,42 +576,33 @@ class Pafy(object):
                 # pylint: disable=W0104
                 s.get_filesize()
 
-    def fetch_basic(self):
+    def _fetch_basic(self):
         """ Fetch basic data and streams. """
         if self._have_basic:
             return
 
-        self._fetch_basic()
-        self._have_basic = 1
         with youtube_dl.YoutubeDL(g.ydl_opts) as ydl:
             self._ydl_info = ydl.extract_info(self.videoid, download=False)
-        self._process_streams()
-        self.expiry = time.time() + g.lifespan
-
-    def _fetch_basic(self, info_url=None):
-        """ Fetch info url page and set member vars. """
-        allinfo = get_video_info(self.videoid, newurl=info_url)
-
-        if allinfo.get("age_ver"):
-            self.age_ver = True
 
         new.callback("Fetched video info")
 
-        def _get_lst(key, default="unknown", dic=allinfo):
-            """ Dict get function, returns first index. """
-            retval = dic.get(key, default)
-            return retval[0] if retval != default else default
+        self._title = self._ydl_info['title']
+        self._author = self._ydl_info['uploader']
+        self._rating = self._ydl_info['average_rating']
+        self._length = self._ydl_info['duration']
+        self._viewcount = self._ydl_info['view_count']
+        self._likes = self._ydl_info['like_count']
+        self._dislikes = self._ydl_info['dislike_count']
+        self._username = self._ydl_info['uploader_id']
+        self._category = self._ydl_info['categories'][0]
+        if self._ydl_info['height'] >= 480:
+            self._bigthumb = g.urls['bigthumb'] % self.videoid
+        if self._ydl_info['height'] >= 720:
+            self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
 
-        self._title = _get_lst('title')
-        self._dashurl = _get_lst('dashmpd')
-        self._author = _get_lst('author')
-        self._rating = float(_get_lst('avg_rating', 0.0))
-        self._length = int(_get_lst('length_seconds', 0))
-        self._viewcount = int(_get_lst('view_count'), 0)
-        self._thumb = unquote_plus(_get_lst('thumbnail_url', ""))
-        self._keywords = _get_lst('keywords', "").split(',')
-        self._bigthumb = _get_lst('iurlsd', "")
-        self._bigthumbhd = _get_lst('iurlsdmaxres', "")
+        self.expiry = time.time() + g.lifespan
+
+        self._have_basic = True
 
     def _fetch_gdata(self):
         """ Extract gdata values, fetch gdata if necessary. """
@@ -663,18 +614,14 @@ class Pafy(object):
         snippet = item['snippet']
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
-        self._category = get_categoryname(snippet['categoryId'])
-        # TODO: Make sure actual usename is not available through the api
-        self._username = uni(snippet['channelTitle'])
-        statistics = item["statistics"]
-        self._likes = int(statistics["likeCount"])
-        self._dislikes = int(statistics["dislikeCount"])
-        self._have_gdata = 1
+        self._keywords = [uni(i) for i in snippet['tags']]
+        self._have_gdata = True
 
     def _process_streams(self):
         """ Create Stream object lists from internal stream maps. """
+
         if not self._have_basic:
-            self.fetch_basic()
+            self._fetch_basic()
 
         allstreams = [Stream(z, self) for z in self._ydl_info['formats']]
         self._streams = [i for i in allstreams if i.mediatype == 'normal']
@@ -684,10 +631,11 @@ class Pafy(object):
         self._oggstreams = [i for i in allstreams if i.extension == 'ogg']
         self._allstreams = allstreams
 
+
     def __repr__(self):
         """ Print video metadata. Return utf8 string. """
         if self._have_basic:
-            keys = "Title Author ID Duration Rating Views Thumbnail Keywords"
+            keys = "Title Author ID Duration Rating Views Thumbnail"
             keys = keys.split(" ")
             keywords = ", ".join(self.keywords)
             info = {"Title": self.title,
@@ -696,8 +644,7 @@ class Pafy(object):
                     "Rating": self.rating,
                     "Duration": self.duration,
                     "ID": self.videoid,
-                    "Thumbnail": self.thumb,
-                    "Keywords": keywords}
+                    "Thumbnail": self.thumb}
 
             nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
@@ -710,44 +657,54 @@ class Pafy(object):
     @property
     def streams(self):
         """ The streams for a video. Returns list."""
-        self.fetch_basic()
+        self._fetch_basic()
         return self._streams
 
     @property
     def allstreams(self):
         """ All stream types for a video. Returns list. """
-        self.fetch_basic()
+        if not self._allstreams:
+            self._process_streams()
+
         return self._allstreams
 
     @property
     def audiostreams(self):
         """ Return a list of audio Stream objects. """
-        self.fetch_basic()
+        if not self._audiostreams:
+            self._process_streams()
+
         return self._audiostreams
 
     @property
     def videostreams(self):
         """ The video streams for a video. Returns list. """
-        self.fetch_basic()
+        if not self._videostreams:
+            self._process_streams()
+
         return self._videostreams
 
     @property
     def oggstreams(self):
         """ Return a list of ogg encoded Stream objects. """
-        self.fetch_basic()
+        if not self._oggstreams:
+            self._process_streams()
+
         return self._oggstreams
 
     @property
     def m4astreams(self):
         """ Return a list of m4a encoded Stream objects. """
-        self.fetch_basic()
+        if not self._m4astreams:
+            self._process_streams()
+
         return self._m4astreams
 
     @property
     def title(self):
         """ Return YouTube video title as a string. """
         if not self._title:
-            self.fetch_basic()
+            self._fetch_basic()
 
         return self._title
 
@@ -755,7 +712,7 @@ class Pafy(object):
     def author(self):
         """ The uploader of the video. Returns str. """
         if not self._author:
-            self.fetch_basic()
+            self._fetch_basic()
 
         return self._author
 
@@ -763,7 +720,7 @@ class Pafy(object):
     def rating(self):
         """ Rating for a video. Returns float. """
         if not self._rating:
-            self.fetch_basic()
+            self._fetch_basic()
 
         return self._rating
 
@@ -771,7 +728,7 @@ class Pafy(object):
     def length(self):
         """ Length of a video in seconds. Returns int. """
         if not self._length:
-            self.fetch_basic()
+            self._fetch_basic()
 
         return self._length
 
@@ -779,35 +736,32 @@ class Pafy(object):
     def viewcount(self):
         """ Number of views for a video. Returns int. """
         if not self._viewcount:
-            self.fetch_basic()
+            self._fetch_basic()
 
         return self._viewcount
 
     @property
     def bigthumb(self):
         """ Large thumbnail image url. Returns str. """
-        self.fetch_basic()
+        self._fetch_basic()
         return self._bigthumb
 
     @property
     def bigthumbhd(self):
         """ Extra large thumbnail image url. Returns str. """
-        self.fetch_basic()
+        self._fetch_basic()
         return self._bigthumbhd
 
     @property
     def thumb(self):
         """ Thumbnail image url. Returns str. """
-        if not self._thumb:
-            self.fetch_basic()
-
-        return self._thumb
+        return g.urls['thumb'] % self.videoid
 
     @property
     def duration(self):
         """ Duration of a video (HH:MM:SS). Returns str. """
         if not self._length:
-            self.fetch_basic()
+            self._fetch_basic()
 
         self._duration = time.strftime('%H:%M:%S', time.gmtime(self._length))
         self._duration = uni(self._duration)
@@ -817,13 +771,17 @@ class Pafy(object):
     @property
     def keywords(self):
         """ Return keywords as list of str. """
-        self.fetch_basic()
+        if not self._keywords:
+            self._fetch_gdata()
+
         return self._keywords
 
     @property
     def category(self):
         """ YouTube category of the video. Returns string. """
-        self._fetch_gdata()
+        if not self._category:
+            self._fetch_gdata()
+
         return self._category
 
     @property
@@ -837,25 +795,33 @@ class Pafy(object):
     @property
     def username(self):
         """ Return the username of the uploader. """
-        self._fetch_gdata()
+        if not self._username:
+            self._fetch_basic()
+
         return self._username
 
     @property
     def published(self):
         """ The upload date and time of the video. Returns string. """
-        self._fetch_gdata()
+        if not self._published:
+            self._fetch_gdata()
+
         return self._published.replace(".000Z", "").replace("T", " ")
 
     @property
     def likes(self):
         """ The number of likes for the video. Returns int. """
-        self._fetch_gdata()
+        if not self._likes:
+            self._fetch_basic()
+
         return self._likes
 
     @property
     def dislikes(self):
         """ The number of dislikes for the video. Returns int. """
-        self._fetch_gdata()
+        if not self._dislikes:
+            self._fetch_basic()
+
         return self._dislikes
 
     @property

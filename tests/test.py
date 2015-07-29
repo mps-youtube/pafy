@@ -215,10 +215,6 @@ class Test(unittest.TestCase):
             for field in "playlist_id description author title".split():
                 self.assertEqual(fetched[field], pl[field])
 
-    def test_misc_tests(self):
-        """ Test extract_smap and _getval. """
-        self.assertRaises(IOError, pafy._getval, "no_digits_here", "88")
-
 
 PLAYLISTS = [
     {
