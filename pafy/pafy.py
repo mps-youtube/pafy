@@ -194,11 +194,11 @@ def extract_video_id(url):
     if '://' not in url:
         url = '//' + url
     parsedurl = urlparse(url)
-    if "youtube.com" in parsedurl.netloc:
+    if parsedurl.netloc in ('youtube.com', 'www.youtube.com'):
         query = parse_qs(parsedurl.query)
         if 'v' in query and idregx.match(query['v'][0]):
             return query['v'][0]
-    elif "youtu.be" in parsedurl.netloc:
+    elif parsedurl.netloc in ('youtu.be', 'www.youtu.be'):
         vidid = parsedurl.path.split('/')[-1] if parsedurl.path else ''
         if idregx.match(vidid):
             return vidid
@@ -1553,7 +1553,7 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
     if '://' not in playlist_url:
         playlist_url = '//' + playlist_url
     parsedurl = urlparse(playlist_url)
-    if "youtube.com" in parsedurl.netloc:
+    if parsedurl.netloc in ('youtube.com', 'www.youtube.com'):
         query = parse_qs(parsedurl.query)
         if 'list' in query and idregx.match(query['list'][0]):
             playlist_id = query['list'][0]
