@@ -322,3 +322,8 @@ Download m4a audio stream at 256k bitrate:
 .. code-block:: bash
 
     $ ytdl -n10 cyMHZVT91Dw
+
+IRC
+---
+
+The mps-youtube irc channel (`#mps-youtube` on Freenode) can be used for discussion of pafy.
