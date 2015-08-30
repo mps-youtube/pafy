@@ -1564,12 +1564,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
 
     url = g.urls["playlist"] % playlist_id
 
-    try:
-        allinfo = fetch_decode(url)  # unicode
-        allinfo = json.loads(allinfo)
-
-    except:
-        raise IOError("Error fetching playlist %s" % playlist_url)
+    allinfo = fetch_decode(url)  # unicode
+    allinfo = json.loads(allinfo)
 
     # playlist specific metadata
     playlist = dict(
