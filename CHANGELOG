@@ -1,4 +1,21 @@
 4 October 2015
+Version 0.4.0
+
+[Major Update!] - Pull in youtube-dl as a dependency, replacing current 
+                  stream code [#109]
+
+This is a major change, and will likely prove controversial, so version
+0.3.76 has been released concurrently with all the changes not related to
+youtube-dl. This makes the code simpler and easier to maintain while fixing
+various bugs, but has some disadvantages.
+
+If this is a problem for you, please use version 0.3.76 AND state your reasons
+and suggestions at issue #110 on Github.
+https://github.com/mps-youtube/pafy/issues/110
+
+-------------------------------------------------------------------------------
+
+4 October 2015
 Version 0.3.76
 
 [Bugfix] - Fix bug in ytdl (#101 #102)
