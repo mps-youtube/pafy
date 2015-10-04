@@ -7,6 +7,7 @@ from .pafy import get_categoryname
 from .pafy import __version__
 from .pafy import __author__
 from .pafy import __license__
+from .pafy import GdataError
 import sys
 
 if "test" not in sys.argv[0]:

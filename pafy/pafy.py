@@ -110,6 +110,32 @@ def fetch_decode(url, encoding=None):
         return req.read()
 
 
+class GdataError(Exception):
+    """Gdata query failed."""
+    pass
+
+
+def call_gdata(api, qs):
+    """Make a request to the youtube gdata api."""
+    qs = dict(qs)
+    qs['key'] = g.api_key
+    url = g.urls['gdata'] + api + '?' + urlencode(qs)
+
+    try:
+        data = g.opener.open(url).read().decode()
+
+    except HTTPError as e:
+        try:
+            errdata = e.file.read().decode()
+            error = json.loads(errdata)['error']['message']
+            errmsg = 'Youtube Error %d: %s' % (e.getcode(), error)
+        except:
+            errmsg = str(e)
+        raise GdataError(errmsg)
+
+    return json.loads(data)
+
+
 def new(url, basic=True, gdata=False, signature=True, size=False,
         callback=None):
     """ Return a new pafy instance given a url or video id.
@@ -149,10 +175,8 @@ def get_video_gdata(video_id):
     new.callback("Fetching video gdata")
     query = {'part': 'id,snippet,statistics',
              'maxResults': 1,
-             'id': video_id,
-             'key': g.api_key}
-    url = g.urls['gdata'] + '?' + urlencode(query)
-    gdata = fetch_decode(url)  # unicode
+             'id': video_id}
+    gdata = call_gdata('videos', query)
     dbg("Fetched video gdata")
     new.callback("Fetched video gdata")
     return gdata
@@ -187,9 +211,8 @@ class g(object):
     """ Class for holding constants needed throughout the module. """
 
     urls = {
-        'gdata': "https://www.googleapis.com/youtube/v3/videos",
+        'gdata': "https://www.googleapis.com/youtube/v3/",
         'watchv': "http://www.youtube.com/watch?v=%s",
-        'vidcat': "https://www.googleapis.com/youtube/v3/videoCategories",
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
         'thumb': "http://i.ytimg.com/vi/%s/default.jpg",
@@ -613,8 +636,7 @@ class Pafy(object):
         if self._have_gdata:
             return
 
-        gdata = get_video_gdata(self.videoid)
-        item = json.loads(gdata)['items'][0]
+        item = get_video_gdata(self.videoid)['items'][0]
         snippet = item['snippet']
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
@@ -927,12 +949,9 @@ def get_categoryname(cat_id):
     if cached.get('updated', 0) > timestamp - g.lifespan:
         return cached.get('title', 'unknown')
     # call videoCategories API endpoint to retrieve title
-    url = g.urls['vidcat']
     query = {'id': cat_id,
-             'part': 'snippet',
-             'key': g.api_key}
-    url += "?" + urlencode(query)
-    catinfo = json.loads(fetch_decode(url))
+             'part': 'snippet'}
+    catinfo = call_gdata('videoCategories', query)
     try:
         for item in catinfo.get('items', []):
             title = item.get('snippet', {}).get('title', 'unknown')
@@ -954,12 +973,9 @@ def set_categories(categories):
     idlist = [cid for cid, item in categories.items()
               if item.get('updated', 0) < timestamp - g.lifespan]
     if len(idlist) > 0:
-        url = g.urls['vidcat']
         query = {'id': ','.join(idlist),
-                 'part': 'snippet',
-                 'key': g.api_key}
-        url += "?" + urlencode(query)
-        catinfo = json.loads(fetch_decode(url))
+                 'part': 'snippet'}
+        catinfo = call_gdata('videoCategories', query)
         try:
             for item in catinfo.get('items', []):
                 cid = item['id']
