@@ -586,7 +586,6 @@ class Pafy(object):
         self._bigthumbhd = None
         self._mix_pl = None
         self.expiry = None
-        self.playlist_meta = None
 
         if basic:
             self._fetch_basic()
@@ -938,7 +937,6 @@ class Pafy(object):
         self._viewcount = int(self._viewcount)
         self._thumb = pl_data.get("thumbnail")
         self._description = pl_data.get("description")
-        self.playlist_meta = pl_data
 
 
 def get_categoryname(cat_id):
