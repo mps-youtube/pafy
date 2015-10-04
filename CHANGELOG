@@ -1,4 +1,11 @@
 4 October 2015
+Version 0.4.1
+
+[Bugfix] - Fix Pafy.streams
+
+-------------------------------------------------------------------------------
+
+4 October 2015
 Version 0.4.0
 
 [Major Update!] - Pull in youtube-dl as a dependency, replacing current 
