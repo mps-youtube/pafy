@@ -661,7 +661,9 @@ class Pafy(object):
     @property
     def streams(self):
         """ The streams for a video. Returns list."""
-        self._fetch_basic()
+        if not self._streams:
+            self._process_streams()
+
         return self._streams
 
     @property
