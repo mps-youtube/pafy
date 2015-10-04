@@ -1,3 +1,12 @@
+4 October 2015
+Version 0.3.76
+
+[Bugfix] - Fix bug in ytdl (#101 #102)
+[Update] - Use better method for matching urls (#104)
+[Bugfix] - Use .opus extension for opus audio (#108)
+
+-------------------------------------------------------------------------------
+
 1 June 2015
 Version 0.3.74
 
