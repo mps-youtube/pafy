@@ -618,7 +618,8 @@ class Pafy(object):
         snippet = item['snippet']
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
-        self._keywords = [uni(i) for i in snippet['tags']]
+        # Note: using snippet.get since some videos have no tags object
+        self._keywords = [uni(i) for i in snippet.get('tags', ())]
         self._have_gdata = True
 
     def _process_streams(self):
