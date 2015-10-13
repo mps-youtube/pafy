@@ -753,6 +753,9 @@ class Stream(object):
         self._mediatype = g.itags[self.itag][2]
         self._threed = 'stereo3d' in sm and sm['stereo3d'] == '1'
 
+        # It will be None by default, for non-audio streams
+        self._rawbitrate = None
+
         if is_dash:
 
             if sm['width'] != "None":  # dash video
