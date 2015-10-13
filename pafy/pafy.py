@@ -403,7 +403,7 @@ class Stream(object):
         """ Return filesize of the stream in bytes.  Set member variable. """
 
         # Faster method
-        if 'filesize' in self._info:
+        if 'filesize' in self._info and self._info['filesize'] is not None:
             return self._info['filesize']
 
         # Fallback
