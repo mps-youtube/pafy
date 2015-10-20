@@ -193,8 +193,8 @@ class g(object):
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
         'thumb': "http://i.ytimg.com/vi/%s/default.jpg",
-        'bigthumb': "http://i.ytimg.com/vi/%s/sddefault.jpg",
-        'bigthumbhd': "http://i.ytimg.com/vi/%s/hddefault.jpg",
+        'bigthumb': "http://i.ytimg.com/vi/%s/mqdefault.jpg",
+        'bigthumbhd': "http://i.ytimg.com/vi/%s/hqdefault.jpg",
     }
     api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
     user_agent = "pafy " + __version__
@@ -599,11 +599,8 @@ class Pafy(object):
         self._dislikes = self._ydl_info['dislike_count']
         self._username = self._ydl_info['uploader_id']
         self._category = self._ydl_info['categories'][0]
-        if self._ydl_info['height'] >= 480:
-            self._bigthumb = g.urls['bigthumb'] % self.videoid
-        if self._ydl_info['height'] >= 720:
-            self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
-
+        self._bigthumb = g.urls['bigthumb'] % self.videoid
+        self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
         self.expiry = time.time() + g.lifespan
 
         self._have_basic = True
