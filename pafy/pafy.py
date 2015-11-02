@@ -111,7 +111,7 @@ def fetch_decode(url, encoding=None):
 
 
 def new(url, basic=True, gdata=False, signature=True, size=False,
-        callback=None):
+        callback=None, ydl_opts=None):
     """ Return a new pafy instance given a url or video id.
 
     NOTE: The signature argument has been deprecated and now has no effect,
@@ -141,7 +141,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
         logging.warning("signature argument has no effect and will be removed"
                         " in a future version.")
 
-    return Pafy(url, basic, gdata, signature, size, callback)
+    return Pafy(url, basic, gdata, signature, size, callback, ydl_opts)
 
 
 def get_video_gdata(video_id):
@@ -202,7 +202,7 @@ class g(object):
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
     cache = {}
-    ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings':True}
+    ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings': True}
 
 
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
@@ -527,7 +527,8 @@ class Pafy(object):
     funcmap = {}  # keep functions as a class variable
 
     def __init__(self, video_url, basic=True, gdata=False,
-                 signature=True, size=False, callback=None):
+                 signature=True, size=False, callback=None,
+                 ydl_opts=None):
         """ Set initial values. """
         self.version = __version__
         self.videoid = extract_video_id(video_url)
@@ -545,6 +546,7 @@ class Pafy(object):
         self._username = None
 
         self._ydl_info = None
+        self._ydl_opts = ydl_opts or g.ydl_opts
         self._streams = []
         self._oggstreams = []
         self._m4astreams = []
@@ -581,7 +583,7 @@ class Pafy(object):
         if self._have_basic:
             return
 
-        with youtube_dl.YoutubeDL(g.ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
             try:
                 self._ydl_info = ydl.extract_info(self.videoid, download=False)
             # Turn into an IOError since that is what pafy previously raised
