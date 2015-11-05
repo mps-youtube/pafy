@@ -583,7 +583,7 @@ class Pafy(object):
         if self._have_basic:
             return
 
-        with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(self._ydl_opts) as ydl:
             try:
                 self._ydl_info = ydl.extract_info(self.videoid, download=False)
             # Turn into an IOError since that is what pafy previously raised
