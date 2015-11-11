@@ -1,3 +1,11 @@
+11 November 2015
+Version 0.3.78
+
+[Bugfix] - Set rawbitrate to None for non-audio streams (was undefined)
+[Bugfix] - Fix javascript extraction code broken by change on youtube
+
+-------------------------------------------------------------------------------
+
 4 October 2015
 Version 0.3.76
 
