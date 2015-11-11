@@ -344,7 +344,8 @@ def _extract_function_from_js(name, js):
     """
     dbg("Extracting function '%s' from javascript", name)
     fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
-    m = re.search(fpattern % re.escape(name), js)
+    fpattern2 = r'var\s+%s=function\(((?:\w+,?)+)\)\{([^}]+)\}'
+    m = re.search(fpattern % re.escape(name), js) or re.search(fpattern2 % re.escape(name), js)
     args, body = m.groups()
     dbg("extracted function %s(%s){%s};", name, args, body)
     func = {'name': name, 'parameters': args.split(","), 'body': body}
@@ -385,6 +386,9 @@ def _get_other_funcs(primary_func, js):
     # dot notation function call; X=O.F(A,B,C..)
     dotcall = re.compile(r'(?:[$\w+]=)?([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
 
+    # no return dot call; a.b(c,d)
+    noreturn = re.compile(r'(\$?\w+)\.(\$?\w+)\(((?:\w+,?)+)\)$')
+
     functions = {}
 
     for part in body:
@@ -401,14 +405,21 @@ def _get_other_funcs(primary_func, js):
 
             # else:
                 # dbg("function '%s' is already in map.", name)
-        elif dotcall.match(part):
 
-            match = dotcall.match(part)
-            name = "%s.%s" % (match.group(1), match.group(2))
+        else:
+            match = None
 
-            # don't treat X=A.slice(B) as X=O.F(B)
-            if match.group(2) in ["slice", "splice"]:
+            if dotcall.match(part):
+                match = dotcall.match(part)
+
+            elif noreturn.match(part):
+                match = noreturn.match(part)
+
+            if not match or match.group(2) in ["slice", "splice"]:
+                # not a function call
                 continue
+
+            name = "%s.%s" % (match.group(1), match.group(2))
 
             if name not in functions:
                 functions[name] = _extract_dictfunc_from_js(name, js)
