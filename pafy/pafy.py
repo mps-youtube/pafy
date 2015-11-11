@@ -140,12 +140,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     if not signature:
         logging.warning("signature argument has no effect and will be removed"
                         " in a future version.")
-    # this assumes all Pafy instances are created by new() call.
-    # optionally, if that's not the case, Pafy class could be provided with
-    # user_ydl_opts, and global options updated this way in its init.
-    if ydl_opts:
-        g.update_ydl_opts(ydl_opts)
-    return Pafy(url, basic, gdata, signature, size, callback)
+    return Pafy(url, basic, gdata, signature, size, callback, ydl_opts)
 
 
 def get_video_gdata(video_id):
@@ -206,13 +201,8 @@ class g(object):
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
     cache = {}
-    ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings': True}
-    @staticmethod
-    def update_ydl_opts(user_opts):
-        try:
-            g.ydl_opts.update(user_opts)
-        except (ValueError, TypeError):
-            dbg("Failed to update ydl_opts with: %s" %(repr(user_opts)))
+    def_ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings': True}
+
 
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
     """ Remux audio. """
@@ -536,7 +526,7 @@ class Pafy(object):
     funcmap = {}  # keep functions as a class variable
 
     def __init__(self, video_url, basic=True, gdata=False,
-                 signature=True, size=False, callback=None):
+                 signature=True, size=False, callback=None, ydl_opts=None):
         """ Set initial values. """
         self.version = __version__
         self.videoid = extract_video_id(video_url)
@@ -574,6 +564,10 @@ class Pafy(object):
         self.expiry = None
         self.playlist_meta = None
 
+        self._ydl_opts = g.def_ydl_opts
+        if ydl_opts:
+            self._ydl_opts.update(ydl_opts)
+
         if basic:
             self._fetch_basic()
 
@@ -585,12 +579,13 @@ class Pafy(object):
                 # pylint: disable=W0104
                 s.get_filesize()
 
+
     def _fetch_basic(self):
         """ Fetch basic data and streams. """
         if self._have_basic:
             return
 
-        with youtube_dl.YoutubeDL(g.ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(self._ydl_opts) as ydl:
             try:
                 self._ydl_info = ydl.extract_info(self.videoid, download=False)
             # Turn into an IOError since that is what pafy previously raised
