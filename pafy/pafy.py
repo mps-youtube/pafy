@@ -485,7 +485,7 @@ class Stream(object):
             elapsed = time.time() - t0
             bytesdone += len(chunk)
             if elapsed:
-                rate = ((bytesdone - offset) / 1024) / elapsed
+                rate = ((float(bytesdone) - float(offset)) / 1024.0) / elapsed
                 eta = (total - bytesdone) / (rate * 1024)
             else: # Avoid ZeroDivisionError
                 rate = 0
