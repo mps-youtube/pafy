@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.4.0"
+__version__ = "0.4.2"
 __author__ = "np1"
 __license__ = "LGPLv3"
 
@@ -137,7 +137,7 @@ def call_gdata(api, qs):
 
 
 def new(url, basic=True, gdata=False, signature=True, size=False,
-        callback=None):
+        callback=None, ydl_opts=None):
     """ Return a new pafy instance given a url or video id.
 
     NOTE: The signature argument has been deprecated and now has no effect,
@@ -166,8 +166,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     if not signature:
         logging.warning("signature argument has no effect and will be removed"
                         " in a future version.")
-
-    return Pafy(url, basic, gdata, signature, size, callback)
+    return Pafy(url, basic, gdata, signature, size, callback, ydl_opts)
 
 
 def get_video_gdata(video_id):
@@ -216,8 +215,8 @@ class g(object):
         'playlist': ('http://www.youtube.com/list_ajax?'
                      'style=json&action_get_list=1&list=%s'),
         'thumb': "http://i.ytimg.com/vi/%s/default.jpg",
-        'bigthumb': "http://i.ytimg.com/vi/%s/sddefault.jpg",
-        'bigthumbhd': "http://i.ytimg.com/vi/%s/hddefault.jpg",
+        'bigthumb': "http://i.ytimg.com/vi/%s/mqdefault.jpg",
+        'bigthumbhd': "http://i.ytimg.com/vi/%s/hqdefault.jpg",
     }
     api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
     user_agent = "pafy " + __version__
@@ -225,7 +224,7 @@ class g(object):
     opener = build_opener()
     opener.addheaders = [('User-Agent', user_agent)]
     cache = {}
-    ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings':True}
+    def_ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings': True}
 
 
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
@@ -426,7 +425,7 @@ class Stream(object):
         """ Return filesize of the stream in bytes.  Set member variable. """
 
         # Faster method
-        if 'filesize' in self._info:
+        if 'filesize' in self._info and self._info['filesize'] is not None:
             return self._info['filesize']
 
         # Fallback
@@ -509,7 +508,7 @@ class Stream(object):
             elapsed = time.time() - t0
             bytesdone += len(chunk)
             if elapsed:
-                rate = ((bytesdone - offset) / 1024) / elapsed
+                rate = ((float(bytesdone) - float(offset)) / 1024.0) / elapsed
                 eta = (total - bytesdone) / (rate * 1024)
             else: # Avoid ZeroDivisionError
                 rate = 0
@@ -550,7 +549,7 @@ class Pafy(object):
     funcmap = {}  # keep functions as a class variable
 
     def __init__(self, video_url, basic=True, gdata=False,
-                 signature=True, size=False, callback=None):
+                 signature=True, size=False, callback=None, ydl_opts=None):
         """ Set initial values. """
         self.version = __version__
         self.videoid = extract_video_id(video_url)
@@ -587,6 +586,10 @@ class Pafy(object):
         self._mix_pl = None
         self.expiry = None
 
+        self._ydl_opts = g.def_ydl_opts
+        if ydl_opts:
+            self._ydl_opts.update(ydl_opts)
+
         if basic:
             self._fetch_basic()
 
@@ -598,12 +601,13 @@ class Pafy(object):
                 # pylint: disable=W0104
                 s.get_filesize()
 
+
     def _fetch_basic(self):
         """ Fetch basic data and streams. """
         if self._have_basic:
             return
 
-        with youtube_dl.YoutubeDL(g.ydl_opts) as ydl:
+        with youtube_dl.YoutubeDL(self._ydl_opts) as ydl:
             try:
                 self._ydl_info = ydl.extract_info(self.videoid, download=False)
             # Turn into an IOError since that is what pafy previously raised
@@ -621,11 +625,8 @@ class Pafy(object):
         self._dislikes = self._ydl_info['dislike_count']
         self._username = self._ydl_info['uploader_id']
         self._category = self._ydl_info['categories'][0]
-        if self._ydl_info['height'] >= 480:
-            self._bigthumb = g.urls['bigthumb'] % self.videoid
-        if self._ydl_info['height'] >= 720:
-            self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
-
+        self._bigthumb = g.urls['bigthumb'] % self.videoid
+        self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
         self.expiry = time.time() + g.lifespan
 
         self._have_basic = True
@@ -639,7 +640,8 @@ class Pafy(object):
         snippet = item['snippet']
         self._published = uni(snippet['publishedAt'])
         self._description = uni(snippet["description"])
-        self._keywords = [uni(i) for i in snippet['tags']]
+        # Note: using snippet.get since some videos have no tags object
+        self._keywords = [uni(i) for i in snippet.get('tags', ())]
         self._have_gdata = True
 
     def _process_streams(self):
