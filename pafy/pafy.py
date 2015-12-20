@@ -996,17 +996,7 @@ def dump_cache():
     return g.cache
 
 
-def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
-                 size=False, callback=lambda x: None):
-    """ Return a dict containing Pafy objects from a YouTube Playlist.
-
-    The returned Pafy objects are initialised using the arguments to
-    get_playlist() in the manner documented for pafy.new()
-
-    """
-    # pylint: disable=R0914
-    # too many local vars
-
+def extract_playlist_id(playlist_url):
     # Normal playlists start with PL, Mixes start with RD + first video ID
     idregx = re.compile(r'((?:RD|PL)[-_0-9a-zA-Z]+)$')
 
@@ -1021,6 +1011,20 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
         query = parse_qs(parsedurl.query)
         if 'list' in query and idregx.match(query['list'][0]):
             playlist_id = query['list'][0]
+
+    return playlist_id
+
+
+def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
+                 size=False, callback=lambda x: None):
+    """ Return a dict containing Pafy objects from a YouTube Playlist.
+
+    The returned Pafy objects are initialised using the arguments to
+    get_playlist() in the manner documented for pafy.new()
+
+    """
+
+    playlist_id = extract_playlist_id(playlist_url)
 
     if not playlist_id:
         err = "Unrecognized playlist url: %s"
@@ -1088,6 +1092,75 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
         playlist['items'].append(dict(pafy=pafy_obj,
                                       playlist_meta=vid_data))
         callback("Added video: %s" % v['title'])
+
+    return playlist
+
+
+def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
+                 size=False, callback=lambda x: None):
+    """ Return a dict containing Pafy objects from a YouTube Playlist.
+
+    The returned Pafy objects are initialised using the arguments to
+    get_playlist() in the manner documented for pafy.new()
+
+    """
+
+    playlist_id = extract_playlist_id(playlist_url)
+
+    if not playlist_id:
+        err = "Unrecognized playlist url: %s"
+        raise ValueError(err % playlist_url)
+
+    query = {'part': 'snippet',
+            'id': playlist_id}
+    allinfo = call_gdata('playlists', query)
+
+    # playlist specific metadata
+    snippet = allinfo['items'][0]['snippet']
+    playlist = dict(
+        playlist_id=playlist_id,
+        title=snippet['title'],
+        author=snippet['channelTitle'],
+        description=snippet['description'],
+        items=[]
+    )
+
+    # playlist items specific metadata
+    query = {'part': 'snippet',
+            'maxResults': 50,
+            'playlistId': playlist_id}
+    playlistitems = call_gdata('playlistItems', query)
+    videos = playlistitems['items']
+    while playlistitems.get('nextPageToken'):
+        query['pageToken'] = playlistitems['nextPageToken']
+        playlistitems = call_gdata('playlistItems', query)
+        videos.extend(playlistitems['items'])
+
+    for v in videos:
+
+        vid_data = dict(
+            title=v['snippet']['title'],
+            author=v['snippet']['channelTitle'],
+            thumbnail=v['snippet'].get('thumbnails', {}
+                ).get('default', {}).get('url'),
+            description=v['snippet']['description'],
+        )
+
+        try:
+            pafy_obj = new(v['snippet']['resourceId']['videoId'],
+                           basic=basic,
+                           gdata=gdata,
+                           signature=signature,
+                           size=size,
+                           callback=callback)
+
+        except IOError as e:
+            callback("%s: %s" % (v['title'], e.message))
+            continue
+
+        pafy_obj.populate_from_playlist(vid_data)
+        playlist['items'].append(pafy_obj)
+        callback("Added video: %s" % vid_data['title'])
 
     return playlist
 
