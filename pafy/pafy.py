@@ -37,6 +37,7 @@ import sys
 import time
 import json
 import logging
+import collections
 
 
 early_py_version = sys.version_info[:2] < (2, 7)
@@ -1096,6 +1097,8 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
     return playlist
 
 
+Playlist = collections.namedtuple('Playlist',
+        'plid title author description items')
 def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
                  size=False, callback=lambda x: None):
     """ Return a dict containing Pafy objects from a YouTube Playlist.
@@ -1117,13 +1120,8 @@ def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
 
     # playlist specific metadata
     snippet = allinfo['items'][0]['snippet']
-    playlist = dict(
-        playlist_id=playlist_id,
-        title=snippet['title'],
-        author=snippet['channelTitle'],
-        description=snippet['description'],
-        items=[]
-    )
+    playlist = Playlist(playlist_id, snippet['title'], snippet['channelTitle'],
+            snippet['description'], [])
 
     # playlist items specific metadata
     query = {'part': 'snippet',
@@ -1159,7 +1157,7 @@ def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
             continue
 
         pafy_obj.populate_from_playlist(vid_data)
-        playlist['items'].append(pafy_obj)
+        playlist.items.append(pafy_obj)
         callback("Added video: %s" % vid_data['title'])
 
     return playlist
