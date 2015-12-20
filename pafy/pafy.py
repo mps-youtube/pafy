@@ -1430,13 +1430,29 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
 class Playlist(object):
     _items = None
 
-    def __init__(self, plid, title, author, description, callback, pafyargs):
-        self.plid = plid
-        self.title = title
-        self.author = author
-        self.description = description
+    def __init__(self, playlist_url, basic, gdata, signature, size, callback):
+        playlist_id = extract_playlist_id(playlist_url)
+
+        if not playlist_id:
+            err = "Unrecognized playlist url: %s"
+            raise ValueError(err % playlist_url)
+
+        query = {'part': 'snippet',
+                'id': playlist_id}
+        allinfo = call_gdata('playlists', query)
+
+        # playlist specific metadata
+        snippet = allinfo['items'][0]['snippet']
+
+        self.plid = playlist_id
+        self.title = snippet['title']
+        self.author = snippet['channelTitle']
+        self.description = snippet['description']
+        self.basic = basic
+        self.gdata = gdata
+        self.signature = signature
+        self.size = size
         self.callback = callback
-        self.pafyargs = pafyargs
     
     @property
     def items(self):
@@ -1468,7 +1484,9 @@ class Playlist(object):
 
             try:
                 pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                        callback=self.callback, **self.pafyargs)
+                        basic=self.basic, gdata=self.gdata,
+                        signature=self.signature, size=self.size,
+                        callback=self.callback)
 
             except IOError as e:
                 self.callback("%s: %s" % (v['title'], e.message))
@@ -1483,31 +1501,14 @@ class Playlist(object):
 
 def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
                  size=False, callback=lambda x: None):
-    """ Return a dict containing Pafy objects from a YouTube Playlist.
+    """ Return a Playlist object from a YouTube Playlist.
 
     The returned Pafy objects are initialised using the arguments to
     get_playlist() in the manner documented for pafy.new()
 
     """
 
-    playlist_id = extract_playlist_id(playlist_url)
-
-    if not playlist_id:
-        err = "Unrecognized playlist url: %s"
-        raise ValueError(err % playlist_url)
-
-    query = {'part': 'snippet',
-            'id': playlist_id}
-    allinfo = call_gdata('playlists', query)
-
-    # playlist specific metadata
-    snippet = allinfo['items'][0]['snippet']
-    pafyargs = {"basic": basic, "gdata": gdata,
-            "signature": signature, "size": size}
-    playlist = Playlist(playlist_id, snippet['title'], snippet['channelTitle'],
-            snippet['description'], callback, pafyargs)
-
-    return playlist
+    return Playlist(playlist_url, basic, gdata, signature, size, callback)
 
 
 def set_api_key(key):
