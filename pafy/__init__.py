@@ -1,4 +1,5 @@
 from .pafy import get_playlist
+from .pafy import get_playlist2
 from .pafy import new
 from .pafy import set_api_key
 from .pafy import dump_cache
