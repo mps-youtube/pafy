@@ -1490,7 +1490,7 @@ class Playlist(object):
         while True:
             playlistitems = call_gdata('playlistItems', query)
 
-            query2 = {'part':'contentDetails',
+            query2 = {'part':'contentDetails,snippet,statistics',
                       'maxResults': 50,
                       'id': ','.join(i['snippet']['resourceId']['videoId']
                           for i in playlistitems['items'])}
@@ -1505,6 +1505,11 @@ class Playlist(object):
                     description=v['snippet']['description'],
                     length_seconds=parseISO8591(
                         vextra['contentDetails']['duration']),
+                    category=get_categoryname(vextra['snippet']['categoryId']),
+                    views=vextra['statistics']['viewCount'],
+                    likes=vextra['statistics']['likeCount'],
+                    dislikes=vextra['statistics']['dislikeCount'],
+                    comments=vextra['statistics'].get('commentCount',0),
                 )
 
                 try:
