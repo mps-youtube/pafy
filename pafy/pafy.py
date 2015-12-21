@@ -1448,11 +1448,11 @@ class Playlist(object):
         self.title = snippet['title']
         self.author = snippet['channelTitle']
         self.description = snippet['description']
-        self.basic = basic
-        self.gdata = gdata
-        self.signature = signature
-        self.size = size
-        self.callback = callback
+        self._basic = basic
+        self._gdata = gdata
+        self._signature = signature
+        self._size = size
+        self._callback = callback
     
     def __iter__(self):
         if self._items is not None:
@@ -1481,9 +1481,9 @@ class Playlist(object):
 
                 try:
                     pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                            basic=self.basic, gdata=self.gdata,
-                            signature=self.signature, size=self.size,
-                            callback=self.callback)
+                            basic=self._basic, gdata=self._gdata,
+                            signature=self._signature, size=self._size,
+                            callback=self._callback)
 
                 except IOError as e:
                     self.callback("%s: %s" % (v['title'], e.message))
@@ -1491,7 +1491,7 @@ class Playlist(object):
 
                 pafy_obj.populate_from_playlist(vid_data)
                 items.append(pafy_obj)
-                self.callback("Added video: %s" % vid_data['title'])
+                self._callback("Added video: %s" % vid_data['title'])
                 yield pafy_obj
 
             if not playlistitems.get('nextPageToken'):
