@@ -1169,10 +1169,6 @@ class Playlist(object):
 
         self._items = items
 
-    @property
-    def items(self):
-        return tuple(self)
-
 
 def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
                  size=False, callback=lambda x: None):
