@@ -937,7 +937,6 @@ class Pafy(object):
         self._rating = pl_data.get("rating", 0.0)
         self._viewcount = "".join(re.findall(r"\d", pl_data.get("views", "0")))
         self._viewcount = int(self._viewcount)
-        self._thumb = pl_data.get("thumbnail")
         self._description = pl_data.get("description")
 
 
