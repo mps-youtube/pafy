@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 import json
 import operator
 import re
+import sys
+import traceback
 
 
 class ExtractorError(Exception):
@@ -15,8 +17,6 @@ class ExtractorError(Exception):
         If expected is set, this is a normal error message and most likely not a bug in youtube-dl.
         """
 
-        if sys.exc_info()[0] in (compat_urllib_error.URLError, socket.timeout, UnavailableVideoError):
-            expected = True
         if video_id is not None:
             msg = video_id + ': ' + msg
         if cause:
