@@ -26,7 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-__version__ = "0.3.78"
+__version__ = "0.3.80"
 __author__ = "np1"
 __license__ = "LGPLv3"
 

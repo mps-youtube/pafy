@@ -1,3 +1,10 @@
+20 December 2015
+Version 0.3.80
+
+[Bugfix] - Fix javascript extraction code, using file from youtube_dl
+
+-------------------------------------------------------------------------------
+
 11 November 2015
 Version 0.3.78
 
