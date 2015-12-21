@@ -1174,9 +1174,9 @@ class Playlist(object):
                     length_seconds=parseISO8591(
                         vextra['contentDetails']['duration']),
                     category=get_categoryname(vextra['snippet']['categoryId']),
-                    views=vextra['statistics']['viewCount'],
-                    likes=vextra['statistics']['likeCount'],
-                    dislikes=vextra['statistics']['dislikeCount'],
+                    views=vextra['statistics'].get('viewCount',0),
+                    likes=vextra['statistics'].get('likeCount',0),
+                    dislikes=vextra['statistics'].get('dislikeCount',0),
                     comments=vextra['statistics'].get('commentCount',0),
                 )
 
