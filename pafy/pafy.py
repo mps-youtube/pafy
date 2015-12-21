@@ -1123,49 +1123,55 @@ class Playlist(object):
         self.size = size
         self.callback = callback
     
-    @property
-    def items(self):
+    def __iter__(self):
         if self._items is not None:
-            return self._items
+            for  i in self._items:
+                yield i
+            return
 
-        self._items = []
+        items = []
 
         # playlist items specific metadata
         query = {'part': 'snippet',
                 'maxResults': 50,
                 'playlistId': self.plid}
-        playlistitems = call_gdata('playlistItems', query)
-        videos = playlistitems['items']
-        while playlistitems.get('nextPageToken'):
-            query['pageToken'] = playlistitems['nextPageToken']
+
+        while True:
             playlistitems = call_gdata('playlistItems', query)
-            videos.extend(playlistitems['items'])
 
-        for v in videos:
+            for v in playlistitems['items']:
+                vid_data = dict(
+                    title=v['snippet']['title'],
+                    author=v['snippet']['channelTitle'],
+                    thumbnail=v['snippet'].get('thumbnails', {}
+                        ).get('default', {}).get('url'),
+                    description=v['snippet']['description'],
+                )
 
-            vid_data = dict(
-                title=v['snippet']['title'],
-                author=v['snippet']['channelTitle'],
-                thumbnail=v['snippet'].get('thumbnails', {}
-                    ).get('default', {}).get('url'),
-                description=v['snippet']['description'],
-            )
+                try:
+                    pafy_obj = new(v['snippet']['resourceId']['videoId'],
+                            basic=self.basic, gdata=self.gdata,
+                            signature=self.signature, size=self.size,
+                            callback=self.callback)
 
-            try:
-                pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                        basic=self.basic, gdata=self.gdata,
-                        signature=self.signature, size=self.size,
-                        callback=self.callback)
+                except IOError as e:
+                    self.callback("%s: %s" % (v['title'], e.message))
+                    continue
 
-            except IOError as e:
-                self.callback("%s: %s" % (v['title'], e.message))
-                continue
+                pafy_obj.populate_from_playlist(vid_data)
+                items.append(pafy_obj)
+                self.callback("Added video: %s" % vid_data['title'])
+                yield pafy_obj
 
-            pafy_obj.populate_from_playlist(vid_data)
-            self._items.append(pafy_obj)
-            self.callback("Added video: %s" % vid_data['title'])
+            if not playlistitems.get('nextPageToken'):
+                break
+            query['pageToken'] = playlistitems['nextPageToken']
 
-        return self._items
+        self._items = items
+
+    @property
+    def items(self):
+        return tuple(self)
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
