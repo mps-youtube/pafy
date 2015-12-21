@@ -1096,6 +1096,23 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
     return playlist
 
 
+def parseISO8591(duration):
+    """ Parse ISO 8591 formated duration """
+    regex = re.compile(r'PT((\d{1,3})H)?((\d{1,3})M)?((\d{1,2})S)?')
+    if duration:
+        duration = regex.findall(duration)
+        if len(duration) > 0:
+            _, hours, _, minutes, _, seconds = duration[0]
+            duration = [seconds, minutes, hours]
+            duration = [int(v) if len(v) > 0 else 0 for v in duration]
+            duration = sum([60**p*v for p, v in enumerate(duration)])
+        else:
+            duration = 30
+    else:
+        duration = 30
+    return duration
+
+
 class Playlist(object):
     _items = None
 
@@ -1142,13 +1159,21 @@ class Playlist(object):
         while True:
             playlistitems = call_gdata('playlistItems', query)
 
-            for v in playlistitems['items']:
+            query2 = {'part':'contentDetails',
+                      'maxResults': 50,
+                      'id': ','.join(i['snippet']['resourceId']['videoId']
+                          for i in playlistitems['items'])}
+            wdata = call_gdata('videos', query2)
+
+            for v, vextra in zip(playlistitems['items'], wdata['items']):
                 vid_data = dict(
                     title=v['snippet']['title'],
                     author=v['snippet']['channelTitle'],
                     thumbnail=v['snippet'].get('thumbnails', {}
                         ).get('default', {}).get('url'),
                     description=v['snippet']['description'],
+                    length_seconds=parseISO8591(
+                        vextra['contentDetails']['duration']),
                 )
 
                 try:
