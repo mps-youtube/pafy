@@ -58,6 +58,9 @@ else:
     uni, pyver = unicode, 2
 
 
+from .jsinterp import JSInterpreter
+
+
 if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
 
@@ -336,258 +339,24 @@ def _extract_dash(dashurl):
     return dashmap
 
 
-def _extract_function_from_js(name, js):
-    """ Find a function definition called `name` and extract components.
-
-    Return a dict representation of the function.
-
-    """
-    dbg("Extracting function '%s' from javascript", name)
-    fpattern = r'function\s+%s\(((?:\w+,?)+)\)\{([^}]+)\}'
-    fpattern2 = r'var\s+%s=function\(((?:\w+,?)+)\)\{([^}]+)\}'
-    m = re.search(fpattern % re.escape(name), js) or re.search(fpattern2 % re.escape(name), js)
-    args, body = m.groups()
-    dbg("extracted function %s(%s){%s};", name, args, body)
-    func = {'name': name, 'parameters': args.split(","), 'body': body}
-    return func
-
-
-def _extract_dictfunc_from_js(name, js):
-    """ Find anonymous function from within a dict. """
-    dbg("Extracting function '%s' from javascript", name)
-    var, _, fname = name.partition(".")
-    fpattern = (r'var\s+%s\s*\=\s*\{.{,2000}?%s'
-                r'\:function\(((?:\w+,?)+)\)\{([^}]+)\}')
-    m = re.search(fpattern % (re.escape(var), re.escape(fname)), js)
-    args, body = m.groups()
-    dbg("extracted dict function %s(%s){%s};", name, args, body)
-    func = {'name': name, 'parameters': args.split(","), 'body': body}
-    return func
-
-
 def _get_mainfunc_from_js(js):
     """ Return main signature decryption function from javascript as dict. """
     dbg("Scanning js for main function.")
-    m = re.search(r'\w\.sig\|\|([$\w]+)\(\w+\.\w+\)', js)
+    m = re.search(r'\.sig\|\|([a-zA-Z0-9$]+)\(', js)
     funcname = m.group(1)
     dbg("Found main function: %s", funcname)
-    function = _extract_function_from_js(funcname, js)
-    return function
-
-
-def _get_other_funcs(primary_func, js):
-    """ Return all secondary functions used in primary_func. """
-    dbg("scanning javascript for secondary functions.")
-    body = primary_func['body']
-    body = body.split(";")
-    # standard function call; X=F(A,B,C...)
-    call = re.compile(r'(?:[$\w+])=([$\w]+)\(((?:\w+,?)+)\)$')
-
-    # dot notation function call; X=O.F(A,B,C..)
-    dotcall = re.compile(r'(?:[$\w+]=)?([$\w]+)\.([$\w]+)\(((?:\w+,?)+)\)$')
-
-    # no return dot call; a.b(c,d)
-    noreturn = re.compile(r'(\$?\w+)\.(\$?\w+)\(((?:\w+,?)+)\)$')
-
-    functions = {}
-
-    for part in body:
-
-        # is this a function?
-        if call.match(part):
-            match = call.match(part)
-            name = match.group(1)
-            # dbg("found secondary function '%s'", name)
-
-            if name not in functions:
-                # extract from javascript if not previously done
-                functions[name] = _extract_function_from_js(name, js)
-
-            # else:
-                # dbg("function '%s' is already in map.", name)
-
-        else:
-            match = None
-
-            if dotcall.match(part):
-                match = dotcall.match(part)
-
-            elif noreturn.match(part):
-                match = noreturn.match(part)
-
-            if not match or match.group(2) in ["slice", "splice"]:
-                # not a function call
-                continue
-
-            name = "%s.%s" % (match.group(1), match.group(2))
-
-            if name not in functions:
-                functions[name] = _extract_dictfunc_from_js(name, js)
-
-    return functions
-
-
-def _getval(val, argsdict):
-    """ resolve variable values, preserve int literals. Return dict."""
-    m = re.match(r'(\d+)', val)
-
-    if m:
-        return int(m.group(1))
-
-    elif val in argsdict:
-        return argsdict[val]
-
-    else:
-        raise IOError("Error val %s from dict %s" % (val, argsdict))
-
-
-def _get_func_from_call(caller, name, arguments, js_url):
-    """
-    Return called function complete with called args given a caller function .
-
-    This function requires that Pafy.funcmap contains the function `name`.
-    It retrieves the function and fills in the parameter values as called in
-    the caller, returning them in the returned newfunction `args` dict
-
-    """
-    newfunction = Pafy.funcmap[js_url][name]
-    newfunction['args'] = {}
-
-    for n, arg in enumerate(arguments):
-        value = _getval(arg, caller['args'])
-
-        # function may not use all arguments
-        if n < len(newfunction['parameters']):
-            param = newfunction['parameters'][n]
-            newfunction['args'][param] = value
-
-    return newfunction
-
-
-def _solve(f, js_url, returns=True):
-    """Solve basic javascript function. Return solution value (str). """
-    # pylint: disable=R0914,R0912
-    resv = "slice|splice|reverse"
-    patterns = {
-        'split_or_join': r'(\w+)=\1\.(?:split|join)\(""\)$',
-        'func_call': r'(\w+)=([$\w]+)\(((?:\w+,?)+)\)$',
-        'x1': r'var\s(\w+)=(\w+)\[(\w+)\]$',
-        'x2': r'(\w+)\[(\w+)\]=(\w+)\[(\w+)\%(\w+)\.length\]$',
-        'x3': r'(\w+)\[(\w+)\]=(\w+)$',
-        'return': r'return (\w+)(\.join\(""\))?$',
-        'reverse': r'(\w+)=(\w+)\.reverse\(\)$',
-        'reverse_noass': r'(\w+)\.reverse\(\)$',
-        'return_reverse': r'return (\w+)\.reverse\(\)$',
-        'slice': r'(\w+)=(\w+)\.slice\((\w+)\)$',
-        'splice_noass': r'([$\w]+)\.splice\(([$\w]+)\,([$\w]+)\)$',
-        'return_slice': r'return (\w+)\.slice\((\w+)\)$',
-        'func_call_dict': r'(\w)=([$\w]+)\.(?!%s)([$\w]+)\(((?:\w+,?)+)\)$'
-                          % resv,
-        'func_call_dict_noret': r'([$\w]+)\.(?!%s)([$\w]+)\(((?:\w+,?)+)\)$'
-                                % resv
-    }
-
-    parts = f['body'].split(";")
-
-    for part in parts:
-        # dbg("Working on part: " + part)
-
-        name = ""
-
-        for n, p in patterns.items():
-            m, name = re.match(p, part), n
-
-            if m:
-                break
-        else:
-            raise IOError("no match for %s" % part)
-
-        if name == "split_or_join":
-            pass
-
-        elif name == "func_call_dict":
-            lhs, dic, key, args = m.group(1, 2, 3, 4)
-            funcname = "%s.%s" % (dic, key)
-            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            f['args'][lhs] = _solve(newfunc, js_url)
-
-        elif name == "func_call_dict_noret":
-            dic, key, args = m.group(1, 2, 3)
-            funcname = "%s.%s" % (dic, key)
-            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            changed_args = _solve(newfunc, js_url, returns=False)
-
-            for arg in f['args']:
-
-                if arg in changed_args:
-                    f['args'][arg] = changed_args[arg]
-
-        elif name == "func_call":
-            lhs, funcname, args = m.group(1, 2, 3)
-            newfunc = _get_func_from_call(f, funcname, args.split(","), js_url)
-            f['args'][lhs] = _solve(newfunc, js_url)  # recursive call
-
-        # new var is an index of another var; eg: var a = b[c]
-        elif name == "x1":
-            b, c = [_getval(x, f['args']) for x in m.group(2, 3)]
-            f['args'][m.group(1)] = b[c]
-
-        # a[b]=c[d%e.length]
-        elif name == "x2":
-            vals = m.group(*range(1, 6))
-            a, b, c, d, e = [_getval(x, f['args']) for x in vals]
-            f['args'][m.group(1)] = a[:b] + c[d % len(e)] + a[b + 1:]
-
-        # a[b]=c
-        elif name == "x3":
-            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
-            f['args'][m.group(1)] = a[:b] + c + a[b + 1:]  # a[b] = c
-
-        elif name == "return":
-            return f['args'][m.group(1)]
-
-        elif name == "reverse":
-            f['args'][m.group(1)] = _getval(m.group(2), f['args'])[::-1]
-
-        elif name == "reverse_noass":
-            f['args'][m.group(1)] = _getval(m.group(1), f['args'])[::-1]
-
-        elif name == "splice_noass":
-            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
-            f['args'][m.group(1)] = a[:b] + a[b + c:]
-
-        elif name == "return_reverse":
-            return f['args'][m.group(1)][::-1]
-
-        elif name == "return_slice":
-            a, b = [_getval(x, f['args']) for x in m.group(1, 2)]
-            return a[b:]
-
-        elif name == "slice":
-            a, b, c = [_getval(x, f['args']) for x in m.group(1, 2, 3)]
-            f['args'][m.group(1)] = b[c:]
-
-    if not returns:
-        # Return the args dict if no return statement in function
-        return f['args']
-
-    else:
-        raise IOError("Processed js funtion parts without finding return")
+    jsi = JSInterpreter(js)
+    return jsi.extract_function(funcname)
 
 
 def _decodesig(sig, js_url):
     """  Return decrypted sig given an encrypted sig and js_url key. """
     # lookup main function in Pafy.funcmap dict
-    mainfunction = Pafy.funcmap[js_url]['mainfunction']
-    param = mainfunction['parameters']
-
-    if not len(param) == 1:
-        raise IOError("Main sig js function has more than one arg: %s" % param)
+    mainfunction = Pafy.funcmap[js_url]
 
     # fill in function argument with signature
-    mainfunction['args'] = {param[0]: sig}
     new.callback("Decrypting signature")
-    solved = _solve(mainfunction, js_url)
+    solved = mainfunction([sig])
     dbg("Decrypted sig = %s...", solved[:30])
     new.callback("Decrypted signature")
     return solved
@@ -714,22 +483,20 @@ def get_js_sm(video_id):
     asm = _extract_smap(g.AF, stream_info, False)
     js_url = myjson['assets']['js']
     js_url = "https:" + js_url if js_url.startswith("//") else js_url
-    funcs = Pafy.funcmap.get(js_url)
+    mainfunc = Pafy.funcmap.get(js_url)
 
-    if not funcs:
+    if not mainfunc:
         dbg("Fetching javascript")
         new.callback("Fetching javascript")
         javascript = fetch_cached(js_url, encoding="utf8",
                                   dbg_ref="javascript", file_prefix="js-")
         mainfunc = _get_mainfunc_from_js(javascript)
-        funcs = _get_other_funcs(mainfunc, javascript)
-        funcs['mainfunction'] = mainfunc
 
-    elif funcs:
+    elif mainfunc:
         dbg("Using functions in memory extracted from %s", js_url)
         dbg("Mem contains %s js func sets", len(Pafy.funcmap))
 
-    return (sm, asm), js_url, funcs, dash_url
+    return (sm, asm), js_url, mainfunc, dash_url
 
 
 def _make_url(raw, sig, quick=True):
@@ -1122,8 +889,8 @@ class Pafy(object):
             dbg("Encrypted signature detected.")
 
             if not self.age_ver:
-                smaps, js_url, funcs, dashurl = get_js_sm(self.videoid)
-                Pafy.funcmap[js_url] = funcs
+                smaps, js_url, mainfunc, dashurl = get_js_sm(self.videoid)
+                Pafy.funcmap[js_url] = mainfunc
                 self.sm, self.asm = smaps
                 self.js_url = js_url
                 dashsig = re.search(r"/s/([\w\.]+)", dashurl).group(1)
