@@ -1437,22 +1437,25 @@ class Playlist(object):
             err = "Unrecognized playlist url: %s"
             raise ValueError(err % playlist_url)
 
-        query = {'part': 'snippet',
+        query = {'part': 'snippet, contentDetails',
                 'id': playlist_id}
         allinfo = call_gdata('playlists', query)
 
-        # playlist specific metadata
-        snippet = allinfo['items'][0]['snippet']
+        pl = allinfo['items'][0]
 
         self.plid = playlist_id
-        self.title = snippet['title']
-        self.author = snippet['channelTitle']
-        self.description = snippet['description']
+        self.title = pl['snippet']['title']
+        self.author = pl['snippet']['channelTitle']
+        self.description = pl['snippet']['description']
+        self ._len = pl['contentDetails']['itemCount']
         self._basic = basic
         self._gdata = gdata
         self._signature = signature
         self._size = size
         self._callback = callback
+
+    def __len__(self):
+        return self._len
     
     def __iter__(self):
         if self._items is not None:
