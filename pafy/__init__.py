@@ -1,4 +1,5 @@
 from .pafy import get_playlist
+from .pafy import get_playlist2
 from .pafy import new
 from .pafy import set_api_key
 from .pafy import dump_cache
@@ -7,6 +8,7 @@ from .pafy import get_categoryname
 from .pafy import __version__
 from .pafy import __author__
 from .pafy import __license__
+from .pafy import GdataError, call_gdata
 import sys
 
 if "test" not in sys.argv[0]:
