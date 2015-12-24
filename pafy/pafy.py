@@ -97,7 +97,7 @@ def fetch_decode(url, encoding=None):
             time.sleep(.5)
             return fetch_decode(url, encoding)
         else:
-            raise e
+            raise
 
     ct = req.headers['content-type']
 
