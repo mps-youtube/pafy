@@ -1,3 +1,12 @@
+1 January 2015
+Version 0.3.82
+
+[Feature] - get_playlist2() command with new interface and support for
+  playlists longer than 200 videos (ids1024)
+[Bugfix] - Fix ZeroDivisionError (cpnielsen) (#125)
+
+-------------------------------------------------------------------------------
+
 20 December 2015
 Version 0.3.80
 
