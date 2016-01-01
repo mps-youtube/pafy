@@ -518,3 +518,44 @@ The returned dict contains the following keys:
     >>>
     >>> playlist['items'][21]['pafy'].getbest().url
     u'http://r4---sn-4g57knzr.googlevideo.com/videoplayback?ipbits=0&ratebypas...'
+
+
+The :func:`pafy.get_playlist2` serves the same purpose as the :func:`pafy.get_playlist`, but uses version 3 of youtube's api, making it able to retrieve playlists of over 200 items. It also provides a different interface, returning a :class:`pafy.Playlist` instead of a dictionary.
+
+.. function:: pafy.get_playlist2(playlist_url[, basic=False][, gdata=False][, signature=False][, size=False][, callback=None])
+
+    :param playlist_url: The YouTube playlist url
+    :type playlist_url: str
+    :param basic: fetch basic metadata and streams
+    :type basic: bool
+    :param gdata: fetch gdata info (upload date, description, category, username, likes, dislikes)
+    :type gdata: bool
+    :param signature: fetch data required to decrypt urls, if encrypted
+    :type signature: bool
+    :param size: fetch the size of each stream (slow)(decrypts urls if needed) 
+    :type size: bool
+    :param callback: a callback function to receive status strings
+    :type callback: function
+    :rtype: :class:`pafy.Playlist`
+
+Playlist Attributes
+-------------------
+
+Once you have retrieved a playlist with :func:`pafy.get_playlist2` you can iterate over it to get the Pafy objects for the items in it, or use `len(playlist)` to get its length. In addition, you can access the following attributes:
+
+.. attribute:: Pafy.plid
+
+    The ID of the playlist (*str*)
+
+.. attribute:: Pafy.title
+
+    The title of the playlist (*str*)
+
+.. attribute:: Pafy.author
+
+    The author of the playlist (*str*)
+
+.. attribute:: Pafy.description
+
+    The description of the playlist (*str*)
+
