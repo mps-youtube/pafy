@@ -122,8 +122,7 @@ def call_gdata(api, qs):
     url = g.urls['gdata'] + api + '?' + urlencode(qs)
 
     try:
-        data = g.opener.open(url).read().decode()
-
+        data = g.opener.open(url).read().decode('utf-8')
     except HTTPError as e:
         try:
             errdata = e.file.read().decode()
