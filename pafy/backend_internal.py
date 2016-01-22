@@ -13,18 +13,18 @@ if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
     from urllib.error import HTTPError, URLError
-    from urllib.parse import parse_qs
+    from urllib.parse import parse_qs, unquote_plus
     uni, pyver = str, 3
 
 else:
     from urllib2 import build_opener, HTTPError, URLError
-    from urlparse import parse_qs
+    from urlparse import parse_qs, unquote_plus
     uni, pyver = unicode, 2
 
 early_py_version = sys.version_info[:2] < (2, 7)
 
 from . import g
-from .pafy import fetch_decode, dbg
+from .pafy import fetch_decode, dbg, get_categoryname
 from .backend_shared import BasePafy, BaseStream, remux
 from .jsinterp import JSInterpreter
 
@@ -52,7 +52,7 @@ class InternPafy(BasePafy):
         if self._have_basic:
             return
 
-        allinfo = get_video_info(self.videoid, newurl=info_url)
+        allinfo = get_video_info(self.videoid, self.callback)
 
         if allinfo.get("age_ver"):
             self.age_ver = True
@@ -90,13 +90,14 @@ class InternPafy(BasePafy):
             dbg("Encrypted signature detected.")
 
             if not self.age_ver:
-                smaps, js_url, mainfunc, dashurl = get_js_sm(self.videoid)
-                Pafy.funcmap[js_url] = mainfunc
+                smaps, js_url, mainfunc, dashurl = get_js_sm(self.videoid,
+                        self._parent.callback)
+                funcmap[js_url] = mainfunc
                 self.sm, self.asm = smaps
                 self.js_url = js_url
                 dashsig = re.search(r"/s/([\w\.]+)", dashurl).group(1)
                 dbg("decrypting dash sig")
-                goodsig = _decodesig(dashsig, js_url)
+                goodsig = _decodesig(dashsig, js_url, self._parent.callback)
                 self._dashurl = re.sub(r"/s/[\w\.]+",
                                        "/signature/%s" % goodsig, dashurl)
 
@@ -136,11 +137,11 @@ class InternPafy(BasePafy):
         if not self._have_basic:
             self.fetch_basic()
 
-        streams = [Stream(z, self) for z in self.sm]
+        streams = [InternStream(z, self) for z in self.sm]
         streams = [x for x in streams if x.itag in g.itags]
-        adpt_streams = [Stream(z, self) for z in self.asm]
+        adpt_streams = [InternStream(z, self) for z in self.asm]
         adpt_streams = [x for x in adpt_streams if x.itag in g.itags]
-        dash_streams = [Stream(z, self) for z in self.dash]
+        dash_streams = [InternStream(z, self) for z in self.dash]
         dash_streams = [x for x in dash_streams if x.itag in g.itags]
         audiostreams = [x for x in adpt_streams if x.bitrate]
         videostreams = [x for x in adpt_streams if not x.bitrate]
@@ -220,6 +221,7 @@ class InternStream(BaseStream):
             self._resolution = "0x0"
             self._rawbitrate = int(sm["bitrate"])
 
+    @property
     def url(self):
         """ Return the url, decrypt if required. """
         if not self._url:
@@ -231,14 +233,8 @@ class InternStream(BaseStream):
                     self._sig = s[2:63] + s[82] + s[64:82] + s[63]
 
             elif self.encrypted:
-                # lookup main function in funcmap dict
-                mainfunction = funcmap[self._parent.js_url]
-
-                # fill in function argument with signature
-                self._parent.callback("Decrypting signature")
-                self._sig = mainfunction([self._sig])
-                dbg("Decrypted sig = %s...", solved[:30])
-                self._parent.callback("Decrypted signature")
+                self._sig = _decodesig(self._sig, self._parent.js_url,
+                        self._parent.callback)
 
             self._url = _make_url(self._rawurl, self._sig)
 
@@ -266,7 +262,7 @@ def parseqs(data):
     return data
 
 
-def get_video_info(video_id, newurl=None):
+def get_video_info(video_id, callback, newurl=None):
     """ Return info for video_id.  Returns dict. """
     url = g.urls['vidinfo'] % video_id
     url = newurl if newurl else url
@@ -278,9 +274,9 @@ def get_video_info(video_id, newurl=None):
             "confirm your age" in info['reason'][0]:
         # Video requires age verification
         dbg("Age verification video")
-        new.callback("Age verification video")
+        callback("Age verification video")
         newurl = g.urls['age_vidinfo'] % (video_id, video_id)
-        info = get_video_info(video_id, newurl)
+        info = get_video_info(video_id, callback, newurl)
         info.update({"age_ver": True})
 
     elif info['status'][0] == "fail":
@@ -344,20 +340,20 @@ def _get_mainfunc_from_js(js):
     return jsi.extract_function(funcname)
 
 
-def _decodesig(sig, js_url):
+def _decodesig(sig, js_url, callback):
     """  Return decrypted sig given an encrypted sig and js_url key. """
-    # lookup main function in Pafy.funcmap dict
-    mainfunction = Pafy.funcmap[js_url]
+    # lookup main function in funcmap dict
+    mainfunction = funcmap[js_url]
 
     # fill in function argument with signature
-    new.callback("Decrypting signature")
+    callback("Decrypting signature")
     solved = mainfunction([sig])
     dbg("Decrypted sig = %s...", solved[:30])
-    new.callback("Decrypted signature")
+    callback("Decrypted signature")
     return solved
 
 
-def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
+def fetch_cached(url, callback, encoding=None, dbg_ref="", file_prefix=""):
     """ Fetch url - from tmpdir if already retrieved. """
     tmpdir = os.path.join(tempfile.gettempdir(), "pafy")
 
@@ -378,7 +374,7 @@ def fetch_cached(url, encoding=None, dbg_ref="", file_prefix=""):
     else:
         data = fetch_decode(url, "utf8")  # unicode
         dbg("Fetched %s", dbg_ref)
-        new.callback("Fetched %s" % dbg_ref)
+        callback("Fetched %s" % dbg_ref)
 
         with open(cached_filename, "w") as f:
             f.write(data)
@@ -416,7 +412,7 @@ def prune_files(path, prefix="", age_max=3600 * 24 * 14, count_max=4):
         os.unlink(f[0])
 
 
-def get_js_sm(video_id):
+def get_js_sm(video_id, callback):
     """ Fetch watchinfo page and extract stream map and js funcs if not known.
 
     This function is needed by videos with encrypted signatures.
@@ -427,10 +423,10 @@ def get_js_sm(video_id):
 
     """
     watch_url = g.urls['watchv'] % video_id
-    new.callback("Fetching watch page")
+    callback("Fetching watch page")
     watchinfo = fetch_decode(watch_url)  # unicode
     dbg("Fetched watch page")
-    new.callback("Fetched watch page")
+    callback("Fetched watch page")
     m = re.search(g.jsplayer, watchinfo)
     myjson = json.loads(m.group(1))
     stream_info = myjson['args']
@@ -443,8 +439,8 @@ def get_js_sm(video_id):
 
     if not mainfunc:
         dbg("Fetching javascript")
-        new.callback("Fetching javascript")
-        javascript = fetch_cached(js_url, encoding="utf8",
+        callback("Fetching javascript")
+        javascript = fetch_cached(js_url, callback, encoding="utf8",
                                   dbg_ref="javascript", file_prefix="js-")
         mainfunc = _get_mainfunc_from_js(javascript)
 
