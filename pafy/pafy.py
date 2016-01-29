@@ -356,7 +356,7 @@ class Stream(object):
 
         eg, 128k or 640x480 (str)
         """
-        if self.rawbitrate:
+        if self.mediatype == 'audio':
             quality = self.bitrate
         else:
             quality = self.resolution
