@@ -108,7 +108,7 @@ class YtdlStream(BaseStream):
         self._resolution = str(width) + 'x' + str(height)
         self._dimensions = width, height
         self._bitrate = str(info.get('abr', 0)) + 'k'
-        self._quality = self._bitrate if self._rawbitrate else self._resolution
+        self._quality = self._bitrate if self._mediatype == 'audio' else self._resolution
 
         self._extension = info['ext']
         self._notes = info.get('format_note') or ''
