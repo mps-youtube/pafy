@@ -456,18 +456,17 @@ class Stream(object):
         """
         # pylint: disable=R0912,R0914
         # Too many branches, too many local vars
-        savedir = filename = ""
-
-        if filepath and os.path.isdir(filepath):
-            savedir, filename = filepath, self.generate_filename()
-
-        elif filepath:
-            savedir, filename = os.path.split(filepath)
-
+        if filepath:
+            if os.path.exists(filepath):
+                if os.path.isdir(filepath):
+                    filepath = os.path.join(filepath, self.generate_filename(meta=meta))
+            else:
+                path_dir = os.path.split(filepath)[0]
+                if path_dir and not os.path.exists(path_dir):
+                    raise IOError('No such file or directory: ' + filepath)
         else:
-            filename = self.generate_filename(meta=meta)
-
-        filepath = os.path.join(savedir, filename)
+            filepath = self.generate_filename(meta=meta)
+            
         temp_filepath = filepath + ".temp"
 
         status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
