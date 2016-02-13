@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 from functools import wraps
 import hashlib
-import pafy.pafy as pafy
+import pafy
 import time
 import os
 import sys
@@ -169,9 +169,6 @@ class Test(unittest.TestCase):
         self.assertRaises(IOError, pafy.new, badid)
         self.assertRaises(IOError, pafy.get_playlist, 'PL' + "a" * 16)
 
-        for video in Test.videos:
-            self.assertIsInstance(video['pafy'], pafy.Pafy)
-
     def test_video_properties(self):
         """ Test video properties. """
         for video in Test.videos:
@@ -218,11 +215,11 @@ class Test(unittest.TestCase):
 
 PLAYLISTS = [
     {
-        'identifier': "http://www.youtube.com/playlist?list=PL91EF4BD43796A9A4",
-        'playlist_id': "PL91EF4BD43796A9A4",
+        'identifier': "https://www.youtube.com/playlist?list=PL9-cZf_sidpkzR4W_LxvZjh4F7YFo4WoG",
+        'playlist_id': "PL9-cZf_sidpkzR4W_LxvZjh4F7YFo4WoG",
         'description': "",
-        'author': "sanjeev virmani",
-        'title': "Android Development 200 lectures",
+        'author': "#TheBeatles",
+        'title': "All Tracks - The Beatles",
         'count': 200,
     },
 ]
