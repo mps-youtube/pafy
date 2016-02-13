@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import logging
+import subprocess
 
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
@@ -661,7 +662,7 @@ def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
 
         try:
             with open(os.devnull, "w") as devnull:
-                call(cmd, stdout=devnull, stderr=STDOUT)
+                subprocess.call(cmd, stdout=devnull, stderr=subprocess.STDOUT)
 
         except OSError:
             dbg("Failed to remux audio using %s", tool)
