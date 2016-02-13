@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 from functools import wraps
 import hashlib
-import pafy.pafy as pafy
+import pafy
 import time
 import os
 import sys
@@ -168,9 +168,6 @@ class Test(unittest.TestCase):
         self.assertRaises(ValueError, pafy.get_playlist, badid)
         self.assertRaises(IOError, pafy.new, badid)
         self.assertRaises(IOError, pafy.get_playlist, 'PL' + "a" * 16)
-
-        for video in Test.videos:
-            self.assertIsInstance(video['pafy'], pafy.Pafy)
 
     def test_video_properties(self):
         """ Test video properties. """
