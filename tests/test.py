@@ -215,11 +215,11 @@ class Test(unittest.TestCase):
 
 PLAYLISTS = [
     {
-        'identifier': "http://www.youtube.com/playlist?list=PL91EF4BD43796A9A4",
-        'playlist_id': "PL91EF4BD43796A9A4",
+        'identifier': "https://www.youtube.com/playlist?list=PL9-cZf_sidpkzR4W_LxvZjh4F7YFo4WoG",
+        'playlist_id': "PL9-cZf_sidpkzR4W_LxvZjh4F7YFo4WoG",
         'description': "",
-        'author': "sanjeev virmani",
-        'title': "Android Development 200 lectures",
+        'author': "#TheBeatles",
+        'title': "All Tracks - The Beatles",
         'count': 200,
     },
 ]
