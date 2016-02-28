@@ -1,3 +1,18 @@
+28 February 2016
+Version 0.5.0
+
+[Feature] - Support both youtube-dl backend and internal backend (old 0.3.x
+            branch. This makes youtube-dl an optional dependency, though it
+            is more stable and thus recommended. There will be no more 0.3.x
+            releases, as this eliminates the need for them.
+
+            To use the internal backend even if youtube-dl is installed, set
+            the environmental variable PAFY_BACKEND to "internal".
+[Bugfix] - Fix UnicodeDecodeError(krishnawhite) (#129)
+[Bugfix] - Fix quality property
+
+-------------------------------------------------------------------------------
+
 1 January 2016
 Version 0.4.3
 

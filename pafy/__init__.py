@@ -1,6 +1,6 @@
 import sys
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 __author__ = "np1"
 __license__ = "LGPLv3"
 
