@@ -91,13 +91,13 @@ class InternPafy(BasePafy):
 
             if not self.age_ver:
                 smaps, js_url, mainfunc, dashurl = get_js_sm(self.videoid,
-                        self._parent.callback)
+                        self.callback)
                 funcmap[js_url] = mainfunc
                 self.sm, self.asm = smaps
                 self.js_url = js_url
                 dashsig = re.search(r"/s/([\w\.]+)", dashurl).group(1)
                 dbg("decrypting dash sig")
-                goodsig = _decodesig(dashsig, js_url, self._parent.callback)
+                goodsig = _decodesig(dashsig, js_url, self.callback)
                 self._dashurl = re.sub(r"/s/[\w\.]+",
                                        "/signature/%s" % goodsig, dashurl)
 

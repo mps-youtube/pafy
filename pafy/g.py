@@ -29,10 +29,11 @@ opener = build_opener()
 opener.addheaders = [('User-Agent', user_agent)]
 cache = {}
 def_ydl_opts = {'quiet': True, 'prefer_insecure': True, 'no_warnings': True}
+
 # The following are specific to the internal backend
 UEFSM = 'url_encoded_fmt_stream_map'
 AF = 'adaptive_fmts'
-JSPLAYER = r';ytplayer\.config\s*=\s*({.*?});'
+jsplayer = r';ytplayer\.config\s*=\s*({.*?});'
 itags = {
     '5': ('320x240', 'flv', "normal", ''),
     '17': ('176x144', '3gp', "normal", ''),
