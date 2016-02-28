@@ -41,6 +41,16 @@ from .util import call_gdata
 
 Pafy = None
 
+# Select which backend to use
+backend = "internal"
+if os.environ.get("PAFY_BACKEND") != "internal":
+   try:
+      import youtube_dl
+      backend = "youtube-dl"
+   except ImportError:
+      logging.warning("""pafy: youtube-dl not found; falling back to internal \
+backend. This is not as well maintained as the youtube-dl backend. To hide this \
+message, set the environmental variable PAFY_BACKEND to \"internal\".""")
 
 if os.environ.get("pafydebug") == "1":
     logging.basicConfig(level=logging.DEBUG)
@@ -102,18 +112,12 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
     to be fetched too (basic data is required to obtain Stream objects).
 
     """
-    # Select which backend to use
     global Pafy
     if Pafy is None:
-        if os.environ.get("PAFY_BACKEND") == "internal":
-            from .backend_internal import InternPafy as Pafy
+        if backend == "internal":
+           from .backend_internal import InternPafy as Pafy
         else:
-            try:
-                import youtube_dl
-            except ImportError:
-                from .backend_internal import InternPafy as Pafy
-            else:
-                from .backend_youtube_dl import YtdlPafy as Pafy
+           from .backend_youtube_dl import YtdlPafy as Pafy
 
     if not signature:
         logging.warning("signature argument has no effect and will be removed"
