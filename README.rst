@@ -27,7 +27,7 @@ Features
 - Download audio only (no video) in ogg or m4a format
 - Retreive playlists and playlist metadata
 - Works with Python 2.6+ and 3.3+
-- Depends on youtube-dl
+- Optionally depends on youtube-dl (recommended; more stable)
 
 
 Documentation
