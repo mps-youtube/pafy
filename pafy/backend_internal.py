@@ -136,7 +136,7 @@ class InternPafy(BasePafy):
     def _process_streams(self):
         """ Create Stream object lists from internal stream maps. """
         if not self._have_basic:
-            self.fetch_basic()
+            self._fetch_basic()
 
         streams = [InternStream(z, self) for z in self.sm]
         streams = [x for x in streams if x.itag in g.itags]
