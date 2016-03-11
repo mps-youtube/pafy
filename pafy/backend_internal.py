@@ -193,7 +193,7 @@ class InternStream(BaseStream):
                 self._bitrate = g.itags[self.itag][0]
                 self._quality = self._bitrate
 
-            self._fsize = int(sm['size'])
+            self._fsize = int(sm['size'] or 0)
             # self._bitrate = sm['bitrate']
             # self._rawbitrate = uni(int(self._bitrate) // 1024) + "k"
 
@@ -204,7 +204,6 @@ class InternStream(BaseStream):
                                       self._dimensions])
             self._quality = self.resolution
 
-        self._vidformat = sm['type'].split(';')[0]  # undocumented
         self._extension = g.itags[self.itag][1]
         self._title = parent.title
         self.encrypted = 's' in sm
@@ -314,20 +313,18 @@ def _extract_dash(dashurl):
     for x in tlist:
         baseurl = x.find("%sBaseURL" % ns)
         url = baseurl.text
-        size = baseurl.attrib["%scontentLength" % ytns]
+        size = baseurl.get("%scontentLength" % ytns)
         bitrate = x.get("bandwidth")
         itag = uni(x.get("id"))
         width = uni(x.get("width"))
         height = uni(x.get("height"))
-        type_ = re.search(r"(?:\?|&)mime=([\w\d\/]+)", url).group(1)
         dashmap.append(dict(bitrate=bitrate,
                             dash=True,
                             itag=itag,
                             width=width,
                             height=height,
                             url=url,
-                            size=size,
-                            type=type_))
+                            size=size))
     return dashmap
 
 
