@@ -85,7 +85,7 @@ def fetch_decode(url, encoding=None):
         return req.read()
 
 
-def new(url, basic=True, gdata=False, signature=True, size=False,
+def new(url, basic=True, gdata=False, size=False,
         callback=None, ydl_opts=None):
     """ Return a new pafy instance given a url or video id.
 
@@ -119,10 +119,7 @@ def new(url, basic=True, gdata=False, signature=True, size=False,
         else:
            from .backend_youtube_dl import YtdlPafy as Pafy
 
-    if not signature:
-        logging.warning("signature argument has no effect and will be removed"
-                        " in a future version.")
-    return Pafy(url, basic, gdata, signature, size, callback, ydl_opts)
+    return Pafy(url, basic, gdata, size, callback, ydl_opts)
 
 
 def cache(name):
