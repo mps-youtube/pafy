@@ -44,11 +44,11 @@ Pafy = None
 # Select which backend to use
 backend = "internal"
 if os.environ.get("PAFY_BACKEND") != "internal":
-   try:
-      import youtube_dl
-      backend = "youtube-dl"
-   except ImportError:
-      logging.warning("""pafy: youtube-dl not found; falling back to internal \
+    try:
+        import youtube_dl
+        backend = "youtube-dl"
+    except ImportError:
+        logging.warning("""pafy: youtube-dl not found; falling back to internal \
 backend. This is not as well maintained as the youtube-dl backend. To hide this \
 message, set the environmental variable PAFY_BACKEND to \"internal\".""")
 
