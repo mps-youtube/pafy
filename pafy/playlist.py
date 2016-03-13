@@ -31,7 +31,7 @@ def extract_playlist_id(playlist_url):
     return playlist_id
 
 
-def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
+def get_playlist(playlist_url, basic=False, gdata=False,
                  size=False, callback=lambda x: None):
     """ Return a dict containing Pafy objects from a YouTube Playlist.
 
@@ -96,7 +96,6 @@ def get_playlist(playlist_url, basic=False, gdata=False, signature=True,
             pafy_obj = new(vid_data['encrypted_id'],
                            basic=basic,
                            gdata=gdata,
-                           signature=signature,
                            size=size,
                            callback=callback)
 
@@ -132,7 +131,7 @@ def parseISO8591(duration):
 class Playlist(object):
     _items = None
 
-    def __init__(self, playlist_url, basic, gdata, signature, size, callback):
+    def __init__(self, playlist_url, basic, gdata, size, callback):
         playlist_id = extract_playlist_id(playlist_url)
 
         if not playlist_id:
@@ -152,7 +151,6 @@ class Playlist(object):
         self ._len = pl['contentDetails']['itemCount']
         self._basic = basic
         self._gdata = gdata
-        self._signature = signature
         self._size = size
         self._callback = callback
 
@@ -200,8 +198,7 @@ class Playlist(object):
                 try:
                     pafy_obj = new(v['snippet']['resourceId']['videoId'],
                             basic=self._basic, gdata=self._gdata,
-                            signature=self._signature, size=self._size,
-                            callback=self._callback)
+                            size=self._size, callback=self._callback)
 
                 except IOError as e:
                     self.callback("%s: %s" % (v['title'], e.message))
@@ -219,7 +216,7 @@ class Playlist(object):
         self._items = items
 
 
-def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
+def get_playlist2(playlist_url, basic=False, gdata=False,
                  size=False, callback=lambda x: None):
     """ Return a Playlist object from a YouTube Playlist.
 
@@ -228,4 +225,4 @@ def get_playlist2(playlist_url, basic=False, gdata=False, signature=True,
 
     """
 
-    return Playlist(playlist_url, basic, gdata, signature, size, callback)
+    return Playlist(playlist_url, basic, gdata, size, callback)
