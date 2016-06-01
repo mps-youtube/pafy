@@ -1,3 +1,12 @@
+31 May 2016
+Version 0.5.1
+
+[Bugfix] - Fix python 2 import (#134)
+[Bugfix] - Fix two bugs in the internal backend (major bug remains unfixed)
+[Update] - Remove deprecated signature argument
+
+-------------------------------------------------------------------------------
+
 28 February 2016
 Version 0.5.0
 
