@@ -142,6 +142,8 @@ class Playlist(object):
                 'id': playlist_id}
         allinfo = call_gdata('playlists', query)
 
+        print(allinfo)
+        sys.exit()
         pl = allinfo['items'][0]
 
         self.plid = playlist_id
