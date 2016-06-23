@@ -49,9 +49,6 @@ class InternPafy(BasePafy):
 
         allinfo = get_video_info(self.videoid, self.callback)
 
-        if allinfo.get("age_ver"):
-            self.age_ver = True
-
         self.callback("Fetched video info")
 
         def _get_lst(key, default="unknown", dic=allinfo):
@@ -81,20 +78,26 @@ class InternPafy(BasePafy):
             dbg("ciphertag mismatch")
             self.ciphertag = not self.ciphertag
 
+        watch_url = g.urls['watchv'] % self.videoid
+        self.callback("Fetching watch page")
+        watchinfo = fetch_decode(watch_url)  # unicode
+        dbg("Fetched watch page")
+        self.callback("Fetched watch page")
+        self.age_ver = re.search(r'player-age-gate-content">', watchinfo) is not None
+
         if self.ciphertag:
             dbg("Encrypted signature detected.")
 
             if not self.age_ver:
-                smaps, js_url, mainfunc, dashurl = get_js_sm(self.videoid,
-                        self.callback)
+                smaps, js_url, mainfunc = get_js_sm(watchinfo, self.callback)
                 funcmap[js_url] = mainfunc
                 self.sm, self.asm = smaps
                 self.js_url = js_url
-                dashsig = re.search(r"/s/([\w\.]+)", dashurl).group(1)
+                dashsig = re.search(r"/s/([\w\.]+)", self._dashurl).group(1)
                 dbg("decrypting dash sig")
                 goodsig = _decodesig(dashsig, js_url, self.callback)
                 self._dashurl = re.sub(r"/s/[\w\.]+",
-                                       "/signature/%s" % goodsig, dashurl)
+                                       "/signature/%s" % goodsig, self._dashurl)
 
             else:
                 s = re.search(r"/s/([\w\.]+)", self._dashurl).group(1)
@@ -258,22 +261,13 @@ def parseqs(data):
 
 def get_video_info(video_id, callback, newurl=None):
     """ Return info for video_id.  Returns dict. """
-    url = g.urls['vidinfo'] % video_id
+    url = g.urls['vidinfo'] % (video_id, video_id)
     url = newurl if newurl else url
     info = fetch_decode(url)  # bytes
     info = parseqs(info)  # unicode dict
     dbg("Fetched video info%s", " (age ver)" if newurl else "")
 
-    if info['status'][0] == "fail" and info['errorcode'][0] == '150' and \
-            "confirm your age" in info['reason'][0]:
-        # Video requires age verification
-        dbg("Age verification video")
-        callback("Age verification video")
-        newurl = g.urls['age_vidinfo'] % (video_id, video_id)
-        info = get_video_info(video_id, callback, newurl)
-        info.update({"age_ver": True})
-
-    elif info['status'][0] == "fail":
+    if info['status'][0] == "fail":
         reason = info['reason'][0] or "Bad video argument"
         raise IOError("Youtube says: %s [%s]" % (reason, video_id))
 
@@ -404,7 +398,7 @@ def prune_files(path, prefix="", age_max=3600 * 24 * 14, count_max=4):
         os.unlink(f[0])
 
 
-def get_js_sm(video_id, callback):
+def get_js_sm(watchinfo, callback):
     """ Fetch watchinfo page and extract stream map and js funcs if not known.
 
     This function is needed by videos with encrypted signatures.
@@ -414,15 +408,9 @@ def get_js_sm(video_id, callback):
     Returns streammap (list of dicts), js url (str)  and funcs (dict)
 
     """
-    watch_url = g.urls['watchv'] % video_id
-    callback("Fetching watch page")
-    watchinfo = fetch_decode(watch_url)  # unicode
-    dbg("Fetched watch page")
-    callback("Fetched watch page")
     m = re.search(g.jsplayer, watchinfo)
     myjson = json.loads(m.group(1))
     stream_info = myjson['args']
-    dash_url = stream_info['dashmpd']
     sm = _extract_smap(g.UEFSM, stream_info, False)
     asm = _extract_smap(g.AF, stream_info, False)
     js_url = myjson['assets']['js']
@@ -440,7 +428,7 @@ def get_js_sm(video_id, callback):
         dbg("Using functions in memory extracted from %s", js_url)
         dbg("Mem contains %s js func sets", len(funcmap))
 
-    return (sm, asm), js_url, mainfunc, dash_url
+    return (sm, asm), js_url, mainfunc
 
 
 def _make_url(raw, sig, quick=True):
