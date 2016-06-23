@@ -446,7 +446,7 @@ class BaseStream(object):
         filename = "".join(x if ok.match(x) else "_" for x in self.title)
 
         if meta:
-            filename += "-%s-%s" % (self._parent.videoid, self.itag)
+            filename += " - %s - %s" % (self._parent.videoid, self.itag)
 
         filename += "." + self.extension
         return filename
