@@ -576,13 +576,13 @@ class BaseStream(object):
         savedir = filename = ""
 
         if filepath and os.path.isdir(filepath):
-            savedir, filename = filepath, self.generate_filename(max_length=256)
+            savedir, filename = filepath, self.generate_filename(max_length=256-len('.temp'))
 
         elif filepath:
             savedir, filename = os.path.split(filepath)
 
         else:
-            filename = self.generate_filename(meta=meta, max_length=256)
+            filename = self.generate_filename(meta=meta, max_length=256-len('.temp'))
 
         filepath = os.path.join(savedir, filename)
         temp_filepath = filepath + ".temp"
