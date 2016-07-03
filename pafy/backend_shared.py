@@ -436,7 +436,7 @@ class BaseStream(object):
         self._fsize = None
         self._active = False
 
-    def generate_filename(self, meta=False):
+    def generate_filename(self, meta=False, max_length=None):
         """ Generate filename. """
         ok = re.compile(r'[^/]')
 
@@ -447,6 +447,11 @@ class BaseStream(object):
 
         if meta:
             filename += " - %s - %s" % (self._parent.videoid, self.itag)
+
+        if max_length:
+            max_length = max_length + 1 + len(self.extension)
+            if len(filename) > max_length:
+                filename = filename[:max-length-3] + '...'
 
         filename += "." + self.extension
         return filename
@@ -571,13 +576,13 @@ class BaseStream(object):
         savedir = filename = ""
 
         if filepath and os.path.isdir(filepath):
-            savedir, filename = filepath, self.generate_filename()
+            savedir, filename = filepath, self.generate_filename(max_length=256)
 
         elif filepath:
             savedir, filename = os.path.split(filepath)
 
         else:
-            filename = self.generate_filename(meta=meta)
+            filename = self.generate_filename(meta=meta, max_length=256)
 
         filepath = os.path.join(savedir, filename)
         temp_filepath = filepath + ".temp"
