@@ -14,7 +14,7 @@ from .pafy import new, get_categoryname, call_gdata, fetch_decode
 
 def extract_playlist_id(playlist_url):
     # Normal playlists start with PL, Mixes start with RD + first video ID
-    idregx = re.compile(r'((?:RD|PL)[-_0-9a-zA-Z]+)$')
+    idregx = re.compile(r'((?:RD|PL|LL)[-_0-9a-zA-Z]+)$')
 
     playlist_id = None
     if idregx.match(playlist_url):
