@@ -17,8 +17,9 @@ urls = {
     'bigthumbhd': "http://i.ytimg.com/vi/%s/hqdefault.jpg",
 
     # For internal backend
-    'vidinfo': ('http://www.youtube.com/get_video_info?video_id=%s&'
-                'eurl=https://youtube.googleapis.com/v/%s&sts=1588')
+    'vidinfo': ('https://www.youtube.com/get_video_info?video_id=%s&'
+                'eurl=https://youtube.googleapis.com/v/%s&sts=%s'),
+    'embed': "https://youtube.com/embed/%s"
 }
 api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
 user_agent = "pafy " + __version__

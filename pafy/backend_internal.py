@@ -261,7 +261,13 @@ def parseqs(data):
 
 def get_video_info(video_id, callback, newurl=None):
     """ Return info for video_id.  Returns dict. """
-    url = g.urls['vidinfo'] % (video_id, video_id)
+    # TODO: see if there is a way to avoid retrieving the embed page
+    #       just for this, or to use it for more. This was coppied from
+    #       youtube-dl.
+    embed_webpage = fetch_decode(g.urls['embed'])
+    sts = re.search(r'sts"\s*:\s*(\d+)', embed_webpage).group(1)
+
+    url = g.urls['vidinfo'] % (video_id, video_id, sts)
     url = newurl if newurl else url
     info = fetch_decode(url)  # bytes
     info = parseqs(info)  # unicode dict
@@ -290,6 +296,7 @@ def _extract_dash(dashurl):
     """ Download dash url and extract some data. """
     # pylint: disable = R0914
     dbg("Fetching dash page")
+    print(dashurl)
     dashdata = fetch_decode(dashurl)
     dbg("DASH list fetched")
     ns = "{urn:mpeg:DASH:schema:MPD:2011}"
