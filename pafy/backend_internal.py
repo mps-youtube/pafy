@@ -296,7 +296,6 @@ def _extract_dash(dashurl):
     """ Download dash url and extract some data. """
     # pylint: disable = R0914
     dbg("Fetching dash page")
-    print(dashurl)
     dashdata = fetch_decode(dashurl)
     dbg("DASH list fetched")
     ns = "{urn:mpeg:DASH:schema:MPD:2011}"
