@@ -326,7 +326,7 @@ class BasePafy(object):
 
     @property
     def mix(self):
-        """ The playlist for the related YouTube mix. Returns a dict containing Pafy objects. """
+        """ The playlist for the related YouTube mix. Returns a Playlist object. """
         if self._mix_pl is None:
             try:
                 self._mix_pl = get_playlist2("RD" + self.videoid)
