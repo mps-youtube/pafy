@@ -99,8 +99,7 @@ class YtdlStream(BaseStream):
         else:
             self._mediatype = 'normal'
 
-        #TODO Figure out how to implement this with youtube-dl
-        self._threed = False
+        self._threed = info.get('format_note') == '3D'
         self._rawbitrate = info.get('abr', 0) * 1024
 
         height = info.get('height') or 0
