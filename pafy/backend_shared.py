@@ -451,7 +451,7 @@ class BaseStream(object):
         if max_length:
             max_length = max_length + 1 + len(self.extension)
             if len(filename) > max_length:
-                filename = filename[:max-length-3] + '...'
+                filename = filename[:max_length-3] + '...'
 
         filename += "." + self.extension
         return filename
