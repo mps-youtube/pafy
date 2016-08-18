@@ -1,3 +1,11 @@
+18 August 2016
+Version 0.5.2
+
+[Bugfix] - Fix internal backend (#140)
+[Update] - Support liked video playlist (#149)
+[Update] - Add spaces to file name format (@ghost) (#145)
+
+-------------------------------------------------------------------------------
 31 May 2016
 Version 0.5.1
 
