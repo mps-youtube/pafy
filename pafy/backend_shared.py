@@ -22,6 +22,7 @@ early_py_version = sys.version_info[:2] < (2, 7)
 from . import __version__, g
 from .pafy import call_gdata
 from .playlist import get_playlist2
+from .util import xenc
 
 dbg = logging.debug
 
@@ -454,7 +455,7 @@ class BaseStream(object):
                 filename = filename[:max_length-3] + '...'
 
         filename += "." + self.extension
-        return filename
+        return xenc(filename)
 
     @property
     def rawbitrate(self):
