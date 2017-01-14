@@ -1,3 +1,14 @@
+13 January 2017
+Version 0.5.3
+
+[Bugfix] - Handle occassional issue reading category (@regisb)
+[Bugfix] - Encode filename to system locale (#163)
+[Update] - Support m.youtube.com urls (@HouseK) (#159)
+[Update] - Support gaming.youtube.com urls (@Phosphorus-M) (#161)
+[Update] - Fix running under Boost.Python (#162)
+
+-------------------------------------------------------------------------------
+
 18 August 2016
 Version 0.5.2
 
