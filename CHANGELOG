@@ -1,3 +1,10 @@
+15 January 2017
+Version 0.5.3.1
+
+[Bugfix] - Fix issue when stdout.encoding is None (#165)
+
+-------------------------------------------------------------------------------
+
 13 January 2017
 Version 0.5.3
 
