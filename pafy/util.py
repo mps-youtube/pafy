@@ -15,7 +15,8 @@ from . import g
 
 
 mswin = os.name == "nt"
-not_utf8_environment = mswin or "UTF-8" not in sys.stdout.encoding
+not_utf8_environment = mswin or (sys.stdout.encoding and
+                                 "UTF-8" not in sys.stdout.encoding)
 
 
 class GdataError(Exception):
