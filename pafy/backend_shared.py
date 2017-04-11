@@ -407,7 +407,7 @@ class BasePafy(object):
         self._author = pl_data.get("author")
         self._length = int(pl_data.get("length_seconds", 0))
         self._rating = pl_data.get("rating", 0.0)
-        self._viewcount = "".join(re.findall(r"\d", pl_data.get("views", "0")))
+        self._viewcount = "".join(re.findall(r"\d", "{0}".format(pl_data.get("views", "0"))))
         self._viewcount = int(self._viewcount)
         self._description = pl_data.get("description")
 
