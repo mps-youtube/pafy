@@ -180,6 +180,7 @@ class Playlist(object):
             wdata = call_gdata('videos', query2)
 
             for v, vextra in zip(playlistitems['items'], wdata['items']):
+                stats = vextra.get('statistics', {})
                 vid_data = dict(
                     title=v['snippet']['title'],
                     author=v['snippet']['channelTitle'],
@@ -189,10 +190,10 @@ class Playlist(object):
                     length_seconds=parseISO8591(
                         vextra['contentDetails']['duration']),
                     category=get_categoryname(vextra['snippet']['categoryId']),
-                    views=vextra['statistics'].get('viewCount',0),
-                    likes=vextra['statistics'].get('likeCount',0),
-                    dislikes=vextra['statistics'].get('dislikeCount',0),
-                    comments=vextra['statistics'].get('commentCount',0),
+                    views=stats.get('viewCount', 0),
+                    likes=stats.get('likeCount', 0),
+                    dislikes=stats.get('dislikeCount', 0),
+                    comments=stats.get('commentCount', 0),
                 )
 
                 try:
