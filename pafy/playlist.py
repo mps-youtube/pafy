@@ -14,8 +14,9 @@ from .pafy import new, get_categoryname, call_gdata, fetch_decode
 
 def extract_playlist_id(playlist_url):
     # Normal playlists start with PL, Mixes start with RD + first video ID,
-    # Liked videos start with LL, Uploads start with UU
-    idregx = re.compile(r'((?:RD|PL|LL|UU)[-_0-9a-zA-Z]+)$')
+    # Liked videos start with LL, Uploads start with UU,
+    # Favorites lists start with FL
+    idregx = re.compile(r'((?:RD|PL|LL|UU|FL)[-_0-9a-zA-Z]+)$')
 
     playlist_id = None
     if idregx.match(playlist_url):
