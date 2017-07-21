@@ -564,7 +564,7 @@ class BaseStream(object):
             self._active = False
             return True
 
-    def download(self, filepath="", quiet=False, callback=lambda *x: None,
+    def download(self, filepath="", quiet=False, progress="Bytes", callback=lambda *x: None,
                  meta=False, remux_audio=False):
         """ Download.  Use quiet=True to supress output. Return filename.
 
@@ -588,11 +588,15 @@ class BaseStream(object):
         filepath = os.path.join(savedir, filename)
         temp_filepath = filepath + ".temp"
 
-        status_string = ('  {:,} Bytes [{:.2%}] received. Rate: [{:4.0f} '
+        progress_available = ["KB", "MB", "GB"]
+        if not progress in progress_available:
+            progress = "Bytes"
+
+        status_string = ('  {:,} ' + progress + ' [{:.2%}] received. Rate: [{:4.0f} '
                          'KB/s].  ETA: [{:.0f} secs]')
 
         if early_py_version:
-            status_string = ('  {0:} Bytes [{1:.2%}] received. Rate:'
+            status_string = ('  {0:} ' + progress + ' [{1:.2%}] received. Rate:'
                              ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
 
         response = g.opener.open(self.url)
@@ -630,7 +634,15 @@ class BaseStream(object):
             else: # Avoid ZeroDivisionError
                 rate = 0
                 eta = 0
-            progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
+
+            if progress == "KB":
+                progress_stats = (round(bytesdone/1024.0, 2), bytesdone * 1.0 / total, rate, eta)
+            elif progress == "MB":
+                progress_stats = (round(bytesdone/1048576.0, 2), bytesdone * 1.0 / total, rate, eta)
+            elif progress == "GB":
+                progress_stats = (round(bytesdone/1073741824.0, 2), bytesdone * 1.0 / total, rate, eta)
+            else:
+                progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
 
             if not chunk:
                 outfh.close()
