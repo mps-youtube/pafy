@@ -3,7 +3,6 @@ from . import g
 from .pafy import new, get_categoryname, call_gdata, fetch_decode
 
 def extract_channel(channel_url):
-    print("DEBUG: extract channel %s" % (channel_url))
     # this recognizes only channel urls not sub urls like
     # https://www.youtube.com/user/foo/about
     # could be expanded easily if necessary
@@ -26,9 +25,29 @@ def extract_channel(channel_url):
 
 def get_channel(channel_url, basic=False, gdata=False,
                  size=False, callback=lambda x: None):
-                 extract_channel(channel_url)
+    if not channel_url:
+        err = "Channel does not exist: %s"
+        raise ValueError(err % channel_url)
+
+    channel_id=extract_channel(channel_url)
+
+    video_links = []
+    query = {'part':'snippet,id',
+            'channelId':channel_id, 'order':'date','maxResults':25}
+    while True:
+        resp = call_gdata('search', query)
+
+        for i in resp['items']:
+            if i['id']['kind'] == "youtube#video":
+                video_links.append(i['id']['videoId'])
+
+        try:
+            next_page_token = resp['nextPageToken']
+            query['pageToken']=next_page_token
+        except:
+            break
+    return video_links
 
 class Channel:
     def __init__(self, channel_url, gdata):
         pass
-
