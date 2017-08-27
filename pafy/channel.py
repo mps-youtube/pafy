@@ -45,7 +45,8 @@ def get_channel_videos(channel_url, basic=False, gdata=False,
             query['pageToken']=next_page_token
         except:
             break
-
+    # TODO: eventually combine those requests later into one while loop
+    # needs only maxresults and added nextPageToken once
     query = {'part':'contentDetails,snippet,statistics',
              'id':','.join(video_ids),
              'maxresults':50}
@@ -69,4 +70,3 @@ def get_channel_info(self):
 class Channel:
     def __init__(self, channel_url, gdata):
         pass
-
