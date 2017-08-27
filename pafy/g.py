@@ -15,7 +15,9 @@ urls = {
     'thumb': "http://i.ytimg.com/vi/%s/default.jpg",
     'bigthumb': "http://i.ytimg.com/vi/%s/mqdefault.jpg",
     'bigthumbhd': "http://i.ytimg.com/vi/%s/hqdefault.jpg",
-
+    # "only" gives you the first 100 so not in use right now
+    'channel': ('https://www.youtube.com/list_ajax?'
+               'style=json&action_get_user_uploads_by_user=1&username=%s'),
     # For internal backend
     'vidinfo': ('https://www.youtube.com/get_video_info?video_id=%s&'
                 'eurl=https://youtube.googleapis.com/v/%s&sts=%s'),
