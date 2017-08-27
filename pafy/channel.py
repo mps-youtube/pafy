@@ -53,6 +53,8 @@ def get_channel_videos(channel_url, basic=False, gdata=False,
 
     return vid_rsp
 
+def get_channel_info(self):
+    pass
 
 class Channel:
     def __init__(self, channel_url, gdata):
