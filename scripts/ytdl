@@ -68,11 +68,13 @@ def xprint(stuff, end=None):
     print(xenc(stuff), end=end)
 
 
-def download(video, audio=False, stream=None):
+def download(video, audio=False, stream=None, preftype=None):
     """ Download a video. """
 
+    preftype = "mp4" if preftype is None else preftype
+
     if not stream and not audio:
-        stream = video.getbest(preftype="mp4")
+        stream = video.getbest(preftype=preftype)
 
     if not stream and audio:
         stream = video.getbestaudio()
@@ -131,6 +133,9 @@ def main():
         '-n)', action="store_true")
     paa('-a', required=False, help='Download the best quality audio (ignores '
         '-n)', action="store_true")
+    paa('-p', default='mp4', help='Use the specified preferred type of video. '
+        'This could be mp4, webm, etc. [default: %(default)s]',
+        metavar='TEXT')
 
     args = parser.parse_args()
     vid = pafy.new(args.url)
@@ -166,7 +171,7 @@ def main():
             xprint("-a and -b cannot be used together! Use only one.")
 
         else:
-            download(vid, audio=args.a)
+            download(vid, audio=args.a, preftype=args.p)
             sys.exit()
 
     elif args.n:
