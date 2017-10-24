@@ -232,14 +232,6 @@ or use a `virtualenv <http://virtualenv.org>`_ if you don't want to install it s
     $ pip install pafy
 
 
-Alternatively you can just grab the pafy.py file and import it in your python
-code:
-
-.. code-block:: bash
-
-    wget https://raw.githubusercontent.com/np1/pafy/master/pafy/pafy.py
-
-
 Command Line Tool (ytdl) Usage
 ------------------------------
 
