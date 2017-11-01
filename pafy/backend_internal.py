@@ -49,7 +49,8 @@ class InternPafy(BasePafy):
 
         allinfo = get_video_info(self.videoid, self.callback)
 
-        self.callback("Fetched video info")
+        if self.callback:
+            self.callback("Fetched video info")
 
         def _get_lst(key, default="unknown", dic=allinfo):
             """ Dict get function, returns first index. """
@@ -79,10 +80,12 @@ class InternPafy(BasePafy):
             self.ciphertag = not self.ciphertag
 
         watch_url = g.urls['watchv'] % self.videoid
-        self.callback("Fetching watch page")
+        if self.callback:
+            self.callback("Fetching watch page")
         watchinfo = fetch_decode(watch_url)  # unicode
         dbg("Fetched watch page")
-        self.callback("Fetched watch page")
+        if self.callback:
+            self.callback("Fetched watch page")
         self.age_ver = re.search(r'player-age-gate-content">', watchinfo) is not None
 
         if self.ciphertag:
@@ -338,10 +341,12 @@ def _decodesig(sig, js_url, callback):
     mainfunction = funcmap[js_url]
 
     # fill in function argument with signature
-    callback("Decrypting signature")
+    if callback:
+        callback("Decrypting signature")
     solved = mainfunction([sig])
     dbg("Decrypted sig = %s...", solved[:30])
-    callback("Decrypted signature")
+    if callback:
+        callback("Decrypted signature")
     return solved
 
 
@@ -366,7 +371,8 @@ def fetch_cached(url, callback, encoding=None, dbg_ref="", file_prefix=""):
     else:
         data = fetch_decode(url, "utf8")  # unicode
         dbg("Fetched %s", dbg_ref)
-        callback("Fetched %s" % dbg_ref)
+        if callback:
+            callback("Fetched %s" % dbg_ref)
 
         with open(cached_filename, "w") as f:
             f.write(data)
@@ -425,7 +431,8 @@ def get_js_sm(watchinfo, callback):
 
     if not mainfunc:
         dbg("Fetching javascript")
-        callback("Fetching javascript")
+        if callback:
+            callback("Fetching javascript")
         javascript = fetch_cached(js_url, callback, encoding="utf8",
                                   dbg_ref="javascript", file_prefix="js-")
         mainfunc = _get_mainfunc_from_js(javascript)
