@@ -212,6 +212,10 @@ class Test(unittest.TestCase):
             for field in "playlist_id description author title".split():
                 self.assertEqual(fetched[field], pl[field])
 
+    def test_get_playlist_pickle(self):
+        import pickle
+        for pl in Test.playlists:
+            pickle.dumps(pl['fetched'])
 
 PLAYLISTS = [
     {

@@ -11,3 +11,6 @@ dev/
 .pypi
 vi.py
 __pycache__
+*.egg-info
+*.temp
+/build

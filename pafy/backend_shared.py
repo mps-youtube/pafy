@@ -62,7 +62,7 @@ class BasePafy(object):
         self.videoid = extract_video_id(video_url)
         self.watchv_url = g.urls['watchv'] % self.videoid
 
-        self.callback = callback or (lambda x: None)
+        self.callback = callback
         self._have_basic = False
         self._have_gdata = False
 
@@ -116,13 +116,15 @@ class BasePafy(object):
 
     def _get_video_gdata(self, video_id):
         """ Return json string containing video metadata from gdata api. """
-        self.callback("Fetching video gdata")
+        if self.callback:
+            self.callback("Fetching video gdata")
         query = {'part': 'id,snippet,statistics',
                  'maxResults': 1,
                  'id': video_id}
         gdata = call_gdata('videos', query)
         dbg("Fetched video gdata")
-        self.callback("Fetched video gdata")
+        if self.callback:
+            self.callback("Fetched video gdata")
         return gdata
 
 
@@ -564,7 +566,7 @@ class BaseStream(object):
             self._active = False
             return True
 
-    def download(self, filepath="", quiet=False, callback=lambda *x: None,
+    def download(self, filepath="", quiet=False, callback=None,
                  meta=False, remux_audio=False):
         """ Download.  Use quiet=True to supress output. Return filename.
 

@@ -11,7 +11,6 @@ else:
 from . import g
 from .pafy import new, get_categoryname, call_gdata, fetch_decode
 
-
 def extract_playlist_id(playlist_url):
     # Normal playlists start with PL, Mixes start with RD + first video ID,
     # Liked videos start with LL, Uploads start with UU,
@@ -34,7 +33,7 @@ def extract_playlist_id(playlist_url):
 
 
 def get_playlist(playlist_url, basic=False, gdata=False,
-                 size=False, callback=lambda x: None):
+                 size=False, callback=None):
     """ Return a dict containing Pafy objects from a YouTube Playlist.
 
     The returned Pafy objects are initialised using the arguments to
@@ -102,13 +101,15 @@ def get_playlist(playlist_url, basic=False, gdata=False,
                            callback=callback)
 
         except IOError as e:
-            callback("%s: %s" % (v['title'], e.message))
+            if callback:
+                callback("%s: %s" % (v['title'], e.message))
             continue
 
         pafy_obj.populate_from_playlist(vid_data)
         playlist['items'].append(dict(pafy=pafy_obj,
                                       playlist_meta=vid_data))
-        callback("Added video: %s" % v['title'])
+        if callback:
+            callback("Added video: %s" % v['title'])
 
     return playlist
 
@@ -204,12 +205,14 @@ class Playlist(object):
                             size=self._size, callback=self._callback)
 
                 except IOError as e:
-                    self.callback("%s: %s" % (v['title'], e.message))
+                    if self.callback:
+                        self.callback("%s: %s" % (v['title'], e.message))
                     continue
 
                 pafy_obj.populate_from_playlist(vid_data)
                 items.append(pafy_obj)
-                self._callback("Added video: %s" % vid_data['title'])
+                if self._callback:
+                    self._callback("Added video: %s" % vid_data['title'])
                 yield pafy_obj
 
             if not playlistitems.get('nextPageToken'):
@@ -220,7 +223,7 @@ class Playlist(object):
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False,
-                 size=False, callback=lambda x: None):
+                 size=False, callback=None):
     """ Return a Playlist object from a YouTube Playlist.
 
     The returned Pafy objects are initialised using the arguments to

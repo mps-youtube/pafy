@@ -40,7 +40,8 @@ class YtdlPafy(BasePafy):
             except youtube_dl.utils.DownloadError as e:
                 raise IOError(str(e).replace('YouTube said', 'Youtube says'))
 
-        self.callback("Fetched video info")
+        if self.callback:
+            self.callback("Fetched video info")
 
         self._title = self._ydl_info['title']
         self._author = self._ydl_info['uploader']
