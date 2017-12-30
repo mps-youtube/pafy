@@ -156,17 +156,22 @@ class Playlist(object):
         self._gdata = gdata
         self._size = size
         self._callback = callback
+        self._cached =0
+        self._pageToken = None
 
     def __len__(self):
         return self._len
-    
+
     def __iter__(self):
-        if self._items is not None:
+        if self._items is not None :
             for  i in self._items:
                 yield i
-            return
+            if self._pageToken == -1 :
+                return
 
-        items = []
+        items = self._items
+        if items == None :
+            items = []
 
         # playlist items specific metadata
         query = {'part': 'snippet',
@@ -174,6 +179,8 @@ class Playlist(object):
                 'playlistId': self.plid}
 
         while True:
+            if self._pageToken :
+                query['pageToken'] = self._pageToken
             playlistitems = call_gdata('playlistItems', query)
 
             query2 = {'part':'contentDetails,snippet,statistics',
@@ -216,10 +223,90 @@ class Playlist(object):
                 yield pafy_obj
 
             if not playlistitems.get('nextPageToken'):
+                self._pageToken = -1
+                self._len = len(items)
+                self._cached = self._len
                 break
+
             query['pageToken'] = playlistitems['nextPageToken']
+            self._pageToken = playlistitems['nextPageToken']
 
         self._items = items
+
+    def __getitem__(self, index) :
+        if self._items != None and index < self._cached:
+            try :
+                return self._items[index]
+            except IndexError :
+                pass
+
+        if self._pageToken == -1 :
+            raise IndexError('index out of range')
+
+        items = self._items
+        if items == None :
+            items = []
+        i = index
+        i -= self._cached
+
+        query = {'part': 'snippet',
+                'maxResults': 50,
+                'playlistId': self.plid}
+
+        while i>=0 :
+            if self._pageToken :
+                query['pageToken'] = self._pageToken
+            playlistitems = call_gdata('playlistItems', query)
+
+            query2 = {'part':'contentDetails,snippet,statistics',
+                      'maxResults': 50,
+                      'id': ','.join(i['snippet']['resourceId']['videoId']
+                          for i in playlistitems['items'])}
+            wdata = call_gdata('videos', query2)
+
+            for v, vextra in zip(playlistitems['items'], wdata['items']):
+                stats = vextra.get('statistics', {})
+                vid_data = dict(
+                    title=v['snippet']['title'],
+                    author=v['snippet']['channelTitle'],
+                    thumbnail=v['snippet'].get('thumbnails', {}
+                        ).get('default', {}).get('url'),
+                    description=v['snippet']['description'],
+                    length_seconds=parseISO8591(
+                        vextra['contentDetails']['duration']),
+                    category=get_categoryname(vextra['snippet']['categoryId']),
+                    views=stats.get('viewCount', 0),
+                    likes=stats.get('likeCount', 0),
+                    dislikes=stats.get('dislikeCount', 0),
+                    comments=stats.get('commentCount', 0),
+                )
+
+                try:
+                    pafy_obj = new(v['snippet']['resourceId']['videoId'],
+                            basic=self._basic, gdata=self._gdata,
+                            size=self._size, callback=self._callback)
+
+                except IOError as e:
+                    if self.callback:
+                        self.callback("%s: %s" % (v['title'], e.message))
+                    continue
+
+                pafy_obj.populate_from_playlist(vid_data)
+                items.append(pafy_obj)
+                i -= 1
+                if self._callback:
+                    self._callback("Added video: %s" % vid_data['title'])
+
+            if not playlistitems.get('nextPageToken'):
+                self._pageToken = -1
+                self._len = len(items)
+                break
+            query['pageToken'] = playlistitems['nextPageToken']
+            self._pageToken = playlistitems['nextPageToken']
+
+        self._cached = len(items)
+        self._items = items
+        return self._items[index]
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False,
