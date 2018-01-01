@@ -14,7 +14,7 @@ def get_channel(channel_url, basic=False, gdata=False,
 
     """
 
-    return Channel(channel_url, basic, gdata, size, callback)
+    return Channel.from_url(channel_url, basic, gdata, size, callback)
 
 class Channel(object):
     def __init__(self, channel_url, basic, gdata, size, callback) :
@@ -43,6 +43,12 @@ class Channel(object):
         t._subscriberCount = ch['subscriberCount']
         t._uploads = ch['uploads']
 
+        return t
+
+    @classmethod
+    def from_url(cls, url, basic, gdata, size, callback):
+        t = cls(url, basic, gdata, size, callback)
+        t._fetch_basic()
         return t
 
     @property
@@ -80,7 +86,7 @@ class Channel(object):
     def uploads(self):
         if not self._uploads:
             self._fetch_basic()
-        return Playlist(self._uploads, self._basic, self._gdata, self._size, self._callback)
+        return Playlist.from_url(self._uploads, self._basic, self._gdata, self._size, self._callback)
 
     @property
     def playlists(self):
@@ -201,7 +207,7 @@ class Channel(object):
         try:
             ch = allinfo['items'][0]
         except:
-            err = "Unrecognized channel url : %s"
+            err = "Unrecognized channel id, url or name : %s"
             raise ValueError(err % channel_url)
 
         self._channel_id = ch['id']

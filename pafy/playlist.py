@@ -165,6 +165,13 @@ class Playlist(object):
         t._len = pl['len']
         return t
 
+    @classmethod
+    def from_url(cls, url, basic, gdata, size, callback):
+        t = cls(url,  basic, gdata, size, callback)
+        t._fetch_basic()
+        return t
+
+
     @property
     def title(self):
         if not self._title:
@@ -375,4 +382,4 @@ def get_playlist2(playlist_url, basic=False, gdata=False,
 
     """
 
-    return Playlist(playlist_url, basic, gdata, size, callback)
+    return Playlist.from_url(playlist_url, basic, gdata, size, callback)
