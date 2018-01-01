@@ -142,17 +142,11 @@ class Playlist(object):
             err = "Unrecognized playlist url: %s"
             raise ValueError(err % playlist_url)
 
-        query = {'part': 'snippet, contentDetails',
-                 'id': playlist_id}
-        allinfo = call_gdata('playlists', query)
-
-        pl = allinfo['items'][0]
-
         self.plid = playlist_id
-        self.title = pl['snippet']['title']
-        self.author = pl['snippet']['channelTitle']
-        self.description = pl['snippet']['description']
-        self ._len = pl['contentDetails']['itemCount']
+        self._title = None
+        self._author = None
+        self._description = None
+        self._len = None
         self._basic = basic
         self._gdata = gdata
         self._size = size
@@ -160,7 +154,40 @@ class Playlist(object):
         self._cached = 0
         self._pageToken = None
 
+    @classmethod
+    def from_dict(cls, pl, basic, gdata, size, callback):
+        t = cls(pl['id'],  basic, gdata, size, callback)
+        t._title = pl['title']
+        t._author = pl['author']
+        t._description = pl['description']
+        t._len = pl['len']
+        return t
+
+    @property
+    def title(self):
+        if not self._title:
+            self._fetch_basic()
+
+        return self._title
+
+    @property
+    def author(self):
+        if not self._author:
+            self._fetch_basic()
+
+        return self._author
+
+    @property
+    def description(self):
+        if not self._description:
+            self._fetch_basic()
+
+        return self._description
+
     def __len__(self):
+        if not self._len:
+            self._fetch_basic()
+
         return self._len
 
     def __iter__(self):
@@ -308,6 +335,18 @@ class Playlist(object):
         self._cached = len(items)
         self._items = items
         return self._items[index]
+
+    def _fetch_basic(self) :
+        query = {'part': 'snippet, contentDetails',
+                'id': self.plid}
+        allinfo = call_gdata('playlists', query)
+
+        pl = allinfo['items'][0]
+
+        self._title = pl['snippet']['title']
+        self._author = pl['snippet']['channelTitle']
+        self._description = pl['snippet']['description']
+        self._len = pl['contentDetails']['itemCount']
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False,
