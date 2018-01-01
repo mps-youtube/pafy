@@ -3,10 +3,14 @@ import re
 from . import g
 from .pafy import new, call_gdata
 from .playlist import Playlist
+from .backend_shared import pyver
 
 def get_channel(channel_url, basic=False, gdata=False,
                  size=False, callback=None):
-    """
+    """Return a Channel object
+
+    The returned Pafy and Playlist objects are initialised using the arguments to
+    get_channel() in the manner documented for pafy.new()
 
     """
 
@@ -155,6 +159,20 @@ class Channel(object):
 
         self._subscriptions = subscriptions
         return self._subscriptions
+
+    def __repr__(self):
+        if not self._title:
+            self._fetch_basic()
+        keys = "Type Title Description SubscriberCount"
+        keys = keys.split(" ")
+        info = {"Type": "Channel",
+                "Title": self.title,
+                "Description": self.description,
+                "SubscriberCount": self.subscriberCount}
+
+        nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
+
+        return nfo.encode("utf8", "replace") if pyver == 2 else nfo
 
     def _fetch_basic(self):
         query = None

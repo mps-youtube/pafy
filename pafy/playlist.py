@@ -5,8 +5,10 @@ import json
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.parse import parse_qs, urlparse
+    pyver = 3
 else:
     from urlparse import parse_qs, urlparse
+    pyver = 2
 
 from . import g
 from .pafy import new, get_categoryname, call_gdata, fetch_decode
@@ -335,6 +337,21 @@ class Playlist(object):
         self._cached = len(items)
         self._items = items
         return self._items[index]
+
+    def __repr__(self):
+        if not self._title:
+            self._fetch_basic()
+        keys = "Type Title Author Description Length"
+        keys = keys.split(" ")
+        info = {"Type": "Playlist",
+                "Title": self._title,
+                "Author": self._author,
+                "Description": self._description,
+                "Length": self.__len__()}
+
+        nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
+
+        return nfo.encode("utf8", "replace") if pyver == 2 else nfo
 
     def _fetch_basic(self) :
         query = {'part': 'snippet, contentDetails',
