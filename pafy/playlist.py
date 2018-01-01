@@ -11,6 +11,7 @@ else:
 from . import g
 from .pafy import new, get_categoryname, call_gdata, fetch_decode
 
+
 def extract_playlist_id(playlist_url):
     # Normal playlists start with PL, Mixes start with RD + first video ID,
     # Liked videos start with LL, Uploads start with UU,
@@ -19,7 +20,7 @@ def extract_playlist_id(playlist_url):
 
     playlist_id = None
     if idregx.match(playlist_url):
-        playlist_id = playlist_url # ID of video
+        playlist_id = playlist_url  # ID of video
 
     if '://' not in playlist_url:
         playlist_url = '//' + playlist_url
@@ -142,7 +143,7 @@ class Playlist(object):
             raise ValueError(err % playlist_url)
 
         query = {'part': 'snippet, contentDetails',
-                'id': playlist_id}
+                 'id': playlist_id}
         allinfo = call_gdata('playlists', query)
 
         pl = allinfo['items'][0]
@@ -156,37 +157,37 @@ class Playlist(object):
         self._gdata = gdata
         self._size = size
         self._callback = callback
-        self._cached =0
+        self._cached = 0
         self._pageToken = None
 
     def __len__(self):
         return self._len
 
     def __iter__(self):
-        if self._items is not None :
-            for  i in self._items:
+        if self._items is not None:
+            for i in self._items:
                 yield i
-            if self._pageToken == -1 :
+            if self._pageToken == -1:
                 return
 
         items = self._items
-        if items == None :
+        if items is None:
             items = []
 
         # playlist items specific metadata
         query = {'part': 'snippet',
-                'maxResults': 50,
-                'playlistId': self.plid}
+                 'maxResults': 50,
+                 'playlistId': self.plid}
 
         while True:
-            if self._pageToken :
+            if self._pageToken:
                 query['pageToken'] = self._pageToken
             playlistitems = call_gdata('playlistItems', query)
 
-            query2 = {'part':'contentDetails,snippet,statistics',
+            query2 = {'part': 'contentDetails,snippet,statistics',
                       'maxResults': 50,
                       'id': ','.join(i['snippet']['resourceId']['videoId']
-                          for i in playlistitems['items'])}
+                                     for i in playlistitems['items'])}
             wdata = call_gdata('videos', query2)
 
             for v, vextra in zip(playlistitems['items'], wdata['items']):
@@ -194,8 +195,8 @@ class Playlist(object):
                 vid_data = dict(
                     title=v['snippet']['title'],
                     author=v['snippet']['channelTitle'],
-                    thumbnail=v['snippet'].get('thumbnails', {}
-                        ).get('default', {}).get('url'),
+                    thumbnail=v['snippet'].get('thumbnails', {})
+                                          .get('default', {}).get('url'),
                     description=v['snippet']['description'],
                     length_seconds=parseISO8591(
                         vextra['contentDetails']['duration']),
@@ -208,8 +209,8 @@ class Playlist(object):
 
                 try:
                     pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                            basic=self._basic, gdata=self._gdata,
-                            size=self._size, callback=self._callback)
+                                   basic=self._basic, gdata=self._gdata,
+                                   size=self._size, callback=self._callback)
 
                 except IOError as e:
                     if self.callback:
@@ -233,35 +234,35 @@ class Playlist(object):
 
         self._items = items
 
-    def __getitem__(self, index) :
-        if self._items != None and index < self._cached:
-            try :
+    def __getitem__(self, index):
+        if self._items is not None and index < self._cached:
+            try:
                 return self._items[index]
-            except IndexError :
+            except IndexError:
                 pass
 
-        if self._pageToken == -1 :
+        if self._pageToken == -1:
             raise IndexError('index out of range')
 
         items = self._items
-        if items == None :
+        if items is None:
             items = []
         i = index
         i -= self._cached
 
         query = {'part': 'snippet',
-                'maxResults': 50,
-                'playlistId': self.plid}
+                 'maxResults': 50,
+                 'playlistId': self.plid}
 
-        while i>=0 :
-            if self._pageToken :
+        while i >= 0:
+            if self._pageToken:
                 query['pageToken'] = self._pageToken
             playlistitems = call_gdata('playlistItems', query)
 
-            query2 = {'part':'contentDetails,snippet,statistics',
+            query2 = {'part': 'contentDetails,snippet,statistics',
                       'maxResults': 50,
                       'id': ','.join(i['snippet']['resourceId']['videoId']
-                          for i in playlistitems['items'])}
+                                     for i in playlistitems['items'])}
             wdata = call_gdata('videos', query2)
 
             for v, vextra in zip(playlistitems['items'], wdata['items']):
@@ -269,8 +270,8 @@ class Playlist(object):
                 vid_data = dict(
                     title=v['snippet']['title'],
                     author=v['snippet']['channelTitle'],
-                    thumbnail=v['snippet'].get('thumbnails', {}
-                        ).get('default', {}).get('url'),
+                    thumbnail=v['snippet'].get('thumbnails', {})
+                                          .get('default', {}).get('url'),
                     description=v['snippet']['description'],
                     length_seconds=parseISO8591(
                         vextra['contentDetails']['duration']),
@@ -283,8 +284,8 @@ class Playlist(object):
 
                 try:
                     pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                            basic=self._basic, gdata=self._gdata,
-                            size=self._size, callback=self._callback)
+                                   basic=self._basic, gdata=self._gdata,
+                                   size=self._size, callback=self._callback)
 
                 except IOError as e:
                     if self.callback:
@@ -310,7 +311,7 @@ class Playlist(object):
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False,
-                 size=False, callback=None):
+                  size=False, callback=None):
     """ Return a Playlist object from a YouTube Playlist.
 
     The returned Pafy objects are initialised using the arguments to
