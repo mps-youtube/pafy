@@ -1,7 +1,7 @@
 import json
 import re
 from . import g
-from .pafy import new, get_categoryname, call_gdata, fetch_decode
+from .pafy import new, call_gdata
 from .playlist import Playlist
 
 def get_channel(channel_url, basic=False, gdata=False,
@@ -12,13 +12,12 @@ def get_channel(channel_url, basic=False, gdata=False,
 
     return Channel(channel_url, basic, gdata, size, callback)
 
-
 class Channel(object):
     def __init__(self, channel_url, basic, gdata, size, callback) :
 
         self._channel_url = channel_url
         self._channel_id = None
-        self._name = None
+        self._title = None
         self._description = None
         self._logo = None
         self._subscriberCount = None
@@ -33,12 +32,12 @@ class Channel(object):
     @classmethod
     def from_dict(cls, ch, basic, gdata, size, callback):
         t = cls(ch['id'], basic, gdata, size, callback)
-        self._channel_id = ch['id']
-        self._name = ch['name']
-        self._description = ch['description']
-        self._logo = ch['logo']
-        self._subscriberCount = ch['subscriberCount']
-        self._uploads = ch['uploads']
+        t._channel_id = ch['id']
+        t._title = ch['title']
+        t._description = ch['description']
+        t._logo = ch['logo']
+        t._subscriberCount = ch['subscriberCount']
+        t._uploads = ch['uploads']
 
         return t
 
@@ -49,10 +48,10 @@ class Channel(object):
         return self._channel_id
 
     @property
-    def name(self):
-        if not self._name:
+    def title(self):
+        if not self._title:
             self._fetch_basic()
-        return self._name
+        return self._title
 
     @property
     def description(self):
@@ -126,15 +125,33 @@ class Channel(object):
 
 
         while True:
-            subs = call_gdata('subscriptions', query)
+            subs_data = call_gdata('subscriptions', query)
+            sub_ids = []
 
-            for sub in subs['items']:
-                sub_obj = Channel(sub['snippet']['resourceId']['channelId'], self._basic, self._gdata, self._size, self._callback)
+            for sub in subs_data['items']:
+                sub_ids.append(sub['snippet']['resourceId']['channelId'])
+
+            query2 = {'part': 'snippet, contentDetails, statistics',
+                      'id': ','.join(sub_ids),
+                      'maxResults': 50}
+
+            data = call_gdata('channels', query2)
+
+            for ch in data['items']:
+                channel_data = dict(
+                    id = ch['id'],
+                    title = ch['snippet']['title'],
+                    description = ch['snippet']['description'],
+                    logo = ch['snippet']['thumbnails']['default']['url'],
+                    subscriberCount = ch['statistics']['subscriberCount'],
+                    uploads = ch['contentDetails']['relatedPlaylists']['uploads']
+                )
+                sub_obj = Channel.from_dict(channel_data, self._basic, self._gdata, self._size, self._callback)
                 subscriptions.append(sub_obj)
 
-            if not subs.get('nextPageToken'):
+            if not subs_data.get('nextPageToken'):
                 break
-            query['pageToken'] = subs['nextPageToken']
+            query['pageToken'] = subs_data['nextPageToken']
 
         self._subscriptions = subscriptions
         return self._subscriptions
@@ -170,7 +187,7 @@ class Channel(object):
             raise ValueError(err % channel_url)
 
         self._channel_id = ch['id']
-        self._name = ch['snippet']['title']
+        self._title = ch['snippet']['title']
         self._description = ch['snippet']['description']
         self._logo = ch['snippet']['thumbnails']['default']['url']
         self._subscriberCount = ch['statistics']['subscriberCount']
