@@ -1,23 +1,23 @@
-import json
 import re
-from . import g
-from .pafy import new, call_gdata
+from .pafy import call_gdata
 from .playlist import Playlist
 from .backend_shared import pyver
 
+
 def get_channel(channel_url, basic=False, gdata=False,
-                 size=False, callback=None):
+                size=False, callback=None):
     """Return a Channel object
 
-    The returned Pafy and Playlist objects are initialised using the arguments to
-    get_channel() in the manner documented for pafy.new()
+    The returned Pafy and Playlist objects are initialised using the arguments
+    to get_channel() in the manner documented for pafy.new()
 
     """
 
     return Channel.from_url(channel_url, basic, gdata, size, callback)
 
+
 class Channel(object):
-    def __init__(self, channel_url, basic, gdata, size, callback) :
+    def __init__(self, channel_url, basic, gdata, size, callback):
 
         self._channel_url = channel_url
         self._channel_id = None
@@ -81,12 +81,12 @@ class Channel(object):
             self._fetch_basic()
         return self._subscriberCount
 
-
     @property
     def uploads(self):
         if not self._uploads:
             self._fetch_basic()
-        return Playlist.from_url(self._uploads, self._basic, self._gdata, self._size, self._callback)
+        return Playlist.from_url(self._uploads, self._basic, self._gdata,
+                                 self._size, self._callback)
 
     @property
     def playlists(self):
@@ -104,14 +104,15 @@ class Channel(object):
 
             for pl in playlistList['items']:
                 pl_data = dict(
-                    id = pl['id'],
-                    title = pl['snippet']['title'],
-                    author = pl['snippet']['channelTitle'],
-                    description = pl['snippet']['description'],
-                    len = pl['contentDetails']['itemCount']
+                    id=pl['id'],
+                    title=pl['snippet']['title'],
+                    author=pl['snippet']['channelTitle'],
+                    description=pl['snippet']['description'],
+                    len=pl['contentDetails']['itemCount']
                 )
 
-                pl_obj = Playlist.from_dict(pl_data, self._basic, self._gdata, self._size, self._callback)
+                pl_obj = Playlist.from_dict(pl_data, self._basic, self._gdata,
+                                            self._size, self._callback)
                 playlists.append(pl_obj)
                 if self._callback:
                     self._callback("Added playlist: %s" % pl_data['title'])
@@ -133,7 +134,6 @@ class Channel(object):
                  'maxResults': 50,
                  'channelId': self.channel_id}
 
-
         while True:
             subs_data = call_gdata('subscriptions', query)
             sub_ids = []
@@ -149,14 +149,15 @@ class Channel(object):
 
             for ch in data['items']:
                 channel_data = dict(
-                    id = ch['id'],
-                    title = ch['snippet']['title'],
-                    description = ch['snippet']['description'],
-                    logo = ch['snippet']['thumbnails']['default']['url'],
-                    subscriberCount = ch['statistics']['subscriberCount'],
-                    uploads = ch['contentDetails']['relatedPlaylists']['uploads']
+                    id=ch['id'],
+                    title=ch['snippet']['title'],
+                    description=ch['snippet']['description'],
+                    logo=ch['snippet']['thumbnails']['default']['url'],
+                    subscriberCount=ch['statistics']['subscriberCount'],
+                    uploads=ch['contentDetails']['relatedPlaylists']['uploads']
                 )
-                sub_obj = Channel.from_dict(channel_data, self._basic, self._gdata, self._size, self._callback)
+                sub_obj = Channel.from_dict(channel_data, self._basic,
+                                            self._gdata, self._size, self._callback)
                 subscriptions.append(sub_obj)
 
             if not subs_data.get('nextPageToken'):
@@ -191,22 +192,22 @@ class Channel(object):
         elif userR.match(channel_url):
             username = userR.search(channel_url).group(1)
             query = {'part': 'snippet, contentDetails, statistics',
-                    'forUsername': username}
-        elif len(channel_url) == 24 and channel_url[:2]=='UC':
+                     'forUsername': username}
+        elif len(channel_url) == 24 and channel_url[:2] == 'UC':
             channel_id = channel_url
         else:
             username = channel_url
             query = {'part': 'snippet, contentDetails, statistics',
-                    'forUsername': username}
+                     'forUsername': username}
 
-        if query == None:
-            query = {'part' : 'snippet, contentDetails, statistics',
-                    'id' : channel_id}
+        if query is None:
+            query = {'part': 'snippet, contentDetails, statistics',
+                     'id': channel_id}
         allinfo = call_gdata('channels', query)
 
         try:
             ch = allinfo['items'][0]
-        except:
+        except IndexError:
             err = "Unrecognized channel id, url or name : %s"
             raise ValueError(err % channel_url)
 
