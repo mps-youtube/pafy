@@ -2,6 +2,10 @@ import sys
 import re
 import json
 
+from . import g
+from .pafy import new, get_categoryname, call_gdata, fetch_decode
+
+
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.parse import parse_qs, urlparse
@@ -9,9 +13,6 @@ if sys.version_info[:2] >= (3, 0):
 else:
     from urlparse import parse_qs, urlparse
     pyver = 2
-
-from . import g
-from .pafy import new, get_categoryname, call_gdata, fetch_decode
 
 
 def extract_playlist_id(playlist_url):
@@ -155,6 +156,7 @@ class Playlist(object):
         self._callback = callback
         self._cached = 0
         self._pageToken = None
+        self._have_basic = False
 
     @classmethod
     def from_dict(cls, pl, basic, gdata, size, callback):
@@ -163,6 +165,7 @@ class Playlist(object):
         t._author = pl['author']
         t._description = pl['description']
         t._len = pl['len']
+        t._have_basic = True
         return t
 
     @classmethod
@@ -171,30 +174,29 @@ class Playlist(object):
         t._fetch_basic()
         return t
 
-
     @property
     def title(self):
-        if not self._title:
+        if not self._have_basic:
             self._fetch_basic()
 
         return self._title
 
     @property
     def author(self):
-        if not self._author:
+        if not self._have_basic:
             self._fetch_basic()
 
         return self._author
 
     @property
     def description(self):
-        if not self._description:
+        if not self._have_basic:
             self._fetch_basic()
 
         return self._description
 
     def __len__(self):
-        if not self._len:
+        if not self._have_basic:
             self._fetch_basic()
 
         return self._len
@@ -373,7 +375,7 @@ class Playlist(object):
         self._items[index] = value
 
     def __repr__(self):
-        if not self._title:
+        if not self._have_basic:
             self._fetch_basic()
         keys = "Type Title Author Description Length"
         keys = keys.split(" ")
@@ -387,9 +389,9 @@ class Playlist(object):
 
         return nfo.encode("utf8", "replace") if pyver == 2 else nfo
 
-    def _fetch_basic(self) :
+    def _fetch_basic(self):
         query = {'part': 'snippet, contentDetails',
-                'id': self.plid}
+                 'id': self.plid}
         allinfo = call_gdata('playlists', query)
 
         pl = allinfo['items'][0]
@@ -398,6 +400,7 @@ class Playlist(object):
         self._author = pl['snippet']['channelTitle']
         self._description = pl['snippet']['description']
         self._len = pl['contentDetails']['itemCount']
+        self._have_basic = True
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False,

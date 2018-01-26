@@ -32,6 +32,7 @@ class Channel(object):
         self._callback = callback
         self._playlists = None
         self._subscriptions = None
+        self._have_basic = False
 
     @classmethod
     def from_dict(cls, ch, basic, gdata, size, callback):
@@ -42,6 +43,7 @@ class Channel(object):
         t._logo = ch['logo']
         t._subscriberCount = ch['subscriberCount']
         t._uploads = ch['uploads']
+        t._have_basic = True
 
         return t
 
@@ -53,31 +55,31 @@ class Channel(object):
 
     @property
     def channel_id(self):
-        if not self._channel_id:
+        if not self._have_basic:
             self._fetch_basic()
         return self._channel_id
 
     @property
     def title(self):
-        if not self._title:
+        if not self._have_basic:
             self._fetch_basic()
         return self._title
 
     @property
     def description(self):
-        if not self._description:
+        if not self._have_basic:
             self._fetch_basic()
         return self._description
 
     @property
     def logo(self):
-        if not self._logo:
+        if not self._have_basic:
             self._fetch_basic()
         return self._logo
 
     @property
     def subscriberCount(self):
-        if not self._subscriberCount:
+        if not self._have_basic:
             self._fetch_basic()
         return self._subscriberCount
 
@@ -85,8 +87,12 @@ class Channel(object):
     def uploads(self):
         if not self._uploads:
             self._fetch_basic()
-        return Playlist.from_url(self._uploads, self._basic, self._gdata,
-                                 self._size, self._callback)
+        if type(self._uploads) != Playlist:
+            self._uploads = Playlist.from_url(self._uploads, self._basic,
+                                              self._gdata, self._size,
+                                              self._callback)
+
+        return self._uploads
 
     @property
     def playlists(self):
@@ -157,7 +163,8 @@ class Channel(object):
                     uploads=ch['contentDetails']['relatedPlaylists']['uploads']
                 )
                 sub_obj = Channel.from_dict(channel_data, self._basic,
-                                            self._gdata, self._size, self._callback)
+                                            self._gdata, self._size,
+                                            self._callback)
                 subscriptions.append(sub_obj)
 
             if not subs_data.get('nextPageToken'):
@@ -168,7 +175,7 @@ class Channel(object):
         return self._subscriptions
 
     def __repr__(self):
-        if not self._title:
+        if not self._have_basic:
             self._fetch_basic()
         keys = "Type Title Description SubscriberCount"
         keys = keys.split(" ")
@@ -217,3 +224,4 @@ class Channel(object):
         self._logo = ch['snippet']['thumbnails']['default']['url']
         self._subscriberCount = ch['statistics']['subscriberCount']
         self._uploads = ch['contentDetails']['relatedPlaylists']['uploads']
+        self._have_basic = True
