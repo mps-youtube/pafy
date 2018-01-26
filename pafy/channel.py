@@ -109,11 +109,16 @@ class Channel(object):
             playlistList = call_gdata('playlists', query)
 
             for pl in playlistList['items']:
+                try:
+                    thumbnail = pl['snippet']['thumbnails']['standard']['url']
+                except KeyError:
+                    thumbnail = None
                 pl_data = dict(
                     id=pl['id'],
                     title=pl['snippet']['title'],
                     author=pl['snippet']['channelTitle'],
                     description=pl['snippet']['description'],
+                    thumbnail=thumbnail,
                     len=pl['contentDetails']['itemCount']
                 )
 

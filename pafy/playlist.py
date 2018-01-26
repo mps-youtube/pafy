@@ -150,6 +150,7 @@ class Playlist(object):
         self._author = None
         self._description = None
         self._len = None
+        self._thumbnail = None
         self._basic = basic
         self._gdata = gdata
         self._size = size
@@ -165,6 +166,7 @@ class Playlist(object):
         t._author = pl['author']
         t._description = pl['description']
         t._len = pl['len']
+        t._thumbnail = pl['thumbnail']
         t._have_basic = True
         return t
 
@@ -194,6 +196,13 @@ class Playlist(object):
             self._fetch_basic()
 
         return self._description
+
+    @property
+    def thumbnail(self):
+        if not self._have_basic:
+            self._fetch_basic()
+
+        return self._thumbnail
 
     def __len__(self):
         if not self._have_basic:
@@ -400,6 +409,10 @@ class Playlist(object):
         self._author = pl['snippet']['channelTitle']
         self._description = pl['snippet']['description']
         self._len = pl['contentDetails']['itemCount']
+        try:
+            self._thumbnail = pl['snippet']['thumbnails']['standard']['url']
+        except KeyError:
+            self._thumbnail = None
         self._have_basic = True
 
 
@@ -416,7 +429,9 @@ def get_playlist2(playlist_url, basic=False, gdata=False,
 
 
 def dict_for_playlist(v):
-    """Returns a dict which can be used to initialise Playlist Object."""
+    """Returns a dict which can be used to initialise Pafy Object for playlist
+
+    """
 
     stats = v.get('statistics', {})
     vid_data = dict(
