@@ -97,7 +97,9 @@ class Channel(object):
     @property
     def playlists(self):
         if self._playlists is not None:
-            return self._playlists
+            for playlist in self._playlists:
+                yield playlist
+            return
 
         playlists = []
 
@@ -127,18 +129,20 @@ class Channel(object):
                 playlists.append(pl_obj)
                 if self._callback:
                     self._callback("Added playlist: %s" % pl_data['title'])
+                yield pl_obj
 
             if not playlistList.get('nextPageToken'):
                 break
             query['pageToken'] = playlistList['nextPageToken']
 
         self._playlists = playlists
-        return self._playlists
 
     @property
     def subscriptions(self):
         if self._subscriptions is not None:
-            return self._subscriptions
+            for sub in self._subscriptions:
+                yield sub
+            return
 
         subscriptions = []
         query = {'part': 'snippet',
@@ -171,23 +175,22 @@ class Channel(object):
                                             self._gdata, self._size,
                                             self._callback)
                 subscriptions.append(sub_obj)
+                yield sub_obj
 
             if not subs_data.get('nextPageToken'):
                 break
             query['pageToken'] = subs_data['nextPageToken']
 
         self._subscriptions = subscriptions
-        return self._subscriptions
 
     def __repr__(self):
         if not self._have_basic:
             self._fetch_basic()
-        keys = "Type Title Description SubscriberCount"
-        keys = keys.split(" ")
         info = {"Type": "Channel",
                 "Title": self.title,
                 "Description": self.description,
                 "SubscriberCount": self.subscriberCount}
+        keys = list(info.keys())
 
         nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 

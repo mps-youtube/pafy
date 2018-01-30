@@ -386,13 +386,12 @@ class Playlist(object):
     def __repr__(self):
         if not self._have_basic:
             self._fetch_basic()
-        keys = "Type Title Author Description Length"
-        keys = keys.split(" ")
         info = {"Type": "Playlist",
                 "Title": self._title,
                 "Author": self._author,
                 "Description": self._description,
                 "Length": self.__len__()}
+        keys = list(info.keys())
 
         nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
 
