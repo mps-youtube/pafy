@@ -186,13 +186,13 @@ class Channel(object):
     def __repr__(self):
         if not self._have_basic:
             self._fetch_basic()
-        info = {"Type": "Channel",
-                "Title": self.title,
-                "Description": self.description,
-                "SubscriberCount": self.subscriberCount}
-        keys = list(info.keys())
 
-        nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
+        info = [("Type", "Channel"),
+                ("Title", self.title),
+                ("Description", self.description),
+                ("SubscriberCount", self.subscriberCount)]
+
+        nfo = "\n".join(["%s: %s" % i for i in info])
 
         return nfo.encode("utf8", "replace") if pyver == 2 else nfo
 
