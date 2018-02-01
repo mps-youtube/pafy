@@ -328,61 +328,6 @@ class Playlist(object):
         self._items = items
         return self._items[index]
 
-    def __setitem__(self, index, value):
-        if self._items is not None:
-            self._items[index] = value
-            return
-
-        items = self._items
-        if items is None:
-            items = []
-
-        # playlist items specific metadata
-        query = {'part': 'snippet',
-                 'maxResults': 50,
-                 'playlistId': self.plid}
-
-        while True:
-            if self._pageToken:
-                query['pageToken'] = self._pageToken
-            playlistitems = call_gdata('playlistItems', query)
-
-            query2 = {'part': 'contentDetails,snippet,statistics',
-                      'maxResults': 50,
-                      'id': ','.join(i['snippet']['resourceId']['videoId']
-                                     for i in playlistitems['items'])}
-            wdata = call_gdata('videos', query2)
-
-            for v in wdata['items']:
-                vid_data = dict_for_playlist(v)
-
-                try:
-                    pafy_obj = new(v['id'],
-                                   basic=self._basic, gdata=self._gdata,
-                                   size=self._size, callback=self._callback)
-
-                except IOError as e:
-                    if self._callback:
-                        self._callback("%s: %s" % (v['title'], e.message))
-                    continue
-
-                pafy_obj.populate_from_playlist(vid_data)
-                items.append(pafy_obj)
-                if self._callback:
-                    self._callback("Added video: %s" % vid_data['title'])
-
-            if not playlistitems.get('nextPageToken'):
-                self._pageToken = -1
-                self._len = len(items)
-                self._cached = self._len
-                break
-
-            query['pageToken'] = playlistitems['nextPageToken']
-            self._pageToken = playlistitems['nextPageToken']
-
-        self._items = items
-        self._items[index] = value
-
     def __repr__(self):
         if not self._have_basic:
             self._fetch_basic()
