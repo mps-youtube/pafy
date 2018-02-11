@@ -1,3 +1,16 @@
+11 February 2018
+Version 0.5.4
+
+[Bugfix] Fix bug in views/likes/comments (@kiorky) (#171)
+[Update] Do not automatically fall back to buggy internal backend (can be
+    overridden with an environmental variable) (@ids1024)
+[Update] Support UU playlist urls (@sedden) (#176)
+[Update] Support FL playlist urls (@zetasyanthis) (#177)
+[Feature] Support KB/MB/GB download progress (@ritiek) (#178)
+[Feature] Add API for channels (@vn-ki) (#196)
+
+-------------------------------------------------------------------------------
+
 15 January 2017
 Version 0.5.3.1
 
