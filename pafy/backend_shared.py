@@ -632,23 +632,23 @@ class BaseStream(object):
 
         downloader._progress_hooks = [progress_hook]
 
-        savedir = filename = ""
-
         if filepath and os.path.isdir(filepath):
-            savedir, filename = filepath, self.generate_filename(max_length=256-len('.temp'))
+            filename = self.generate_filename(max_length=256-len('.temp'))
+            filepath = os.path.join(filepath, filename)
 
         elif filepath:
-            savedir, filename = os.path.split(filepath)
+            pass
 
         else:
-            filename = self.generate_filename(meta=meta, max_length=256-len('.temp'))
+            filepath = self.generate_filename(meta=meta, max_length=256-len('.temp'))
 
         infodict = {'url': self.url}
 
-        downloader.download(filename, infodict)
+        downloader.download(filepath, infodict)
+        print()
 
         if remux_audio and self.mediatype == "audio":
-            subprocess.run("mv {} {}.temp".format(filepath))
+            subprocess.run(['mv', filepath, filepath+'.temp'])
             remux(filepath+'.temp', filepath, quiet=quiet, muxer=remux_audio)
 
     def _internal_download(self, filepath="", quiet=False, progress="Bytes", callback=None,
