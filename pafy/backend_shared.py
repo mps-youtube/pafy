@@ -579,8 +579,8 @@ class BaseStream(object):
     def _youtubedl_download(self, filepath="", quiet=False, progress="Bytes",
                             callback=None, meta=False, remux_audio=False):
 
-        downloader = youtube_dl.downloader.http.HttpFD(ydl(),
-            {'http_chunk_size': 10240})
+        downloader = youtube_dl.downloader.http.HttpFD(ydl(), {})
+            # {'http_chunk_size': 5120})
 
         progress_available = ["KB", "MB", "GB"]
         if progress not in progress_available:
@@ -597,8 +597,14 @@ class BaseStream(object):
             if s['status'] == 'downloading':
                 bytesdone = s['downloaded_bytes']
                 total = s['total_bytes']
-                rate = s['speed']/1024
-                eta = s['eta']
+                if s.get('speed') is not None:
+                    rate = s['speed']/1024
+                else:
+                    rate = 0
+                if s.get('eta') is None:
+                    eta = 0
+                else:
+                    eta = s['eta']
 
                 if progress == "KB":
                     progress_stats = (round(bytesdone/1024.0, 2),
@@ -639,7 +645,7 @@ class BaseStream(object):
 
         infodict = {'url': self.url}
 
-        downloader.real_download(filename, infodict)
+        downloader.download(filename, infodict)
 
         if remux_audio and self.mediatype == "audio":
             subprocess.run("mv {} {}.temp".format(filepath))
@@ -750,8 +756,6 @@ class BaseStream(object):
         else:  # download incomplete, return temp filepath
             outfh.close()
             return temp_filepath
-
-
 
 
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
