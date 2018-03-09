@@ -579,8 +579,8 @@ class BaseStream(object):
     def _youtubedl_download(self, filepath="", quiet=False, progress="Bytes",
                             callback=None, meta=False, remux_audio=False):
 
-        downloader = youtube_dl.downloader.http.HttpFD(ydl(), {})
-            # {'http_chunk_size': 5120})
+        downloader = youtube_dl.downloader.http.HttpFD(ydl(),
+            {'http_chunk_size': 10485760})
 
         progress_available = ["KB", "MB", "GB"]
         if progress not in progress_available:
