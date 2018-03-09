@@ -1,15 +1,19 @@
 import sys
 import re
 import json
+import itertools
+
+from . import g
+from .pafy import new, get_categoryname, call_gdata, fetch_decode
+
 
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.parse import parse_qs, urlparse
+    pyver = 3
 else:
     from urlparse import parse_qs, urlparse
-
-from . import g
-from .pafy import new, get_categoryname, call_gdata, fetch_decode
+    pyver = 2
 
 
 def extract_playlist_id(playlist_url):
@@ -133,8 +137,6 @@ def parseISO8591(duration):
 
 
 class Playlist(object):
-    _items = None
-
     def __init__(self, playlist_url, basic, gdata, size, callback):
         playlist_id = extract_playlist_id(playlist_url)
 
@@ -142,44 +144,82 @@ class Playlist(object):
             err = "Unrecognized playlist url: %s"
             raise ValueError(err % playlist_url)
 
-        query = {'part': 'snippet, contentDetails',
-                 'id': playlist_id}
-        allinfo = call_gdata('playlists', query)
-
-        pl = allinfo['items'][0]
-
         self.plid = playlist_id
-        self.title = pl['snippet']['title']
-        self.author = pl['snippet']['channelTitle']
-        self.description = pl['snippet']['description']
-        self ._len = pl['contentDetails']['itemCount']
+        self._title = None
+        self._author = None
+        self._description = None
+        self._len = None
+        self._thumbnail = None
         self._basic = basic
         self._gdata = gdata
         self._size = size
         self._callback = callback
-        self._cached = 0
         self._pageToken = None
+        self._have_basic = False
+        self._items = []
+
+    @classmethod
+    def from_dict(cls, pl, basic, gdata, size, callback):
+        t = cls(pl['id'],  basic, gdata, size, callback)
+        t._title = pl['title']
+        t._author = pl['author']
+        t._description = pl['description']
+        t._len = pl['len']
+        t._thumbnail = pl['thumbnail']
+        t._have_basic = True
+        return t
+
+    @classmethod
+    def from_url(cls, url, basic, gdata, size, callback):
+        t = cls(url,  basic, gdata, size, callback)
+        t._fetch_basic()
+        return t
+
+    @property
+    def title(self):
+        if not self._have_basic:
+            self._fetch_basic()
+
+        return self._title
+
+    @property
+    def author(self):
+        if not self._have_basic:
+            self._fetch_basic()
+
+        return self._author
+
+    @property
+    def description(self):
+        if not self._have_basic:
+            self._fetch_basic()
+
+        return self._description
+
+    @property
+    def thumbnail(self):
+        if not self._have_basic:
+            self._fetch_basic()
+
+        return self._thumbnail
 
     def __len__(self):
+        if not self._have_basic:
+            self._fetch_basic()
+
         return self._len
 
     def __iter__(self):
-        if self._items is not None:
-            for i in self._items:
-                yield i
-            if self._pageToken == -1:
-                return
-
-        items = self._items
-        if items is None:
-            items = []
+        for i in self._items:
+            yield i
 
         # playlist items specific metadata
         query = {'part': 'snippet',
                  'maxResults': 50,
                  'playlistId': self.plid}
 
-        while True:
+        # Use -1 to represent having reached the last page
+        while self._pageToken != -1:
             if self._pageToken:
                 query['pageToken'] = self._pageToken
             playlistitems = call_gdata('playlistItems', query)
@@ -190,124 +230,77 @@ class Playlist(object):
                                      for i in playlistitems['items'])}
             wdata = call_gdata('videos', query2)
 
-            for v, vextra in zip(playlistitems['items'], wdata['items']):
-                stats = vextra.get('statistics', {})
-                vid_data = dict(
-                    title=v['snippet']['title'],
-                    author=v['snippet']['channelTitle'],
-                    thumbnail=v['snippet'].get('thumbnails', {})
-                                          .get('default', {}).get('url'),
-                    description=v['snippet']['description'],
-                    length_seconds=parseISO8591(
-                        vextra['contentDetails']['duration']),
-                    category=get_categoryname(vextra['snippet']['categoryId']),
-                    views=stats.get('viewCount', 0),
-                    likes=stats.get('likeCount', 0),
-                    dislikes=stats.get('dislikeCount', 0),
-                    comments=stats.get('commentCount', 0),
-                )
+            index = len(self._items)
+            for v in wdata['items']:
+                vid_data = dict_for_playlist(v)
 
                 try:
-                    pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                                   basic=self._basic, gdata=self._gdata,
+                    pafy_obj = new(v['id'],
+                                   basic=False, gdata=False,
                                    size=self._size, callback=self._callback)
 
                 except IOError as e:
-                    if self.callback:
-                        self.callback("%s: %s" % (v['title'], e.message))
+                    if self._callback:
+                        self._callback("%s: %s" % (v['title'], e.message))
                     continue
 
                 pafy_obj.populate_from_playlist(vid_data)
-                items.append(pafy_obj)
+                self._items.append(pafy_obj)
                 if self._callback:
                     self._callback("Added video: %s" % vid_data['title'])
-                yield pafy_obj
 
-            if not playlistitems.get('nextPageToken'):
-                self._pageToken = -1
-                self._len = len(items)
-                self._cached = self._len
-                break
+            self._pageToken = playlistitems.get('nextPageToken', -1)
+            if self._pageToken == -1:
+                self._len = len(self._items)
 
-            query['pageToken'] = playlistitems['nextPageToken']
-            self._pageToken = playlistitems['nextPageToken']
+            # Do not yield until self._items and self._pageToken are set
+            for i in self._items[index:]:
+                if self._basic:
+                    i._fetch_basic()
+                if self._gdata:
+                    i._fetch_gdata()
 
-        self._items = items
+                yield i
 
     def __getitem__(self, index):
-        if self._items is not None and index < self._cached:
-            try:
-                return self._items[index]
-            except IndexError:
-                pass
+        if index < len(self._items):
+            return self._items[index]
 
-        if self._pageToken == -1:
+        try:
+            return next(itertools.islice(self, index, None))
+        except StopIteration:
             raise IndexError('index out of range')
 
-        items = self._items
-        if items is None:
-            items = []
-        i = index
-        i -= self._cached
+    def __repr__(self):
+        if not self._have_basic:
+            self._fetch_basic()
 
-        query = {'part': 'snippet',
-                 'maxResults': 50,
-                 'playlistId': self.plid}
+        info = [("Type", "Playlist"),
+                ("Title", self._title),
+                ("Author", self._author),
+                ("Description", self._description),
+                ("Length", self.__len__())]
 
-        while i >= 0:
-            if self._pageToken:
-                query['pageToken'] = self._pageToken
-            playlistitems = call_gdata('playlistItems', query)
+        nfo = "\n".join(["%s: %s" % i for i in info])
 
-            query2 = {'part': 'contentDetails,snippet,statistics',
-                      'maxResults': 50,
-                      'id': ','.join(i['snippet']['resourceId']['videoId']
-                                     for i in playlistitems['items'])}
-            wdata = call_gdata('videos', query2)
+        return nfo.encode("utf8", "replace") if pyver == 2 else nfo
 
-            for v, vextra in zip(playlistitems['items'], wdata['items']):
-                stats = vextra.get('statistics', {})
-                vid_data = dict(
-                    title=v['snippet']['title'],
-                    author=v['snippet']['channelTitle'],
-                    thumbnail=v['snippet'].get('thumbnails', {})
-                                          .get('default', {}).get('url'),
-                    description=v['snippet']['description'],
-                    length_seconds=parseISO8591(
-                        vextra['contentDetails']['duration']),
-                    category=get_categoryname(vextra['snippet']['categoryId']),
-                    views=stats.get('viewCount', 0),
-                    likes=stats.get('likeCount', 0),
-                    dislikes=stats.get('dislikeCount', 0),
-                    comments=stats.get('commentCount', 0),
-                )
+    def _fetch_basic(self):
+        query = {'part': 'snippet, contentDetails',
+                 'id': self.plid}
+        allinfo = call_gdata('playlists', query)
 
-                try:
-                    pafy_obj = new(v['snippet']['resourceId']['videoId'],
-                                   basic=self._basic, gdata=self._gdata,
-                                   size=self._size, callback=self._callback)
+        pl = allinfo['items'][0]
 
-                except IOError as e:
-                    if self.callback:
-                        self.callback("%s: %s" % (v['title'], e.message))
-                    continue
-
-                pafy_obj.populate_from_playlist(vid_data)
-                items.append(pafy_obj)
-                i -= 1
-                if self._callback:
-                    self._callback("Added video: %s" % vid_data['title'])
-
-            if not playlistitems.get('nextPageToken'):
-                self._pageToken = -1
-                self._len = len(items)
-                break
-            query['pageToken'] = playlistitems['nextPageToken']
-            self._pageToken = playlistitems['nextPageToken']
-
-        self._cached = len(items)
-        self._items = items
-        return self._items[index]
+        self._title = pl['snippet']['title']
+        self._author = pl['snippet']['channelTitle']
+        self._description = pl['snippet']['description']
+        self._len = pl['contentDetails']['itemCount']
+        try:
+            self._thumbnail = pl['snippet']['thumbnails']['standard']['url']
+        except KeyError:
+            self._thumbnail = None
+        self._have_basic = True
 
 
 def get_playlist2(playlist_url, basic=False, gdata=False,
@@ -319,4 +312,28 @@ def get_playlist2(playlist_url, basic=False, gdata=False,
 
     """
 
-    return Playlist(playlist_url, basic, gdata, size, callback)
+    return Playlist.from_url(playlist_url, basic, gdata, size, callback)
+
+
+def dict_for_playlist(v):
+    """Returns a dict which can be used to initialise Pafy Object for playlist
+
+    """
+
+    stats = v.get('statistics', {})
+    vid_data = dict(
+        title=v['snippet']['title'],
+        author=v['snippet']['channelTitle'],
+        thumbnail=v['snippet'].get('thumbnails', {})
+                              .get('default', {}).get('url'),
+        description=v['snippet']['description'],
+        length_seconds=parseISO8591(
+                       v['contentDetails']['duration']),
+        category=get_categoryname(v['snippet']['categoryId']),
+        views=stats.get('viewCount', 0),
+        likes=stats.get('likeCount', 0),
+        dislikes=stats.get('dislikeCount', 0),
+        comments=stats.get('commentCount', 0),
+    )
+
+    return vid_data

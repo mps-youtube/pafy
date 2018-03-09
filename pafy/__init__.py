@@ -1,4 +1,4 @@
-__version__ = "0.5.3.1"
+__version__ = "0.5.4"
 __author__ = "np1"
 __license__ = "LGPLv3"
 
@@ -11,3 +11,4 @@ from .pafy import get_categoryname
 from .pafy import backend
 from .util import GdataError, call_gdata
 from .playlist import get_playlist, get_playlist2
+from .channel import get_channel

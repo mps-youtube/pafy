@@ -143,18 +143,15 @@ class BasePafy(object):
     def __repr__(self):
         """ Print video metadata. Return utf8 string. """
         if self._have_basic:
-            keys = "Title Author ID Duration Rating Views Thumbnail"
-            keys = keys.split(" ")
-            keywords = ", ".join(self.keywords)
-            info = {"Title": self.title,
-                    "Author": self.author,
-                    "Views": self.viewcount,
-                    "Rating": self.rating,
-                    "Duration": self.duration,
-                    "ID": self.videoid,
-                    "Thumbnail": self.thumb}
+            info = [("Title", self.title),
+                    ("Author", self.author),
+                    ("ID", self.videoid),
+                    ("Duration", self.duration),
+                    ("Rating", self.rating),
+                    ("Views", self.viewcount),
+                    ("Thumbnail", self.thumb)]
 
-            nfo = "\n".join(["%s: %s" % (k, info.get(k, "")) for k in keys])
+            nfo = "\n".join(["%s: %s" % i for i in info])
 
         else:
             nfo = "Pafy object: %s [%s]" % (self.videoid,
