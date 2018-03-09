@@ -4,6 +4,7 @@ import sys
 import time
 import logging
 import subprocess
+import random
 
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
@@ -23,6 +24,12 @@ from . import __version__, g
 from .pafy import call_gdata
 from .playlist import get_playlist2
 from .util import xenc
+
+try:
+    import youtube_dl
+    YOUTUBE_DL_PRESENT = True
+except ImportError:
+    YOUTUBE_DL_PRESENT = False
 
 dbg = logging.debug
 
@@ -566,7 +573,82 @@ class BaseStream(object):
             self._active = False
             return True
 
-    def download(self, filepath="", quiet=False, progress="Bytes", callback=None,
+    def download(self, *args, **kwargs):
+        if YOUTUBE_DL_PRESENT:
+            self._youtubedl_download(*args, **kwargs)
+        else:
+            self._internal_download(*args, **kwargs)
+
+    def _youtubedl_download(self, filepath="", quiet=False, progress="Bytes",
+                            callback=None, meta=False, remux_audio=False):
+
+        downloader = youtube_dl.downloader.http.HttpFD(ydl(),
+            {'http_chunk_size': 10240})
+
+        progress_available = ["KB", "MB", "GB"]
+        if progress not in progress_available:
+            progress = "Bytes"
+
+        status_string = ('  {:,} ' + progress + ' [{:.2%}] received. Rate: [{:4.0f} '
+                         'KB/s].  ETA: [{:.0f} secs]')
+
+        if early_py_version:
+            status_string = ('  {0:} ' + progress + ' [{1:.2%}] received. Rate:'
+                             ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
+
+        def progress_hook(s):
+            if s['status'] == 'downloading':
+                bytesdone = s['downloaded_bytes']
+                total = s['total_bytes']
+                rate = s['speed']/1024
+                eta = s['eta']
+
+                if progress == "KB":
+                    progress_stats = (round(bytesdone/1024.0, 2),
+                                      bytesdone * 1.0 / total,
+                                      rate, eta)
+                elif progress == "MB":
+                    progress_stats = (round(bytesdone/1048576.0, 2),
+                                      bytesdone * 1.0 / total,
+                                      rate, eta)
+                elif progress == "GB":
+                    progress_stats = (round(bytesdone/1073741824.0, 2),
+                                      bytesdone * 1.0 / total,
+                                      rate, eta)
+                else:
+                    progress_stats = (bytesdone, bytesdone * 1.0 / total,
+                                      rate, eta)
+
+                if not quiet:
+                    status = status_string.format(*progress_stats)
+                    sys.stdout.write("\r" + status + ' ' * 4 + "\r")
+                    sys.stdout.flush()
+
+                if callback:
+                    callback(total, *progress_stats)
+
+        downloader._progress_hooks = [progress_hook]
+
+        savedir = filename = ""
+
+        if filepath and os.path.isdir(filepath):
+            savedir, filename = filepath, self.generate_filename(max_length=256-len('.temp'))
+
+        elif filepath:
+            savedir, filename = os.path.split(filepath)
+
+        else:
+            filename = self.generate_filename(meta=meta, max_length=256-len('.temp'))
+
+        infodict = {'url': self.url}
+
+        downloader.real_download(filename, infodict)
+
+        if remux_audio and self.mediatype == "audio":
+            subprocess.run("mv {} {}.temp".format(filepath))
+            remux(filepath+'.temp', filepath, quiet=quiet, muxer=remux_audio)
+
+    def _internal_download(self, filepath="", quiet=False, progress="Bytes", callback=None,
                  meta=False, remux_audio=False):
         """ Download.  Use quiet=True to supress output. Return filename.
 
@@ -673,6 +755,8 @@ class BaseStream(object):
             return temp_filepath
 
 
+
+
 def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
     """ Remux audio. """
     muxer = muxer if isinstance(muxer, str) else "ffmpeg"
@@ -699,3 +783,24 @@ def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
     else:
         logging.warning("audio remux failed")
         os.rename(infile, outfile)
+
+
+class ydl:
+    def urlopen(self, url):
+        return g.opener.open(url)
+
+    def to_screen(self, *args, **kwargs):
+        # print(*args, **kwargs)
+        pass
+
+    def to_console_title(self, *args, **kwargs):
+        pass
+
+    def trouble(self, *args, **kwargs):
+        pass
+
+    def report_warning(self, *args, **kwargs):
+        pass
+
+    def report_error(self, *args, **kwargs):
+        pass
