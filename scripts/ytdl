@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function, unicode_literals
 import pafy
 import sys
+import string
 import os
 
 early_py_version = sys.version_info[:2] < (2, 7)
@@ -68,7 +69,7 @@ def xprint(stuff, end=None):
     print(xenc(stuff), end=end)
 
 
-def download(video, audio=False, stream=None, preftype=None):
+def download(video, outfilepath=None, audio=False, stream=None, preftype=None):
     """ Download a video. """
 
     preftype = "mp4" if preftype is None else preftype
@@ -87,7 +88,18 @@ def download(video, audio=False, stream=None, preftype=None):
 
     xprint(dl_str.format(stream.filename, size))
     xprint("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
-    stream.download(quiet=False)
+
+    if outfilepath is None: outfilepath = stream.title
+
+    outdirpath = os.path.dirname(outfilepath)
+    outfilename = os.path.basename(outfilepath)
+    validChars = set('-_. ' + string.ascii_letters)
+    outfilename = ''.join([char if char in validChars else "_" for char in outfilename])
+
+    if '.' not in outfilename: outfilename += '.' + preftype
+    outfilepath = os.path.join(outdirpath, outfilename)
+
+    stream.download(quiet=False, filepath=outfilepath)
     xprint("\nDone")
 
 
@@ -136,6 +148,7 @@ def main():
     paa('-p', default='mp4', help='Use the specified preferred type of video. '
         'This could be mp4, webm, etc. [default: %(default)s]',
         metavar='TEXT')
+    paa('-o', required=False, help="Output filepath", type=str)
 
     args = parser.parse_args()
     vid = pafy.new(args.url)
@@ -163,7 +176,7 @@ def main():
         xprint(vid)
 
     if args.s:
-        printstreams(streams)
+        rintstreams(streams)
 
     if args.b or args.a:
 
@@ -171,14 +184,14 @@ def main():
             xprint("-a and -b cannot be used together! Use only one.")
 
         else:
-            download(vid, audio=args.a, preftype=args.p)
+            download(vid, args.o, audio=args.a, preftype=args.p)
             sys.exit()
 
     elif args.n:
         streamnumber = int(args.n) - 1
 
         try:
-            download(vid, stream=streams[streamnumber])
+            download(vid, args.o, stream=streams[streamnumber])
 
         except IndexError:
             em = "Sorry, %s is not a valid option, use 1-%s"
