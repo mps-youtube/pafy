@@ -121,7 +121,7 @@ def new(url, basic=True, gdata=False, size=False,
         else:
            from .backend_youtube_dl import YtdlPafy as Pafy
 
-    return Pafy(url, basic, gdata, size, callback, ydl_opts)
+    return Pafy(url, basic, gdata, size, callback, ydl_opts=ydl_opts)
 
 
 def cache(name):
