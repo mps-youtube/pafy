@@ -21,7 +21,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function, unicode_literals
 import pafy
 import sys
-import string
 import os
 
 early_py_version = sys.version_info[:2] < (2, 7)
@@ -174,7 +173,7 @@ def main():
         xprint(vid)
 
     if args.s:
-        rintstreams(streams)
+        printstreams(streams)
 
     if args.b or args.a:
 
