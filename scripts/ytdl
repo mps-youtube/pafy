@@ -93,8 +93,6 @@ def download(video, outfilepath=None, audio=False, stream=None, preftype=None):
 
     outdirpath = os.path.dirname(outfilepath)
     outfilename = os.path.basename(outfilepath)
-    validChars = set('-_. ' + string.ascii_letters)
-    outfilename = ''.join([char if char in validChars else "_" for char in outfilename])
 
     if '.' not in outfilename: outfilename += '.' + preftype
     outfilepath = os.path.join(outdirpath, outfilename)
