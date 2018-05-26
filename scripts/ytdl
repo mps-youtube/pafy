@@ -68,7 +68,7 @@ def xprint(stuff, end=None):
     print(xenc(stuff), end=end)
 
 
-def download(video, audio=False, stream=None, preftype=None):
+def download(video, outfilepath=None, audio=False, stream=None, preftype=None):
     """ Download a video. """
 
     preftype = "mp4" if preftype is None else preftype
@@ -87,7 +87,16 @@ def download(video, audio=False, stream=None, preftype=None):
 
     xprint(dl_str.format(stream.filename, size))
     xprint("-Quality: %s; Format: %s" % (stream.quality, stream.extension))
-    stream.download(quiet=False)
+
+    if outfilepath is None: outfilepath = stream.title
+
+    outdirpath = os.path.dirname(outfilepath)
+    outfilename = os.path.basename(outfilepath)
+
+    if '.' not in outfilename: outfilename += '.' + preftype
+    outfilepath = os.path.join(outdirpath, outfilename)
+
+    stream.download(quiet=False, filepath=outfilepath)
     xprint("\nDone")
 
 
@@ -136,6 +145,7 @@ def main():
     paa('-p', default='mp4', help='Use the specified preferred type of video. '
         'This could be mp4, webm, etc. [default: %(default)s]',
         metavar='TEXT')
+    paa('-o', required=False, help="Output filepath", type=str)
 
     args = parser.parse_args()
     vid = pafy.new(args.url)
@@ -171,14 +181,14 @@ def main():
             xprint("-a and -b cannot be used together! Use only one.")
 
         else:
-            download(vid, audio=args.a, preftype=args.p)
+            download(vid, args.o, audio=args.a, preftype=args.p)
             sys.exit()
 
     elif args.n:
         streamnumber = int(args.n) - 1
 
         try:
-            download(vid, stream=streams[streamnumber])
+            download(vid, args.o, stream=streams[streamnumber])
 
         except IndexError:
             em = "Sorry, %s is not a valid option, use 1-%s"
