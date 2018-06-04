@@ -411,6 +411,7 @@ class BasePafy(object):
             return response.getcode() < 300
 
     def getbestthumb(self):
+        """ Return the best available thumbnail."""
         if not self._bestthumb:
             part_url = "http://i.ytimg.com/vi/%s/" % self.videoid
             # Thumbnail resolution sorted in descending order
