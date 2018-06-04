@@ -52,6 +52,7 @@ class YtdlPafy(BasePafy):
         self._dislikes = self._ydl_info['dislike_count']
         self._username = self._ydl_info['uploader_id']
         self._category = self._ydl_info['categories'][0] if self._ydl_info['categories'] else ''
+        self._bestthumb = self._ydl_info['thumbnails'][0]['url']
         self._bigthumb = g.urls['bigthumb'] % self.videoid
         self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
         self.expiry = time.time() + g.lifespan

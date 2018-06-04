@@ -7,13 +7,13 @@ import subprocess
 
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
-    from urllib.request import build_opener
+    from urllib.request import urlopen, build_opener
     from urllib.error import HTTPError, URLError
     from urllib.parse import parse_qs, urlparse
     uni, pyver = str, 3
 
 else:
-    from urllib2 import build_opener, HTTPError, URLError
+    from urllib2 import urlopen, build_opener, HTTPError, URLError
     from urlparse import parse_qs, urlparse
     uni, pyver = unicode, 2
 
@@ -89,6 +89,7 @@ class BasePafy(object):
         self._bigthumb = None
         self._viewcount = None
         self._bigthumbhd = None
+        self._bestthumb = None
         self._mix_pl = None
         self.expiry = None
 
@@ -399,6 +400,31 @@ class BasePafy(object):
 
         else:
             return r
+
+    @classmethod
+    def _content_available(cls, url):
+        try:
+            response = urlopen(url)
+        except HTTPError:
+            return False
+        else:
+            return response.getcode() < 300
+
+    def getbestthumb(self):
+        if not self._bestthumb:
+            part_url = "http://i.ytimg.com/vi/%s/" % self.videoid
+            # Thumbnail resolution sorted in descending order
+            thumbs = ("maxresdefault.jpg",
+                      "sddefault.jpg",
+                      "hqdefault.jpg",
+                      "mqdefault.jpg",
+                      "default.jpg")
+            for thumb in thumbs:
+                url = part_url + thumb
+                if self._content_available(url):
+                    return url
+
+        return self._bestthumb
 
     def populate_from_playlist(self, pl_data):
         """ Populate Pafy object with items fetched from playlist data. """
