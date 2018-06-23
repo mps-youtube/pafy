@@ -190,7 +190,6 @@ class ydl:
         return g.opener.open(url)
 
     def to_screen(self, *args, **kwargs):
-        # print(*args, **kwargs)
         pass
 
     def to_console_title(self, *args, **kwargs):
