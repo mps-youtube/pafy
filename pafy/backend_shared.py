@@ -590,8 +590,8 @@ class BaseStream(object):
             self._active = False
             return True
 
-    def download(self, filepath="", quiet=False, progress="Bytes", callback=None,
-                 meta=False, remux_audio=False):
+    def download(self, filepath="", quiet=False, progress="Bytes",
+                           callback=None, meta=False, remux_audio=False):
         """ Download.  Use quiet=True to supress output. Return filename.
 
         Use meta=True to append video id and itag to generated filename
@@ -615,15 +615,10 @@ class BaseStream(object):
         temp_filepath = filepath + ".temp"
 
         progress_available = ["KB", "MB", "GB"]
-        if not progress in progress_available:
+        if progress not in progress_available:
             progress = "Bytes"
 
-        status_string = ('  {:,} ' + progress + ' [{:.2%}] received. Rate: [{:4.0f} '
-                         'KB/s].  ETA: [{:.0f} secs]')
-
-        if early_py_version:
-            status_string = ('  {0:} ' + progress + ' [{1:.2%}] received. Rate:'
-                             ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
+        status_string = get_status_string(progress)
 
         response = g.opener.open(self.url)
         total = int(response.info()['Content-Length'].strip())
@@ -657,18 +652,12 @@ class BaseStream(object):
             if elapsed:
                 rate = ((float(bytesdone) - float(offset)) / 1024.0) / elapsed
                 eta = (total - bytesdone) / (rate * 1024)
-            else: # Avoid ZeroDivisionError
+            else:  # Avoid ZeroDivisionError
                 rate = 0
                 eta = 0
 
-            if progress == "KB":
-                progress_stats = (round(bytesdone/1024.0, 2), bytesdone * 1.0 / total, rate, eta)
-            elif progress == "MB":
-                progress_stats = (round(bytesdone/1048576.0, 2), bytesdone * 1.0 / total, rate, eta)
-            elif progress == "GB":
-                progress_stats = (round(bytesdone/1073741824.0, 2), bytesdone * 1.0 / total, rate, eta)
-            else:
-                progress_stats = (bytesdone, bytesdone * 1.0 / total, rate, eta)
+            progress_stats = (get_size_done(bytesdone, progress),
+                              bytesdone * 1.0 / total, rate, eta)
 
             if not chunk:
                 outfh.close()
@@ -723,3 +712,19 @@ def remux(infile, outfile, quiet=False, muxer="ffmpeg"):
     else:
         logging.warning("audio remux failed")
         os.rename(infile, outfile)
+
+
+def get_size_done(bytesdone, progress):
+    _progress_dict = {'KB': 1024.0, 'MB': 1048576.0, 'GB': 1073741824.0}
+    return round(bytesdone/_progress_dict.get(progress, 1.0), 2)
+
+
+def get_status_string(progress):
+    status_string = ('  {:,} ' + progress + ' [{:.2%}] received. Rate: [{:4.0f} '
+                     'KB/s].  ETA: [{:.0f} secs]')
+
+    if early_py_version:
+        status_string = ('  {0:} ' + progress + ' [{1:.2%}] received. Rate:'
+                         ' [{2:4.0f} KB/s].  ETA: [{3:.0f} secs]')
+
+    return status_string
