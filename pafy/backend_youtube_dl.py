@@ -46,6 +46,10 @@ class YtdlPafy(BasePafy):
             self.callback("Fetched video info")
 
         self._title = self._ydl_info['title']
+
+        if self._ydl_info.get('entries'):
+            self._ydl_info = self._ydl_info['entries'][0]
+
         self._author = self._ydl_info['uploader']
         self._rating = self._ydl_info['average_rating']
         self._length = self._ydl_info['duration']
