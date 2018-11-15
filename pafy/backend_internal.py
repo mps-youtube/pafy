@@ -62,7 +62,7 @@ class InternPafy(BasePafy):
         self._author = _get_lst('author')
         self._rating = float(_get_lst('avg_rating', 0.0))
         self._length = int(_get_lst('length_seconds', 0))
-        self._viewcount = int(_get_lst('view_count'), 0)
+        self._viewcount = int(_get_lst('view_count', 0))
         self._thumb = unquote_plus(_get_lst('thumbnail_url', ""))
         self._formats = [x.split("/") for x in _get_lst('fmt_list').split(",")]
         self._keywords = _get_lst('keywords', "").split(',')
