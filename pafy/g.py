@@ -1,4 +1,5 @@
 import sys
+import urllib
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
     from urllib.request import build_opener
@@ -24,10 +25,19 @@ urls = {
 api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"
 user_agent = "pafy " + __version__
 lifespan = 60 * 60 * 5  # 5 hours
-opener = build_opener()
+def_ydl_opts = {'quiet': True, 'prefer_insecure': False, 'no_warnings': True,
+                #'proxy': 'https://127.0.0.1:1080'
+                }
+proxy_support = None
+if 'proxy' in def_ydl_opts.keys():
+    proxy_support = urllib.request.ProxyHandler({def_ydl_opts['proxy'].split('://')[0]:
+                                                def_ydl_opts['proxy'].split('://')[-1]})
+if proxy_support!=None:
+    opener = build_opener(proxy_support)
+else:
+    opener = build_opener()
 opener.addheaders = [('User-Agent', user_agent)]
 cache = {}
-def_ydl_opts = {'quiet': True, 'prefer_insecure': False, 'no_warnings': True}
 
 # The following are specific to the internal backend
 UEFSM = 'url_encoded_fmt_stream_map'
