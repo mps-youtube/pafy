@@ -1,3 +1,19 @@
+21 November 2019
+Version 0.5.5
+
+[Performance] Fix download throttling for youtube-dl (@vn-ki) (#203)
+[Feature] - Support passing custom filenames to ytdl command-line tool
+    (@inspectorG4dget) (#208)
+[Update] - Pass ydl_opts as keyword argument instead of positional argument
+    (@ryin1) (#210)
+[Bugfix] - Fix crash when no view_count is returned (@dokime7) (#220)
+[Update] - Set shebang to force to Python 3 instead of system version of
+    Python (@pirate486743186) (#224)
+[Update] - Support OL playlist urls (@lopsided98) (#226)
+[BugFix] - Prefer HTTPS by default otherwise some video URLs fail (@ritiek) (#235)
+
+-------------------------------------------------------------------------------
+
 11 February 2018
 Version 0.5.4
 
