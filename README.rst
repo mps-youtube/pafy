@@ -2,8 +2,8 @@
     :target: https://pypi.python.org/pypi/pafy
 .. image:: https://img.shields.io/pypi/dm/Pafy.svg
     :target: https://pypi.python.org/pypi/pafy
-.. image:: https://img.shields.io/coveralls/np1/pafy/develop.svg
-    :target: https://coveralls.io/r/np1/pafy?branch=develop
+.. image:: https://img.shields.io/coveralls/mps-youtube/pafy/develop.svg
+    :target: https://coveralls.io/r/mps-youtube/pafy?branch=develop
 .. image:: https://landscape.io/github/mps-youtube/pafy/develop/landscape.svg
     :target: https://landscape.io/github/mps-youtube/pafy/develop
     :alt: Code Health

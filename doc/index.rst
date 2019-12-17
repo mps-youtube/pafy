@@ -4,12 +4,9 @@ Pafy Documentation
 
 This is the documentation for pafy - a Python library to download YouTube content and retrieve metadata
 
-A quick start intro with usage examples is available in the `README <http://github.com/np1/pafy/blob/master/README.rst>`_
+A quick start intro with usage examples is available in the `README <http://github.com/mps-youtube/pafy/blob/develop/README.rst>`_
 
-Development / Source code / Bug reporting: `github.com/np1/pafy
-<https://github.com/np1/pafy/>`_
-
-Homepage: `np1.github.io/pafy <http://np1.github.io/pafy/>`_
+Development / Source code / Bug reporting: `github.com/mps-youtube/pafy <https://github.com/mps-youtube/pafy/>`_
 
 API Keys
 ========
