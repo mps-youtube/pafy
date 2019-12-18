@@ -2,7 +2,6 @@ import sys
 import time
 import logging
 import os
-import subprocess
 
 if sys.version_info[:2] >= (3, 0):
     # pylint: disable=E0611,F0401,I0011
@@ -182,7 +181,7 @@ class YtdlStream(BaseStream):
         print()
 
         if remux_audio and self.mediatype == "audio":
-            subprocess.run(['mv', filepath, filepath + '.temp'])
+            os.rename(filepath, filepath + '.temp')
             remux(filepath + '.temp', filepath, quiet=quiet, muxer=remux_audio)
 
         return filepath
