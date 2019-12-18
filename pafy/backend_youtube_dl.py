@@ -185,6 +185,8 @@ class YtdlStream(BaseStream):
             subprocess.run(['mv', filepath, filepath + '.temp'])
             remux(filepath + '.temp', filepath, quiet=quiet, muxer=remux_audio)
 
+        return filepath
+
 
 class ydl:
     def urlopen(self, url):
