@@ -5,7 +5,7 @@ pafy.py.
 
 Python library to download YouTube content and retrieve metadata
 
-https://github.com/np1/pafy
+https://github.com/mps-youtube/pafy
 
 Copyright (C)  2013-2014 np1
 
