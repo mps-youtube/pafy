@@ -115,6 +115,8 @@ class YtdlStream(BaseStream):
         self._extension = info['ext']
         self._notes = info.get('format_note') or ''
         self._url = info.get('url')
+        if self._url.startswith("https://manifest.googlevideo.com"):
+            self._url = info.get('fragment_base_url', self._url)
 
         self._info = info
 
