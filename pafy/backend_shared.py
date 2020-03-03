@@ -29,7 +29,7 @@ dbg = logging.debug
 
 def extract_video_id(url):
     """ Extract the video id from a url, return video id as str. """
-    idregx = re.compile(r'[\w-]{11}$')
+    idregx = re.compile(r'.{11}$')
     url = str(url).strip()
 
     if idregx.match(url):
