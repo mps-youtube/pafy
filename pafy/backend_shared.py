@@ -401,6 +401,26 @@ class BasePafy(object):
         else:
             return r
 
+    def getworstaudio(self, preftype="any", ftypestrict=True):
+        """ Return the lowest bitrate audio Stream object."""
+        if not self.audiostreams:
+            return None
+
+        def _sortkey(x, keybitrate=0, keyftype=0):
+            """ Sort function for min(). """
+            keybitrate = int(x.rawbitrate)
+            keyftype = preftype == x.extension
+            strict, nonstrict = (keyftype, keybitrate), (keybitrate, keyftype)
+            return strict if ftypestrict else nonstrict
+
+        r = min(self.audiostreams, key=_sortkey)
+
+        if ftypestrict and preftype != "any" and r.extension != preftype:
+            return None
+
+        else:
+            return r
+
     @classmethod
     def _content_available(cls, url):
         try:
