@@ -381,19 +381,32 @@ class BasePafy(object):
         """
         return self._getbest(preftype, ftypestrict, vidonly=False)
 
+    def _sortaudiokey(self, x, keybitrate=0, keyftype=0, preftype="any", ftypestrict=True):
+        """ Sort function. """
+        keybitrate = int(x.rawbitrate)
+        keyftype = preftype == x.extension
+        strict, nonstrict = (keyftype, keybitrate), (keybitrate, keyftype)
+        return strict if ftypestrict else nonstrict
+
     def getbestaudio(self, preftype="any", ftypestrict=True):
         """ Return the highest bitrate audio Stream object."""
         if not self.audiostreams:
             return None
 
-        def _sortkey(x, keybitrate=0, keyftype=0):
-            """ Sort function for max(). """
-            keybitrate = int(x.rawbitrate)
-            keyftype = preftype == x.extension
-            strict, nonstrict = (keyftype, keybitrate), (keybitrate, keyftype)
-            return strict if ftypestrict else nonstrict
+        r = max(self.audiostreams, key=lambda x:self._sortaudiokey(x, preftype=preftype, ftypestrict=ftypestrict))
 
-        r = max(self.audiostreams, key=_sortkey)
+        if ftypestrict and preftype != "any" and r.extension != preftype:
+            return None
+
+        else:
+            return r
+
+    def getworstaudio(self, preftype="any", ftypestrict=True):
+        """ Return the lowest bitrate audio Stream object."""
+        if not self.audiostreams:
+            return None
+
+        r = min(self.audiostreams, key=lambda x:self._sortaudiokey(x, preftype=preftype, ftypestrict=ftypestrict))
 
         if ftypestrict and preftype != "any" and r.extension != preftype:
             return None
