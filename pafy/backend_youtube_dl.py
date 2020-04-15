@@ -180,7 +180,8 @@ class YtdlStream(BaseStream):
         infodict = {'url': self.url}
 
         downloader.download(filepath, infodict)
-        print("")
+        if not quiet:
+            print("")
 
         if remux_audio and self.mediatype == "audio":
             os.rename(filepath, filepath + '.temp')
