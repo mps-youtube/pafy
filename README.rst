@@ -1,3 +1,5 @@
+There is currently (06/15/2020) an issue with youtube-dl in which thumbnails aren't extracted from the original video. this fork is designed to make pafy more stable until that issue is fixed, coalescing descriptiave data in the event that it doesn't exist to avoid crashes.
+
 .. image:: https://img.shields.io/pypi/v/Pafy.svg
     :target: https://pypi.python.org/pypi/pafy
 .. image:: https://img.shields.io/pypi/dm/Pafy.svg
