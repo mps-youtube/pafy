@@ -1,7 +1,23 @@
+10 January 2020
+Version 0.5.6
+
+[Bugfix] - Fix a bug where a manifest URL is returned instead of the
+    direct URL when fetching for video and audio streams (@noembryo) (#237)
+[BugFix] - Return filepath when Stream.download() is called, like mentioned in
+    docs (@bhigy) (#247)
+[Update] - Update repo's homepage, download, etc. URLs to their current valid
+    location (@regisb) (#249)
+[Update] - Update print statement for consistency with both Python 2 & 3
+    (@ritiek) (#250)
+[Update] - Use built-in os.rename to move files instead of calling `mv`
+    (@ritiek) (#251)
+
+-------------------------------------------------------------------------------
+
 21 November 2019
 Version 0.5.5
 
-[Performance] Fix download throttling for youtube-dl (@vn-ki) (#203)
+[Performance] - Fix download throttling for youtube-dl (@vn-ki) (#203)
 [Feature] - Support passing custom filenames to ytdl command-line tool
     (@inspectorG4dget) (#208)
 [Update] - Pass ydl_opts as keyword argument instead of positional argument
