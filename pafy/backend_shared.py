@@ -661,7 +661,10 @@ class BaseStream(object):
 
         if offset:
             # partial file exists, resume download
-            resuming_opener = build_opener()
+            if g.proxy_support != None:
+                resuming_opener = build_opener(g.proxy_support)
+            else:
+                resuming_opener = build_opener()
             resuming_opener.addheaders = [('User-Agent', g.user_agent),
                                           ("Range", "bytes=%s-" % offset)]
             response = resuming_opener.open(self.url)
