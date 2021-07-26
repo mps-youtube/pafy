@@ -11,7 +11,7 @@ Development / Source code / Bug reporting: `github.com/mps-youtube/pafy <https:/
 API Keys
 ========
 
-Specifying an API key is optional, as pafy includes one.  However, it is prefered that software calling pafy provides it's own API key, and the default may be removed in the future.
+Specifying an API key is optional, as pafy includes one.  However, it is prefered that software calling pafy provides its own API key, and the default may be removed in the future.
 
 `Information from Google about obtaining an API key <https://developers.google.com/youtube/registering_an_application>`_
 
