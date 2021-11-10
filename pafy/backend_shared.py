@@ -326,6 +326,14 @@ class BasePafy(object):
         return self._dislikes
 
     @property
+    def subtitles(self):
+        """ The subtitles of the video. Returns dict. """
+        if not self._subtitles:
+            self._fetch_basic()
+
+        return self._subtitles
+
+    @property
     def mix(self):
         """ The playlist for the related YouTube mix. Returns a Playlist object. """
         if self._mix_pl is None:
