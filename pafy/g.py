@@ -27,7 +27,8 @@ lifespan = 60 * 60 * 5  # 5 hours
 opener = build_opener()
 opener.addheaders = [('User-Agent', user_agent)]
 cache = {}
-def_ydl_opts = {'quiet': True, 'prefer_insecure': False, 'no_warnings': True}
+def_ydl_opts = {'quiet': True, 'prefer_insecure': False,
+                'no_warnings': True, "writesubtitles": True}
 
 # The following are specific to the internal backend
 UEFSM = 'url_encoded_fmt_stream_map'
