@@ -68,6 +68,7 @@ class InternPafy(BasePafy):
         self._keywords = _get_lst('keywords', "").split(',')
         self._bigthumb = _get_lst('iurlsd', "")
         self._bigthumbhd = _get_lst('iurlsdmaxres', "")
+        self._subtitles = {}  # no subtitles with the internal backend
         self.ciphertag = _get_lst("use_cipher_signature") == "True"
         self.sm = _extract_smap(g.UEFSM, allinfo, True)
         self.asm = _extract_smap(g.AF, allinfo, True)
