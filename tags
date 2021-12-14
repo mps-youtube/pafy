@@ -1,0 +1,327 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/henk/git/pafy/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	/p5.9.20210905.0/
+:func:`Stream.download` example	doc/index.rst	/^:func:`Stream.download` example$/;"	S	section:Stream Objects
+:func:`pafy.get_playlist` example	doc/index.rst	/^:func:`pafy.get_playlist` example$/;"	S	section:Playlist Retrieval
+AF	pafy/g.py	/^AF = 'adaptive_fmts'$/;"	v
+ALLSPHINXOPTS	doc/Makefile	/^ALLSPHINXOPTS   = -d $(BUILDDIR)\/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .$/;"	m
+API Keys	doc/index.rst	/^API Keys$/;"	s	chapter:Pafy Documentation
+BUILDDIR	doc/Makefile	/^BUILDDIR      = _build$/;"	m
+BasePafy	pafy/backend_shared.py	/^class BasePafy(object):$/;"	c
+BaseStream	pafy/backend_shared.py	/^class BaseStream(object):$/;"	c
+Channel	pafy/channel.py	/^class Channel(object):$/;"	c
+Command Line Tool (ytdl) Usage	README.rst	/^Command Line Tool (ytdl) Usage$/;"	c
+Documentation	README.rst	/^Documentation$/;"	c
+ExtractorError	pafy/jsinterp.py	/^class ExtractorError(Exception):$/;"	c
+Features	README.rst	/^Features$/;"	c
+GdataError	pafy/util.py	/^class GdataError(Exception):$/;"	c
+I18NSPHINXOPTS	doc/Makefile	/^I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .$/;"	m
+IRC	README.rst	/^IRC$/;"	c
+Installation	README.rst	/^Installation$/;"	c
+InternPafy	pafy/backend_internal.py	/^class InternPafy(BasePafy):$/;"	c
+InternStream	pafy/backend_internal.py	/^class InternStream(BaseStream):$/;"	c
+JSInterpreter	pafy/jsinterp.py	/^class JSInterpreter(object):$/;"	c
+PAPER	doc/Makefile	/^PAPER         =$/;"	m
+PAPEROPT_a4	doc/Makefile	/^PAPEROPT_a4     = -D latex_paper_size=a4$/;"	m
+PAPEROPT_letter	doc/Makefile	/^PAPEROPT_letter = -D latex_paper_size=letter$/;"	m
+PLAYLISTS	tests/test.py	/^PLAYLISTS = [$/;"	v
+Pafy	pafy/pafy.py	/^           from .backend_internal import InternPafy as Pafy$/;"	x	function:new	file:	nameref:unknown:InternPafy
+Pafy	pafy/pafy.py	/^           from .backend_youtube_dl import YtdlPafy as Pafy$/;"	x	function:new	file:	nameref:unknown:YtdlPafy
+Pafy	pafy/pafy.py	/^Pafy = None$/;"	v
+Pafy Attributes	doc/index.rst	/^Pafy Attributes$/;"	S	section:Pafy Objects
+Pafy Documentation	doc/index.rst	/^Pafy Documentation$/;"	c
+Pafy Methods	doc/index.rst	/^Pafy Methods$/;"	S	section:Pafy Objects
+Pafy Objects	doc/index.rst	/^Pafy Objects$/;"	s	chapter:Pafy Documentation
+Pafy Objects and Stream Objects	doc/index.rst	/^Pafy Objects and Stream Objects$/;"	s	chapter:Pafy Documentation
+Playlist	pafy/playlist.py	/^class Playlist(object):$/;"	c
+Playlist Attributes	doc/index.rst	/^Playlist Attributes$/;"	S	section:Playlist Retrieval
+Playlist Retrieval	doc/index.rst	/^Playlist Retrieval$/;"	s	chapter:Pafy Documentation
+SPHINXBUILD	doc/Makefile	/^SPHINXBUILD   = sphinx-build$/;"	m
+SPHINXOPTS	doc/Makefile	/^SPHINXOPTS    =$/;"	m
+Stream Attributes	doc/index.rst	/^Stream Attributes$/;"	S	section:Stream Objects
+Stream Lists	doc/index.rst	/^Stream Lists$/;"	S	section:Pafy Objects
+Stream Methods	doc/index.rst	/^Stream Methods$/;"	S	section:Stream Objects
+Stream Objects	doc/index.rst	/^Stream Objects$/;"	s	chapter:Pafy Documentation
+Test	tests/test.py	/^class Test(unittest.TestCase):$/;"	c
+UEFSM	pafy/g.py	/^UEFSM = 'url_encoded_fmt_stream_map'$/;"	v
+Usage Examples	README.rst	/^Usage Examples$/;"	c
+VIDEOS	tests/test.py	/^VIDEOS = [$/;"	v
+YtdlPafy	pafy/backend_youtube_dl.py	/^class YtdlPafy(BasePafy):$/;"	c
+YtdlStream	pafy/backend_youtube_dl.py	/^class YtdlStream(BaseStream):$/;"	c
+_ASSIGN_OPERATORS	pafy/jsinterp.py	/^_ASSIGN_OPERATORS = [(op + '=', opfunc) for op, opfunc in _OPERATORS]$/;"	v
+_NAME_RE	pafy/jsinterp.py	/^_NAME_RE = r'[a-zA-Z_$][a-zA-Z_$0-9]*'$/;"	v
+_OPERATORS	pafy/jsinterp.py	/^_OPERATORS = [$/;"	v
+__author__	pafy/__init__.py	/^__author__ = "np1"$/;"	v
+__author__	scripts/ytdl	/^__author__ = "np1"$/;"	v
+__getitem__	pafy/playlist.py	/^    def __getitem__(self, index):$/;"	m	class:Playlist
+__init__	pafy/backend_internal.py	/^    def __init__(self, *args, **kwargs):$/;"	m	class:InternPafy
+__init__	pafy/backend_internal.py	/^    def __init__(self, sm, parent):$/;"	m	class:InternStream
+__init__	pafy/backend_shared.py	/^    def __init__(self, parent):$/;"	m	class:BaseStream
+__init__	pafy/backend_shared.py	/^    def __init__(self, video_url, basic=True, gdata=False,$/;"	m	class:BasePafy
+__init__	pafy/backend_youtube_dl.py	/^    def __init__(self, *args, **kwargs):$/;"	m	class:YtdlPafy
+__init__	pafy/backend_youtube_dl.py	/^    def __init__(self, info, parent):$/;"	m	class:YtdlStream
+__init__	pafy/channel.py	/^    def __init__(self, channel_url, basic, gdata, size, callback):$/;"	m	class:Channel
+__init__	pafy/jsinterp.py	/^    def __init__(self, code, objects=None):$/;"	m	class:JSInterpreter
+__init__	pafy/jsinterp.py	/^    def __init__(self, msg, tb=None, expected=False, cause=None, video_id=None):$/;"	m	class:ExtractorError
+__init__	pafy/playlist.py	/^    def __init__(self, playlist_url, basic, gdata, size, callback):$/;"	m	class:Playlist
+__iter__	pafy/playlist.py	/^    def __iter__(self):$/;"	m	class:Playlist
+__len__	pafy/playlist.py	/^    def __len__(self):$/;"	m	class:Playlist
+__license__	pafy/__init__.py	/^__license__ = "LGPLv3"$/;"	v
+__license__	scripts/ytdl	/^__license__ = "LGPLv3"$/;"	v
+__repr__	pafy/backend_shared.py	/^    def __repr__(self):$/;"	m	class:BasePafy
+__repr__	pafy/backend_shared.py	/^    def __repr__(self):$/;"	m	class:BaseStream
+__repr__	pafy/channel.py	/^    def __repr__(self):$/;"	m	class:Channel
+__repr__	pafy/playlist.py	/^    def __repr__(self):$/;"	m	class:Playlist
+__version__	pafy/__init__.py	/^__version__ = "0.5.5"$/;"	v
+__version__	scripts/ytdl	/^__version__ = "0.3.67"$/;"	v
+_content_available	pafy/backend_shared.py	/^    def _content_available(cls, url):$/;"	m	class:BasePafy
+_decodesig	pafy/backend_internal.py	/^def _decodesig(sig, js_url, callback):$/;"	f
+_extract_dash	pafy/backend_internal.py	/^def _extract_dash(dashurl):$/;"	f
+_extract_smap	pafy/backend_internal.py	/^def _extract_smap(map_name, dic, zero_idx=True):$/;"	f
+_fetch_basic	pafy/backend_internal.py	/^    def _fetch_basic(self):$/;"	m	class:InternPafy
+_fetch_basic	pafy/backend_shared.py	/^    def _fetch_basic(self):$/;"	m	class:BasePafy
+_fetch_basic	pafy/backend_youtube_dl.py	/^    def _fetch_basic(self):$/;"	m	class:YtdlPafy
+_fetch_basic	pafy/channel.py	/^    def _fetch_basic(self):$/;"	m	class:Channel
+_fetch_basic	pafy/playlist.py	/^    def _fetch_basic(self):$/;"	m	class:Playlist
+_fetch_gdata	pafy/backend_internal.py	/^    def _fetch_gdata(self):$/;"	m	class:InternPafy
+_fetch_gdata	pafy/backend_shared.py	/^    def _fetch_gdata(self):$/;"	m	class:BasePafy
+_fetch_gdata	pafy/backend_youtube_dl.py	/^    def _fetch_gdata(self):$/;"	m	class:YtdlPafy
+_get_lst	pafy/backend_internal.py	/^        def _get_lst(key, default="unknown", dic=allinfo):$/;"	f	member:InternPafy._fetch_basic	file:
+_get_mainfunc_from_js	pafy/backend_internal.py	/^def _get_mainfunc_from_js(js):$/;"	f
+_get_video_gdata	pafy/backend_shared.py	/^    def _get_video_gdata(self, video_id):$/;"	m	class:BasePafy
+_getvideo	pafy/backend_shared.py	/^    def _getvideo(self, preftype="any", ftypestrict=True, vidonly=False, quality="max"):$/;"	m	class:BasePafy
+_make_url	pafy/backend_internal.py	/^def _make_url(raw, sig, quick=True):$/;"	f
+_process_streams	pafy/backend_internal.py	/^    def _process_streams(self):$/;"	m	class:InternPafy
+_process_streams	pafy/backend_shared.py	/^    def _process_streams(self):$/;"	m	class:BasePafy
+_process_streams	pafy/backend_youtube_dl.py	/^    def _process_streams(self):$/;"	m	class:YtdlPafy
+_sortaudiokey	pafy/backend_shared.py	/^    def _sortaudiokey(self, x, keybitrate=0, keyftype=0, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+_sortvideokey	pafy/backend_shared.py	/^    def _sortvideokey(self, x, key3d=0, keyres=0, keyftype=0, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+allstreams	pafy/backend_shared.py	/^    def allstreams(self):$/;"	m	class:BasePafy
+api_key	pafy/g.py	/^api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"$/;"	v
+audiostreams	pafy/backend_shared.py	/^    def audiostreams(self):$/;"	m	class:BasePafy
+author	pafy/backend_shared.py	/^    def author(self):$/;"	m	class:BasePafy
+author	pafy/playlist.py	/^    def author(self):$/;"	m	class:Playlist
+backend	pafy/pafy.py	/^        backend = "yt-dlp"$/;"	v
+backend	pafy/pafy.py	/^backend = "internal"$/;"	v
+bigthumb	pafy/backend_shared.py	/^    def bigthumb(self):$/;"	m	class:BasePafy
+bigthumbhd	pafy/backend_shared.py	/^    def bigthumbhd(self):$/;"	m	class:BasePafy
+bitrate	pafy/backend_shared.py	/^    def bitrate(self):$/;"	m	class:BaseStream
+build_function	pafy/jsinterp.py	/^    def build_function(self, argnames, code):$/;"	m	class:JSInterpreter
+cache	pafy/g.py	/^cache = {}$/;"	v
+cache	pafy/pafy.py	/^def cache(name):$/;"	f
+call_function	pafy/jsinterp.py	/^    def call_function(self, funcname, *args):$/;"	m	class:JSInterpreter
+call_gdata	pafy/util.py	/^def call_gdata(api, qs):$/;"	f
+callback	tests/test.py	/^        callback = lambda a, b, c, d, e: 0$/;"	f	member:Test.test_pafy_download	file:
+cancel	pafy/backend_shared.py	/^    def cancel(self):$/;"	m	class:BaseStream
+category	pafy/backend_shared.py	/^    def category(self):$/;"	m	class:BasePafy
+changes	doc/Makefile	/^changes:$/;"	t
+channel_id	pafy/channel.py	/^    def channel_id(self):$/;"	m	class:Channel
+clean	doc/Makefile	/^clean:$/;"	t
+commands	tox.ini	/^commands = nosetests -v tests\/test.py$/;"	k	section:testenv
+commands	tox.ini	/^commands = nosetests -v tests\/test.py$/;"	k	section:testenv:py26
+copyright	doc/conf.py	/^copyright = u'2013-2014 np1'$/;"	v
+dbg	pafy/backend_shared.py	/^dbg = logging.debug$/;"	v
+dbg	pafy/backend_youtube_dl.py	/^dbg = logging.debug$/;"	v
+dbg	pafy/pafy.py	/^dbg = logging.debug$/;"	v
+def_ydl_opts	pafy/g.py	/^def_ydl_opts = {'quiet': True, 'prefer_insecure': False, 'no_warnings': True}$/;"	v
+deps	tox.ini	/^deps = nose$/;"	k	section:testenv
+deps	tox.ini	/^deps = nose$/;"	k	section:testenv:py26
+description	pafy/backend_shared.py	/^    def description(self):$/;"	m	class:BasePafy
+description	pafy/channel.py	/^    def description(self):$/;"	m	class:Channel
+description	pafy/playlist.py	/^    def description(self):$/;"	m	class:Playlist
+devhelp	doc/Makefile	/^devhelp:$/;"	t
+dict_for_playlist	pafy/playlist.py	/^def dict_for_playlist(v):$/;"	f
+dimensions	pafy/backend_shared.py	/^    def dimensions(self):$/;"	m	class:BaseStream
+dirhtml	doc/Makefile	/^dirhtml:$/;"	t
+dislikes	pafy/backend_shared.py	/^    def dislikes(self):$/;"	m	class:BasePafy
+doctest	doc/Makefile	/^doctest:$/;"	t
+download	pafy/backend_shared.py	/^    def download(self, filepath="", quiet=False, progress="Bytes",$/;"	m	class:BaseStream
+download	pafy/backend_youtube_dl.py	/^    def download(self, filepath="", quiet=False, progress="Bytes",$/;"	m	class:YtdlStream
+download	scripts/ytdl	/^def download(video, outfilepath=None, audio=False, stream=None, preftype=None):$/;"	f
+dump_cache	pafy/pafy.py	/^def dump_cache():$/;"	f
+duration	pafy/backend_shared.py	/^    def duration(self):$/;"	m	class:BasePafy
+early_py_version	pafy/backend_internal.py	/^early_py_version = sys.version_info[:2] < (2, 7)$/;"	v
+early_py_version	pafy/backend_shared.py	/^early_py_version = sys.version_info[:2] < (2, 7)$/;"	v
+early_py_version	pafy/backend_youtube_dl.py	/^early_py_version = sys.version_info[:2] < (2, 7)$/;"	v
+early_py_version	scripts/ytdl	/^early_py_version = sys.version_info[:2] < (2, 7)$/;"	v
+envlist	tox.ini	/^envlist = py34, py26, py27$/;"	k	section:tox
+epub	doc/Makefile	/^epub:$/;"	t
+exclude_patterns	doc/conf.py	/^exclude_patterns = ['_build']$/;"	v
+extension	pafy/backend_shared.py	/^    def extension(self):$/;"	m	class:BaseStream
+extensions	doc/conf.py	/^extensions = [$/;"	v
+extract_function	pafy/jsinterp.py	/^    def extract_function(self, funcname):$/;"	m	class:JSInterpreter
+extract_object	pafy/jsinterp.py	/^    def extract_object(self, objname):$/;"	m	class:JSInterpreter
+extract_playlist_id	pafy/playlist.py	/^def extract_playlist_id(playlist_url):$/;"	f
+extract_video_id	pafy/backend_shared.py	/^def extract_video_id(url):$/;"	f
+fetch_cached	pafy/backend_internal.py	/^def fetch_cached(url, callback, encoding=None, dbg_ref="", file_prefix=""):$/;"	f
+fetch_decode	pafy/pafy.py	/^def fetch_decode(url, encoding=None):$/;"	f
+filename	pafy/backend_shared.py	/^    def filename(self):$/;"	m	class:BaseStream
+format_traceback	pafy/jsinterp.py	/^    def format_traceback(self):$/;"	m	class:ExtractorError
+from_dict	pafy/channel.py	/^    def from_dict(cls, ch, basic, gdata, size, callback):$/;"	m	class:Channel
+from_dict	pafy/playlist.py	/^    def from_dict(cls, pl, basic, gdata, size, callback):$/;"	m	class:Playlist
+from_url	pafy/channel.py	/^    def from_url(cls, url, basic, gdata, size, callback):$/;"	m	class:Channel
+from_url	pafy/playlist.py	/^    def from_url(cls, url, basic, gdata, size, callback):$/;"	m	class:Playlist
+funcmap	pafy/backend_internal.py	/^funcmap = {}$/;"	v
+generate_filename	pafy/backend_shared.py	/^    def generate_filename(self, meta=False, max_length=None):$/;"	m	class:BaseStream
+get_categoryname	pafy/pafy.py	/^def get_categoryname(cat_id):$/;"	f
+get_channel	pafy/channel.py	/^def get_channel(channel_url, basic=False, gdata=False,$/;"	f
+get_filesize	pafy/backend_shared.py	/^    def get_filesize(self):$/;"	m	class:BaseStream
+get_filesize	pafy/backend_youtube_dl.py	/^    def get_filesize(self):$/;"	m	class:YtdlStream
+get_js_sm	pafy/backend_internal.py	/^def get_js_sm(watchinfo, callback):$/;"	f
+get_playlist	pafy/playlist.py	/^def get_playlist(playlist_url, basic=False, gdata=False,$/;"	f
+get_playlist2	pafy/playlist.py	/^def get_playlist2(playlist_url, basic=False, gdata=False,$/;"	f
+get_size_done	pafy/backend_shared.py	/^def get_size_done(bytesdone, progress):$/;"	f
+get_status_string	pafy/backend_shared.py	/^def get_status_string(progress):$/;"	f
+get_video_info	pafy/backend_internal.py	/^def get_video_info(video_id, callback, newurl=None):$/;"	f
+getbest	pafy/backend_shared.py	/^    def getbest(self, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+getbestaudio	pafy/backend_shared.py	/^    def getbestaudio(self, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+getbestthumb	pafy/backend_shared.py	/^    def getbestthumb(self):$/;"	m	class:BasePafy
+getbestvideo	pafy/backend_shared.py	/^    def getbestvideo(self, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+gettext	doc/Makefile	/^gettext:$/;"	t
+getworst	pafy/backend_shared.py	/^    def getworst(self, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+getworstaudio	pafy/backend_shared.py	/^    def getworstaudio(self, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+getworstvideo	pafy/backend_shared.py	/^    def getworstvideo(self, preftype="any", ftypestrict=True):$/;"	m	class:BasePafy
+help	doc/Makefile	/^help:$/;"	t
+html	doc/Makefile	/^html:$/;"	t
+html_favicon	doc/conf.py	/^html_favicon = "favicon.ico"$/;"	v
+html_static_path	doc/conf.py	/^html_static_path = ['_static']$/;"	v
+html_theme	doc/conf.py	/^html_theme = "sphinx_rtd_theme"$/;"	v
+html_theme_path	doc/conf.py	/^html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]$/;"	v
+htmlhelp	doc/Makefile	/^htmlhelp:$/;"	t
+htmlhelp_basename	doc/conf.py	/^htmlhelp_basename = 'pafydoc'$/;"	v
+info	doc/Makefile	/^info:$/;"	t
+interpret_expression	pafy/jsinterp.py	/^    def interpret_expression(self, expr, local_vars, allow_recursion):$/;"	m	class:JSInterpreter
+interpret_statement	pafy/jsinterp.py	/^    def interpret_statement(self, stmt, local_vars, allow_recursion=100):$/;"	m	class:JSInterpreter
+itag	pafy/backend_shared.py	/^    def itag(self):$/;"	m	class:BaseStream
+itags	pafy/g.py	/^itags = {$/;"	v
+json	doc/Makefile	/^json:$/;"	t
+jsplayer	pafy/g.py	/^jsplayer = r';ytplayer\\.config\\s*=\\s*({.*?});'$/;"	v
+keywords	pafy/backend_shared.py	/^    def keywords(self):$/;"	m	class:BasePafy
+latex	doc/Makefile	/^latex:$/;"	t
+latex_documents	doc/conf.py	/^latex_documents = [$/;"	v
+latex_elements	doc/conf.py	/^latex_elements = {$/;"	v
+latexpdf	doc/Makefile	/^latexpdf:$/;"	t
+latexpdfja	doc/Makefile	/^latexpdfja:$/;"	t
+length	pafy/backend_shared.py	/^    def length(self):$/;"	m	class:BasePafy
+lifespan	pafy/g.py	/^lifespan = 60 * 60 * 5  # 5 hours$/;"	v
+likes	pafy/backend_shared.py	/^    def likes(self):$/;"	m	class:BasePafy
+linkcheck	doc/Makefile	/^linkcheck:$/;"	t
+load_cache	pafy/pafy.py	/^def load_cache(newcache):$/;"	f
+logo	pafy/channel.py	/^    def logo(self):$/;"	m	class:Channel
+m4astreams	pafy/backend_shared.py	/^    def m4astreams(self):$/;"	m	class:BasePafy
+main	scripts/ytdl	/^def main():$/;"	f
+man	doc/Makefile	/^man:$/;"	t
+man_pages	doc/conf.py	/^man_pages = [$/;"	v
+master_doc	doc/conf.py	/^master_doc = 'index'$/;"	v
+mediatype	pafy/backend_shared.py	/^    def mediatype(self):$/;"	m	class:BaseStream
+mix	pafy/backend_shared.py	/^    def mix(self):$/;"	m	class:BasePafy
+msg	scripts/ytdl	/^        msg = ("ytdl requires the argparse library to be installed separately "$/;"	v
+mswin	pafy/util.py	/^mswin = os.name == "nt"$/;"	v
+mswin	scripts/ytdl	/^mswin = os.name == "nt"$/;"	v
+new	pafy/pafy.py	/^def new(url, basic=True, gdata=False, size=False,$/;"	f
+not_utf8_environment	pafy/util.py	/^not_utf8_environment = mswin or (sys.stdout.encoding and$/;"	v
+not_utf8_environment	scripts/ytdl	/^not_utf8_environment = mswin or "UTF-8" not in os.environ.get("LANG", "")$/;"	v
+notes	pafy/backend_shared.py	/^    def notes(self):$/;"	m	class:BaseStream
+oggstreams	pafy/backend_shared.py	/^    def oggstreams(self):$/;"	m	class:BasePafy
+opener	pafy/g.py	/^opener = build_opener()$/;"	v
+parseISO8591	pafy/playlist.py	/^def parseISO8591(duration):$/;"	f
+parseqs	pafy/backend_internal.py	/^def parseqs(data):$/;"	f
+pickle	doc/Makefile	/^pickle:$/;"	t
+playlists	pafy/channel.py	/^    def playlists(self):$/;"	m	class:Channel
+populate_from_playlist	pafy/backend_shared.py	/^    def populate_from_playlist(self, pl_data):$/;"	m	class:BasePafy
+printstreams	scripts/ytdl	/^def printstreams(streams):$/;"	f
+progress_hook	pafy/backend_youtube_dl.py	/^        def progress_hook(s):$/;"	f	member:YtdlStream.download	file:
+project	doc/conf.py	/^project = u'pafy'$/;"	v
+prune_files	pafy/backend_internal.py	/^def prune_files(path, prefix="", age_max=3600 * 24 * 14, count_max=4):$/;"	f
+pseudoxml	doc/Makefile	/^pseudoxml:$/;"	t
+published	pafy/backend_shared.py	/^    def published(self):$/;"	m	class:BasePafy
+pygments_style	doc/conf.py	/^pygments_style = 'sphinx'$/;"	v
+pyver	pafy/backend_internal.py	/^    uni, pyver = str, 3$/;"	v
+pyver	pafy/backend_internal.py	/^    uni, pyver = unicode, 2$/;"	v
+pyver	pafy/backend_shared.py	/^    uni, pyver = str, 3$/;"	v
+pyver	pafy/backend_shared.py	/^    uni, pyver = unicode, 2$/;"	v
+pyver	pafy/playlist.py	/^    pyver = 2$/;"	v
+pyver	pafy/playlist.py	/^    pyver = 3$/;"	v
+qthelp	doc/Makefile	/^qthelp:$/;"	t
+quality	pafy/backend_shared.py	/^    def quality(self):$/;"	m	class:BaseStream
+rating	pafy/backend_shared.py	/^    def rating(self):$/;"	m	class:BasePafy
+rawbitrate	pafy/backend_shared.py	/^    def rawbitrate(self):$/;"	m	class:BaseStream
+release	doc/conf.py	/^release = __version__$/;"	v
+remux	pafy/backend_shared.py	/^def remux(infile, outfile, quiet=False, muxer="ffmpeg"):$/;"	f
+report_error	pafy/backend_youtube_dl.py	/^    def report_error(self, *args, **kwargs):$/;"	m	class:ydl
+report_warning	pafy/backend_youtube_dl.py	/^    def report_warning(self, *args, **kwargs):$/;"	m	class:ydl
+resf	pafy/jsinterp.py	/^        def resf(args):$/;"	f	member:JSInterpreter.build_function	file:
+resolution	pafy/backend_shared.py	/^    def resolution(self):$/;"	m	class:BaseStream
+runOnce	tests/test.py	/^    def runOnce(self):$/;"	m	class:Test
+setUp	tests/test.py	/^    def setUp(self):$/;"	m	class:Test
+set_api_key	pafy/pafy.py	/^def set_api_key(key):$/;"	f
+set_categories	pafy/pafy.py	/^def set_categories(categories):$/;"	f
+singlehtml	doc/Makefile	/^singlehtml:$/;"	t
+source_suffix	doc/conf.py	/^source_suffix = '.rst'$/;"	v
+stdout_to_null	tests/test.py	/^def stdout_to_null(fn):$/;"	f
+streams	pafy/backend_shared.py	/^    def streams(self):$/;"	m	class:BasePafy
+subscriberCount	pafy/channel.py	/^    def subscriberCount(self):$/;"	m	class:Channel
+subscriptions	pafy/channel.py	/^    def subscriptions(self):$/;"	m	class:Channel
+templates_path	doc/conf.py	/^templates_path = ['_templates']$/;"	v
+test_best_stream_size	tests/test.py	/^    def test_best_stream_size(self):$/;"	m	class:Test
+test_generate_filename_with_meta	tests/test.py	/^    def test_generate_filename_with_meta(self):$/;"	m	class:Test
+test_get_playlist	tests/test.py	/^    def test_get_playlist(self):$/;"	m	class:Test
+test_get_playlist_pickle	tests/test.py	/^    def test_get_playlist_pickle(self):$/;"	m	class:Test
+test_pafy__invalid_win_filename	tests/test.py	/^    def test_pafy__invalid_win_filename(self):$/;"	m	class:Test
+test_pafy_download	tests/test.py	/^    def test_pafy_download(self):$/;"	m	class:Test
+test_pafy_download_invalid_dirname	tests/test.py	/^    def test_pafy_download_invalid_dirname(self):$/;"	m	class:Test
+test_pafy_download_resume	tests/test.py	/^    def test_pafy_download_resume(self):$/;"	m	class:Test
+test_pafy_download_to_dir	tests/test.py	/^    def test_pafy_download_to_dir(self):$/;"	m	class:Test
+test_pafy_init	tests/test.py	/^    def test_pafy_init(self):$/;"	m	class:Test
+test_streams_exist	tests/test.py	/^    def test_streams_exist(self):$/;"	m	class:Test
+test_video_properties	tests/test.py	/^    def test_video_properties(self):$/;"	m	class:Test
+testenv	tox.ini	/^[testenv]$/;"	s
+testenv:py26	tox.ini	/^[testenv:py26]$/;"	s
+texinfo	doc/Makefile	/^texinfo:$/;"	t
+texinfo_documents	doc/conf.py	/^texinfo_documents = [$/;"	v
+text	doc/Makefile	/^text:$/;"	t
+threed	pafy/backend_shared.py	/^    def threed(self):$/;"	m	class:BaseStream
+thumb	pafy/backend_shared.py	/^    def thumb(self):$/;"	m	class:BasePafy
+thumbnail	pafy/playlist.py	/^    def thumbnail(self):$/;"	m	class:Playlist
+title	pafy/backend_shared.py	/^    def title(self):$/;"	m	class:BasePafy
+title	pafy/backend_shared.py	/^    def title(self):$/;"	m	class:BaseStream
+title	pafy/channel.py	/^    def title(self):$/;"	m	class:Channel
+title	pafy/playlist.py	/^    def title(self):$/;"	m	class:Playlist
+to_console_title	pafy/backend_youtube_dl.py	/^    def to_console_title(self, *args, **kwargs):$/;"	m	class:ydl
+to_screen	pafy/backend_youtube_dl.py	/^    def to_screen(self, *args, **kwargs):$/;"	m	class:ydl
+tox	tox.ini	/^[tox]$/;"	s
+trouble	pafy/backend_youtube_dl.py	/^    def trouble(self, *args, **kwargs):$/;"	m	class:ydl
+uni	pafy/backend_internal.py	/^    uni, pyver = str, 3$/;"	v
+uni	pafy/backend_internal.py	/^    uni, pyver = unicode, 2$/;"	v
+uni	pafy/backend_shared.py	/^    uni, pyver = str, 3$/;"	v
+uni	pafy/backend_shared.py	/^    uni, pyver = unicode, 2$/;"	v
+uni	pafy/backend_youtube_dl.py	/^    uni = str$/;"	v
+unittest	tests/test.py	/^    import unittest2 as unittest$/;"	I	nameref:module:unittest2
+uploads	pafy/channel.py	/^    def uploads(self):$/;"	m	class:Channel
+url	pafy/backend_internal.py	/^    def url(self):$/;"	m	class:InternStream
+url	pafy/backend_shared.py	/^    def url(self):$/;"	m	class:BaseStream
+url_https	pafy/backend_shared.py	/^    def url_https(self):$/;"	m	class:BaseStream
+urlopen	pafy/backend_youtube_dl.py	/^    def urlopen(self, url):$/;"	m	class:ydl
+urls	pafy/g.py	/^urls = {$/;"	v
+user_agent	pafy/g.py	/^user_agent = "pafy " + __version__$/;"	v
+username	pafy/backend_shared.py	/^    def username(self):$/;"	m	class:BasePafy
+utf8_replace	pafy/util.py	/^def utf8_replace(txt):$/;"	f
+utf8_replace	scripts/ytdl	/^def utf8_replace(txt):$/;"	f
+version	doc/conf.py	/^version = __version__$/;"	v
+videostreams	pafy/backend_shared.py	/^    def videostreams(self):$/;"	m	class:BasePafy
+viewcount	pafy/backend_shared.py	/^    def viewcount(self):$/;"	m	class:BasePafy
+wrapper	tests/test.py	/^    def wrapper(*a, **b):$/;"	f	function:stdout_to_null	file:
+xenc	pafy/util.py	/^def xenc(stuff):$/;"	f
+xenc	scripts/ytdl	/^def xenc(stuff):$/;"	f
+xml	doc/Makefile	/^xml:$/;"	t
+xprint	scripts/ytdl	/^def xprint(stuff, end=None):$/;"	f
+ydl	pafy/backend_youtube_dl.py	/^class ydl:$/;"	c
+ytdl Examples	README.rst	/^ytdl Examples$/;"	c
