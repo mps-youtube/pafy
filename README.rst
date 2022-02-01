@@ -65,8 +65,8 @@ get certain attributes:
     >>> video.viewcount, video.author, video.length
     (1916, 'PyCon 2014', 10394)
 
-    >>> video.duration, video.likes, video.dislikes
-    ('02:53:14', 25, 0)
+    >>> video.duration, video.likes
+    ('02:53:14', 25)
 
     >>> print(video.description)
     Speaker: Richard Jones
