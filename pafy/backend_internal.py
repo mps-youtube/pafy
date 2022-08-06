@@ -129,7 +129,6 @@ class InternPafy(BasePafy):
         self._username = uni(snippet['channelTitle'])
         statistics = item["statistics"]
         self._likes = int(statistics["likeCount"])
-        self._dislikes = int(statistics["dislikeCount"])
         self._have_gdata = 1
 
 
