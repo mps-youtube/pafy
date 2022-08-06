@@ -64,7 +64,6 @@ def get_playlist(playlist_url, basic=False, gdata=False,
         likes=allinfo.get('likes'),
         title=allinfo.get('title'),
         author=allinfo.get('author'),
-        dislikes=allinfo.get('dislikes'),
         description=allinfo.get('description'),
         items=[]
     )
@@ -84,7 +83,6 @@ def get_playlist(playlist_url, basic=False, gdata=False,
             user_id=v.get('user_id'),
             privacy=v.get('privacy'),
             start=v.get('start', 0.0),
-            dislikes=v.get('dislikes'),
             duration=v.get('duration'),
             comments=v.get('comments'),
             keywords=v.get('keywords'),
@@ -333,7 +331,6 @@ def dict_for_playlist(v):
         category=get_categoryname(v['snippet']['categoryId']),
         views=stats.get('viewCount', 0),
         likes=stats.get('likeCount', 0),
-        dislikes=stats.get('dislikeCount', 0),
         comments=stats.get('commentCount', 0),
     )
 
