@@ -9,7 +9,7 @@ if sys.version_info[:2] >= (3, 0):
 else:
     uni = unicode
 
-import youtube_dl
+import yt_dlp as youtube_dl
 
 from . import g
 from .backend_shared import BasePafy, BaseStream, remux, get_status_string, get_size_done

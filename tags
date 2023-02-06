@@ -8,12 +8,12 @@
 !_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
-!_TAG_PROGRAM_VERSION	5.9.0	/p5.9.20210905.0/
-:func:`Stream.download` example	doc/index.rst	/^:func:`Stream.download` example$/;"	S	section:Stream Objects
-:func:`pafy.get_playlist` example	doc/index.rst	/^:func:`pafy.get_playlist` example$/;"	S	section:Playlist Retrieval
+!_TAG_PROGRAM_VERSION	5.9.0	/p5.9.20220828.0/
+:func:`Stream.download` example	doc/index.rst	/^:func:`Stream.download` example$/;"	s	chapter:Stream Objects
+:func:`pafy.get_playlist` example	doc/index.rst	/^:func:`pafy.get_playlist` example$/;"	s	chapter:Playlist Retrieval
 AF	pafy/g.py	/^AF = 'adaptive_fmts'$/;"	v
 ALLSPHINXOPTS	doc/Makefile	/^ALLSPHINXOPTS   = -d $(BUILDDIR)\/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .$/;"	m
-API Keys	doc/index.rst	/^API Keys$/;"	s	chapter:Pafy Documentation
+API Keys	doc/index.rst	/^API Keys$/;"	c	title:Pafy Documentation
 BUILDDIR	doc/Makefile	/^BUILDDIR      = _build$/;"	m
 BasePafy	pafy/backend_shared.py	/^class BasePafy(object):$/;"	c
 BaseStream	pafy/backend_shared.py	/^class BaseStream(object):$/;"	c
@@ -36,20 +36,20 @@ PLAYLISTS	tests/test.py	/^PLAYLISTS = [$/;"	v
 Pafy	pafy/pafy.py	/^           from .backend_internal import InternPafy as Pafy$/;"	x	function:new	file:	nameref:unknown:InternPafy
 Pafy	pafy/pafy.py	/^           from .backend_youtube_dl import YtdlPafy as Pafy$/;"	x	function:new	file:	nameref:unknown:YtdlPafy
 Pafy	pafy/pafy.py	/^Pafy = None$/;"	v
-Pafy Attributes	doc/index.rst	/^Pafy Attributes$/;"	S	section:Pafy Objects
-Pafy Documentation	doc/index.rst	/^Pafy Documentation$/;"	c
-Pafy Methods	doc/index.rst	/^Pafy Methods$/;"	S	section:Pafy Objects
-Pafy Objects	doc/index.rst	/^Pafy Objects$/;"	s	chapter:Pafy Documentation
-Pafy Objects and Stream Objects	doc/index.rst	/^Pafy Objects and Stream Objects$/;"	s	chapter:Pafy Documentation
+Pafy Attributes	doc/index.rst	/^Pafy Attributes$/;"	s	chapter:Pafy Objects
+Pafy Documentation	doc/index.rst	/^Pafy Documentation$/;"	H
+Pafy Methods	doc/index.rst	/^Pafy Methods$/;"	s	chapter:Pafy Objects
+Pafy Objects	doc/index.rst	/^Pafy Objects$/;"	c	title:Pafy Documentation
+Pafy Objects and Stream Objects	doc/index.rst	/^Pafy Objects and Stream Objects$/;"	c	title:Pafy Documentation
 Playlist	pafy/playlist.py	/^class Playlist(object):$/;"	c
-Playlist Attributes	doc/index.rst	/^Playlist Attributes$/;"	S	section:Playlist Retrieval
-Playlist Retrieval	doc/index.rst	/^Playlist Retrieval$/;"	s	chapter:Pafy Documentation
+Playlist Attributes	doc/index.rst	/^Playlist Attributes$/;"	s	chapter:Playlist Retrieval
+Playlist Retrieval	doc/index.rst	/^Playlist Retrieval$/;"	c	title:Pafy Documentation
 SPHINXBUILD	doc/Makefile	/^SPHINXBUILD   = sphinx-build$/;"	m
 SPHINXOPTS	doc/Makefile	/^SPHINXOPTS    =$/;"	m
-Stream Attributes	doc/index.rst	/^Stream Attributes$/;"	S	section:Stream Objects
-Stream Lists	doc/index.rst	/^Stream Lists$/;"	S	section:Pafy Objects
-Stream Methods	doc/index.rst	/^Stream Methods$/;"	S	section:Stream Objects
-Stream Objects	doc/index.rst	/^Stream Objects$/;"	s	chapter:Pafy Documentation
+Stream Attributes	doc/index.rst	/^Stream Attributes$/;"	s	chapter:Stream Objects
+Stream Lists	doc/index.rst	/^Stream Lists$/;"	s	chapter:Pafy Objects
+Stream Methods	doc/index.rst	/^Stream Methods$/;"	s	chapter:Stream Objects
+Stream Objects	doc/index.rst	/^Stream Objects$/;"	c	title:Pafy Documentation
 Test	tests/test.py	/^class Test(unittest.TestCase):$/;"	c
 UEFSM	pafy/g.py	/^UEFSM = 'url_encoded_fmt_stream_map'$/;"	v
 Usage Examples	README.rst	/^Usage Examples$/;"	c
@@ -109,7 +109,7 @@ api_key	pafy/g.py	/^api_key = "AIzaSyCIM4EzNqi1in22f4Z3Ru3iYvLaY8tc3bo"$/;"	v
 audiostreams	pafy/backend_shared.py	/^    def audiostreams(self):$/;"	m	class:BasePafy
 author	pafy/backend_shared.py	/^    def author(self):$/;"	m	class:BasePafy
 author	pafy/playlist.py	/^    def author(self):$/;"	m	class:Playlist
-backend	pafy/pafy.py	/^        backend = "yt-dlp"$/;"	v
+backend	pafy/pafy.py	/^        backend = "yt_dlp"$/;"	v
 backend	pafy/pafy.py	/^backend = "internal"$/;"	v
 bigthumb	pafy/backend_shared.py	/^    def bigthumb(self):$/;"	m	class:BasePafy
 bigthumbhd	pafy/backend_shared.py	/^    def bigthumbhd(self):$/;"	m	class:BasePafy
@@ -324,4 +324,6 @@ xenc	scripts/ytdl	/^def xenc(stuff):$/;"	f
 xml	doc/Makefile	/^xml:$/;"	t
 xprint	scripts/ytdl	/^def xprint(stuff, end=None):$/;"	f
 ydl	pafy/backend_youtube_dl.py	/^class ydl:$/;"	c
+youtube_dl	pafy/backend_youtube_dl.py	/^import yt_dlp as youtube_dl$/;"	I	nameref:module:yt_dlp
+youtube_dl	pafy/pafy.py	/^        import yt_dlp as youtube_dl$/;"	I	nameref:module:yt_dlp
 ytdl Examples	README.rst	/^ytdl Examples$/;"	c
