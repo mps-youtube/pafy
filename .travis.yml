@@ -8,7 +8,7 @@ python:
 install:
     - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
     - pip install coveralls > /dev/null
-    - pip install youtube-dl > /dev/null
+    - pip install https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz > /dev/null
 
 before_script:
     - printenv
