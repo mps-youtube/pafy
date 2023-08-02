@@ -45,8 +45,8 @@ Pafy = None
 backend = "internal"
 if os.environ.get("PAFY_BACKEND") != "internal":
     try:
-        import youtube_dl
-        backend = "youtube-dl"
+        import yt_dlp as youtube_dl
+        backend = "yt_dlp"
     except ImportError:
         raise ImportError(
                "pafy: youtube-dl not found; you can use the internal backend by "
