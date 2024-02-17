@@ -44,18 +44,18 @@ class YtdlPafy(BasePafy):
         if self.callback:
             self.callback("Fetched video info")
 
-        self._title = self._ydl_info['title']
-        self._author = self._ydl_info['uploader']
-        self._rating = self._ydl_info['average_rating']
-        self._length = self._ydl_info['duration']
-        self._viewcount = self._ydl_info['view_count']
-        self._likes = self._ydl_info.get('like_count', 0)
-        self._dislikes = self._ydl_info.get('dislike_count', 0)
-        self._username = self._ydl_info['uploader_id']
-        self._category = self._ydl_info['categories'][0] if self._ydl_info['categories'] else ''
-        self._bestthumb = self._ydl_info['thumbnails'][0]['url']
-        self._bigthumb = g.urls['bigthumb'] % self.videoid
-        self._bigthumbhd = g.urls['bigthumbhd'] % self.videoid
+        self._title = self._ydl_info.get('title','')
+        self._author = self._ydl_info.get('uploader','')
+        self._rating = self._ydl_info.get('average_rating',0)
+        self._length = self._ydl_info.get('duration',0)
+        self._viewcount = self._ydl_info.get('view_count',0)
+        self._likes = self._ydl_info.get('like_count',0)
+        self._dislikes = self._ydl_info.get('dislike_count',0)
+        self._username = self._ydl_info.get('uploader_id','')
+        self._category = self._ydl_info.get('categories',['uncategorized'])[0] if self._ydl_info.get('categories') else ''
+        self._bestthumb = self._ydl_info.get('thumbnails')[0].get('url') if self._ydl_info.get('thumbnails') else ''
+        self._bigthumb = g.urls.get('bigthumb') % self.videoid
+        self._bigthumbhd = g.urls.get('bigthumbhd') % self.videoid
         self.expiry = time.time() + g.lifespan
 
         self._have_basic = True
